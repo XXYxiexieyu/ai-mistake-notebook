@@ -153,18 +153,24 @@ class DeepSeekClient(
 
     fun scanWrongPage(
         imageFile: File,
-        subjectHint: String
+        subjectHint: String,
+        enhancedInkImage: File? = null
     ): Pair<FullPageScanPayload, String> {
         val typeList = Subjects.questionTypes(subjectHint).joinToString("、")
         val prompt = """
             你是高三北京高考整页错题识别助手。请检查整页作业或试卷，只找出有明确批改证据的错题。
 
             判断错题时必须重点观察题目、作答区域和答案附近是否有：
-            - 红色或其他颜色的叉、圈划、波浪线、删除线、订正答案；
+            - 蓝色笔的叉号、圈划、波浪线、删除线、订正或补写答案；
+            - 红色、紫色、绿色或其他颜色的叉、圈划、波浪线、删除线、订正答案；
             - 老师批注、扣分标记、失分分值、未得分标记；
             - 原先答案被另一颜色笔改写，或旁边出现正确步骤。
 
             注意：
+            - 如果提供了第二张图，第二张是彩色笔迹增强图：浅灰代表原纸张和印刷内容，蓝色、红色、绿色和紫色高饱和笔画代表检测到的彩笔痕迹；
+            - 必须同时对照原图和彩色笔迹增强图，特别留意蓝色圆珠笔、蓝色中性笔和蓝紫色钢笔；
+            - 蓝色叉号、蓝笔下划线加订正、蓝色圈出错误、蓝笔补充过程都可能表示错题；
+            - 蓝色勾号、普通蓝笔作答或没有订正意义的蓝色线条不能直接判错；
             - 单独的红勾通常表示正确，不能仅凭红勾判为错题；
             - 普通高亮、下划线、印刷粗体或题干颜色本身不等于错题；
             - 只有作答完成但没有批改痕迹时，不要擅自判错；
@@ -183,7 +189,7 @@ class DeepSeekClient(
                 {
                   "box": [左, 上, 右, 下],
                   "isWrong": true,
-                  "evidenceType": "叉号|红笔订正|扣分标记|其他颜色批注|错误圈划|无明确批改",
+                  "evidenceType": "蓝色笔订正|红笔订正|其他颜色批注|叉号|错误圈划|扣分标记|无明确批改",
                   "wrongEvidence": "描述批改痕迹和位置",
                   "questionText": "完整题干，含公式和选项",
                   "answerText": "正确答案",
@@ -202,7 +208,9 @@ class DeepSeekClient(
               ]
             }
         """.trimIndent()
-        val raw = request(arrayListOf(textPart(prompt), imagePart(imageFile)))
+        val content = arrayListOf(textPart(prompt), imagePart(imageFile))
+        if (enhancedInkImage?.isFile == true) content += imagePart(enhancedInkImage)
+        val raw = request(content)
         val json = extractJson(raw)
         val payload = gson.fromJson(json, FullPageScanPayload::class.java)
         return payload to json

@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.1.2-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.1.3-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -42,7 +42,7 @@
 |---|---|
 | 错题录入 | 拍照、相册、手动四角框选、透视校正 |
 | 批量录入 | 多图导入、单图多题、AI 自动分题 |
-| 整页扫描 | 根据对错号、红笔订正、扣分和其他颜色批注识别错题 |
+| 整页扫描 | 根据对错号、蓝笔/红笔订正、扣分和其他颜色批注识别错题，并生成彩笔增强图辅助判断 |
 | AI 分析 | 题干、答案、解析、题型、知识点、错因、难度和置信度 |
 | 原作答证据 | 错误答案、草稿照片、具体小问或错误步骤 |
 | 教材知识网 | 35 册教材、259 个单元、1156 个章节条目 |
@@ -181,6 +181,7 @@ python tools/fetch_catalog.py
 | `0.1.0-preview` | 本地优先错题本、六科知识树、AI 分析、重考、图表、PDF、ZIP 和一年提醒 |
 | `0.1.1-preview` | 整页拍摄自动识别错题，根据红笔批改等痕迹筛选并保存依据 |
 | `0.1.2-preview` | 单题连续问答、问答本地历史、知识点教材知识网映射 |
+| `0.1.3-preview` | 增加彩色笔迹增强图，重点提升蓝色笔订正和圈划的整页识别能力 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -206,6 +207,14 @@ python tools/fetch_catalog.py
 - 小米 15：安装和主要流程运行正常。
 - 小米 13：安装和主要流程运行正常。
 - 两台设备均使用未 Root 的正式系统环境。
+
+## 构建验证
+
+- `assembleDebug`：通过。
+- `testDebugUnitTest`：6 项通过，包括蓝笔颜色检测。
+- `lintDebug`：0 个问题。
+- GitHub Actions：通过。
+- APK v2 签名：通过。
 
 ## 贡献
 

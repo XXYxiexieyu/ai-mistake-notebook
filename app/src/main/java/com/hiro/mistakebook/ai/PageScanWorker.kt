@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters
 import com.hiro.mistakebook.MistakeBookApplication
 import com.hiro.mistakebook.data.AnalysisState
 import com.hiro.mistakebook.data.QuestionDraft
+import java.io.File
 import java.io.IOException
 import kotlin.math.max
 import kotlin.math.min
@@ -38,7 +39,17 @@ class PageScanWorker(
         }
 
         return try {
-            val (payload, rawJson) = app.container.aiClient.scanWrongPage(sourceFile, scan.subject)
+            val enhancedFile = File(applicationContext.cacheDir, "ink_enhanced_${scan.id}.jpg")
+            val enhancedCreated = InkImageEnhancer.createEnhancedImage(sourceFile, enhancedFile)
+            val (payload, rawJson) = try {
+                app.container.aiClient.scanWrongPage(
+                    sourceFile,
+                    scan.subject,
+                    enhancedFile.takeIf { enhancedCreated }
+                )
+            } finally {
+                if (enhancedFile.exists()) enhancedFile.delete()
+            }
             val source = BitmapFactory.decodeFile(sourceFile.absolutePath)
                 ?: error("无法读取整页图片")
             var saved = 0

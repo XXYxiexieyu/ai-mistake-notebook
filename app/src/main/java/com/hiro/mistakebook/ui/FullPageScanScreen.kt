@@ -168,7 +168,7 @@ fun FullPageScanScreen(
                         verticalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
                         Text(
-                            "AI 会根据题目和答案附近的对错号、红笔订正、扣分及其他颜色批注识别错题。普通下划线和高亮不会单独被判为错题。",
+                            "AI 会重点检查蓝色、红色、紫色等彩笔在题目和答案附近留下的叉号、圈划、订正、扣分和补充步骤。普通下划线和高亮不会单独被判为错题。",
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall
                         )

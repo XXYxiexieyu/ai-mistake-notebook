@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.hiro.mistakebook.data.KnowledgeTreeData
 import com.hiro.mistakebook.data.FullPageScanPayload
 import com.hiro.mistakebook.data.KnowledgeMatcher
+import com.hiro.mistakebook.ai.InkColorAnalyzer
 import com.hiro.mistakebook.data.Subjects
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -84,5 +85,20 @@ class CatalogTest {
         assertEquals("必修第一册", matches.first().book)
         assertEquals("第三章 函数", matches.first().unit)
         assertTrue(matches.first().chapter.contains("单调性"))
+    }
+
+    @Test
+    fun blueCorrectionInkIsDetected() {
+        val blue = InkColorAnalyzer.analyze(42, 88, 205)
+        assertTrue(blue.coloredInk)
+        assertTrue(blue.blueFamily)
+        assertTrue(blue.hue in 165f..325f)
+
+        val pastelBlue = InkColorAnalyzer.analyze(95, 125, 190)
+        assertTrue(pastelBlue.blueFamily)
+
+        val grayPrint = InkColorAnalyzer.analyze(72, 72, 72)
+        assertFalse(grayPrint.coloredInk)
+        assertFalse(grayPrint.blueFamily)
     }
 }
