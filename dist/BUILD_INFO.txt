@@ -1,0 +1,24 @@
+AI错题本 Android 预览版
+
+Version: 0.1.2-preview
+Package: com.hiro.mistakebook
+Min Android: 10 (API 29)
+Target Android: 15 (API 35)
+APK: AI_Mistake_Notebook_0.1.2-preview.apk
+Size: 61,837,966 bytes (58.97 MB)
+SHA-256: B6AF97EF5610706241F92333CC59D0BC5E9A007F80BFE91BA01D09EC0491E033
+
+Verification:
+- assembleDebug: passed
+- testDebugUnitTest: 5 tests passed
+- lintDebug: 0 issues
+- APK v2 signature: verified
+- Knowledge catalog: 35 books, 259 units, 1156 sections
+- Whole-page wrong-question detection with correction-mark evidence: implemented
+- Per-question contextual AI chat with local history: implemented
+- AI knowledge-point matching into the textbook knowledge network: implemented
+
+Not yet verified:
+- Runtime installation on a physical Xiaomi 15 or Xiaomi 13.
+- Camera and file picker behavior on Xiaomi HyperOS.
+- DeepSeek responses using the user's real API key.

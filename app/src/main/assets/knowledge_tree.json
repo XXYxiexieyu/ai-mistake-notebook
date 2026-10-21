@@ -1,0 +1,2639 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026-10-21",
+  "source": "电子课本网公开目录，内置离线使用",
+  "books": [
+    {
+      "subject": "语文",
+      "publisher": "统编版（人教社出版）",
+      "title": "必修上册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/yuwen/gzbxgysc/",
+      "units": [
+        {
+          "title": "第一单元",
+          "sections": [
+            "第1课",
+            "沁园春·长沙",
+            "第2课",
+            "立在地球边上放号",
+            "红烛",
+            "*峨日朵雪峰之侧",
+            "*致云雀",
+            "第3课",
+            "百合花",
+            "*哦，香雪",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第二单元",
+          "sections": [
+            "第4课",
+            "喜看稻菽千重浪——记首届国家最高科技奖获得者袁隆平",
+            "*心有一团火，温暖众人心",
+            "*“探界者”钟扬",
+            "第5课",
+            "以工匠精神雕琢时代品质",
+            "第6课",
+            "芣苢",
+            "文氏外孙入村收麦",
+            "插秧歌",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第三单元",
+          "sections": [
+            "第7课",
+            "短歌行",
+            "*归园田居（其一）",
+            "第8课",
+            "梦游天姥吟留别",
+            "登高",
+            "*琵琶行并序",
+            "第9课",
+            "念奴娇·赤壁怀古",
+            "*永遇乐·京口北固亭怀古",
+            "*声声慢（寻寻觅觅）",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第四单元 家乡文化生活",
+          "sections": [
+            "学习活动",
+            "一 记录家乡的人和物",
+            "二 家乡文化生活现状调查",
+            "三 参与家乡文化建设"
+          ]
+        },
+        {
+          "title": "第五单元 整本书阅读",
+          "sections": [
+            "《乡土中国》",
+            "《乡土中国》阅读指导",
+            "《乡土中国》深入研读",
+            "《乡土中国》交流分享"
+          ]
+        },
+        {
+          "title": "第六单元",
+          "sections": [
+            "第10课",
+            "劝学",
+            "*师说",
+            "第11课",
+            "反对党八股（节选）",
+            "第12课",
+            "拿来主义",
+            "第13课",
+            "*读书：目的和前提",
+            "*上图书馆",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第七单元",
+          "sections": [
+            "第14课",
+            "故都的秋",
+            "*荷塘月色",
+            "第15课",
+            "我与地坛（节选）",
+            "第16课",
+            "赤壁赋",
+            "*登泰山记",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第八单元 词语积累与词语解释",
+          "sections": [
+            "学习活动",
+            "一 丰富词语积累",
+            "二 把握古今词义的联系与区别",
+            "三 词义的辨析和词语的使用"
+          ]
+        },
+        {
+          "title": "古诗词诵读",
+          "sections": [
+            "静女",
+            "涉江采芙蓉",
+            "虞美人（春花秋月何时了）",
+            "鹊桥仙（纤云弄巧）"
+          ]
+        },
+        {
+          "title": "其他",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "语文",
+      "publisher": "统编版（人教社出版）",
+      "title": "必修下册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/yuwen/gzbxxc/",
+      "units": [
+        {
+          "title": "第一单元",
+          "sections": [
+            "第1课",
+            "子路、曾皙、冉有、公西华侍坐",
+            "*齐桓晋文之事",
+            "庖丁解牛",
+            "第2课",
+            "烛之武退秦师",
+            "第3课",
+            "鸿门宴",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第二单元",
+          "sections": [
+            "第4课",
+            "窦娥冤（节选）",
+            "第5课",
+            "雷雨（节选）",
+            "第6课",
+            "*哈姆雷特（节选）",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第三单元",
+          "sections": [
+            "第7课",
+            "青蒿素：人类征服疾病的一小步",
+            "*一名物理学家的教育历程",
+            "第8课",
+            "中国建筑的特征",
+            "第9课",
+            "说“木叶”",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第四单元",
+          "sections": [
+            "信息时代的语文生活",
+            "学习活动",
+            "一 认识多媒介",
+            "二 善用多媒介",
+            "三 辨识媒介信息"
+          ]
+        },
+        {
+          "title": "第五单元",
+          "sections": [
+            "第10课",
+            "在《人民报》创刊纪念会上的演说",
+            "在马克思墓前的讲话",
+            "第11课",
+            "谏逐客书",
+            "*与妻书",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第六单元",
+          "sections": [
+            "第12课",
+            "祝福",
+            "第13课",
+            "林教头风雪山神庙",
+            "*装在套子里的人",
+            "第14课",
+            "促织",
+            "*变形记（节选）",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "第七单元",
+          "sections": [
+            "整本书阅读",
+            "《红楼梦》"
+          ]
+        },
+        {
+          "title": "第八单元",
+          "sections": [
+            "第15课",
+            "谏太宗十思疏",
+            "*答司马谏议书",
+            "第16课",
+            "阿房宫赋",
+            "*六国论",
+            "单元学习任务"
+          ]
+        },
+        {
+          "title": "古诗词诵读",
+          "sections": [
+            "登岳阳楼",
+            "桂枝香·金陵怀古",
+            "念奴娇·过洞庭",
+            "游园（【皂罗袍】）",
+            "作业和试题讲解",
+            "7、8两课书练习",
+            "练习讲评"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "语文",
+      "publisher": "统编版（人教社出版）",
+      "title": "选择性必修上册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/yuwen/gzxzxbxsc/",
+      "units": [
+        {
+          "title": "第一单元",
+          "sections": [
+            "第1课",
+            "中国人民站起来了",
+            "第2课",
+            "长征胜利万岁",
+            "*大战中的插曲",
+            "第3课",
+            "别了，“不列颠尼亚”",
+            "*县委书记的榜样——焦裕禄",
+            "第4课",
+            "在民族复兴的历史丰碑上——2020中国抗疫记",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第二单元",
+          "sections": [
+            "第5课",
+            "《论语》十二章",
+            "大学之道",
+            "*人皆有不忍人之心",
+            "第6课",
+            "《老子》四章",
+            "*五石之瓠",
+            "第7课",
+            "*兼爱",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第三单元",
+          "sections": [
+            "第8课",
+            "大卫·科波菲尔（节选）",
+            "第9课",
+            "复活（节选）",
+            "第10课",
+            "老人与海（节选）",
+            "第11课",
+            "*百年孤独（节选）",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第四单元 逻辑的力量",
+          "sections": [
+            "学习活动",
+            "一 发现潜藏的逻辑谬误",
+            "二 运用有效的推理形式",
+            "三 采用合理的论证方法"
+          ]
+        },
+        {
+          "title": "古诗词诵读",
+          "sections": [
+            "无衣",
+            "春江花月夜",
+            "将进酒",
+            "江城子·乙卯正月二十日夜记梦"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "语文",
+      "publisher": "统编版（人教社出版）",
+      "title": "选择性必修中册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/yuwen/gzxzxbxzc/",
+      "units": [
+        {
+          "title": "第一单元",
+          "sections": [
+            "第1课",
+            "社会历史的决定性基础",
+            "第2课",
+            "改造我们的学习",
+            "人的正确思想是从哪里来的？",
+            "第3课",
+            "实践是检验真理的唯一标准",
+            "第4课",
+            "*修辞立其诚",
+            "*怜悯是人的天性",
+            "第5课",
+            "人应当坚持正义",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第二单元",
+          "sections": [
+            "第6课",
+            "记念刘和珍君",
+            "*为了忘却的记念",
+            "第7课",
+            "包身工",
+            "第8课",
+            "荷花淀",
+            "*小二黑结婚（节选）",
+            "*党费",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第三单元",
+          "sections": [
+            "第9课",
+            "屈原列传",
+            "第10课",
+            "*苏武传",
+            "第11课",
+            "过秦论",
+            "*五代史伶官传序",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第四单元",
+          "sections": [
+            "第12课",
+            "玩偶之家（节选）",
+            "第13课",
+            "迷娘（之一）",
+            "致大海",
+            "*自己之歌（节选）",
+            "*树和天空",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "古诗词诵读",
+          "sections": [
+            "燕歌行并序",
+            "李凭箜篌引",
+            "锦瑟",
+            "书愤"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "语文",
+      "publisher": "统编版（人教社出版）",
+      "title": "选择性必修下册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/yuwen/gzxzxbxxc/",
+      "units": [
+        {
+          "title": "第一单元",
+          "sections": [
+            "第1课",
+            "氓",
+            "离骚（节选）",
+            "第2课",
+            "*孔雀东南飞并序",
+            "第3课",
+            "蜀道难",
+            "*蜀相",
+            "第4课",
+            "*望海潮（东南形胜）",
+            "*扬州慢（淮左名都）",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第二单元",
+          "sections": [
+            "第5课",
+            "阿Q正传（节选）",
+            "*边城（节选）",
+            "第6课",
+            "大堰河——我的保姆",
+            "*再别康桥",
+            "第7课",
+            "风景谈",
+            "*秦腔",
+            "第8课",
+            "茶馆（节选）",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第三单元",
+          "sections": [
+            "第9课",
+            "陈情表",
+            "*项脊轩志",
+            "第10课",
+            "兰亭集序",
+            "归去来兮辞并序",
+            "第11课",
+            "*种树郭橐驼传",
+            "第12课",
+            "*石钟山记",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "第四单元",
+          "sections": [
+            "第13课",
+            "自然选择的证明",
+            "*宇宙的边疆",
+            "第14课",
+            "*天文学上的旷世之争",
+            "单元研习任务"
+          ]
+        },
+        {
+          "title": "古诗词诵读",
+          "sections": [
+            "拟行路难（其四）",
+            "客至",
+            "登快阁",
+            "临安春雨初霁"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbbx1/",
+      "units": [
+        {
+          "title": "第一章 集合与常用逻辑用语",
+          "sections": [
+            "1.1 集合",
+            "1.1.1 集合及其表示方法",
+            "1.1.2 集合的基本关系",
+            "1.1.3 集合的基本运算",
+            "1.2 常用逻辑用语",
+            "1.2.1 命题与量词",
+            "1.2.2 全称量词命题与存在量词命题的否定",
+            "1.2.3 充分条件、必要条件",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第二章 等式与不等式",
+          "sections": [
+            "2.1 等式",
+            "2.1.1 等式的性质与方程的解集",
+            "2.1.2 一元二次方程的解集及其根与系数的关系",
+            "2.1.3 方程组的解集",
+            "2.2 不等式",
+            "2.2.1 不等式及其性质",
+            "2.2.2 不等式的解集",
+            "2.2.3 一元二次不等式的解法",
+            "2.2.4 均值不等式及其应用",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第三章 函数",
+          "sections": [
+            "3.1 函数的概念与性质",
+            "3.1.1 函数及其表示方法",
+            "3.1.2 函数的单调性",
+            "3.1.3 函数的奇偶性",
+            "3.2 函数与方程、不等式之间的关系",
+            "3.3 函数的应用(一)",
+            "3.4 数学建模活动:决定苹果的最佳出售时间点",
+            "本章小结"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbbx2/",
+      "units": [
+        {
+          "title": "第四章 指数函数、对数函数与幂函数",
+          "sections": [
+            "4.1 指数与指数函数",
+            "4.1.1 实数指数幂及其运算",
+            "4.1.2 指数函数的性质与图像",
+            "4.2 对数与对数函数",
+            "4.2.1 对数运算",
+            "4.2.2 对数运算法则",
+            "4.2.3 对数函数的性质与图像",
+            "4.3 指数函数与对数函数的关系",
+            "4.4 幂函数",
+            "4.5 增长速度的比较",
+            "4.6 函数的应用(二)",
+            "4.7 数学建模活动: 生长规律的描述",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第五章 统计与概率",
+          "sections": [
+            "5.1 统计",
+            "5.1.1 数据的收集",
+            "5.1.2 数据的数字特征",
+            "5.1.3 数据的直观表示",
+            "5.1.4 用样本估计总体",
+            "5.2 数学探究活动:由编号样本估计总数及其模拟",
+            "5.3 概率",
+            "5.3.1 样本空间与事件",
+            "5.3.2 事件之间的关系与运算",
+            "5.3.3 古典概型",
+            "5.3.4 频率与概率",
+            "5.3.5 随机事件的独立性",
+            "5.4 统计与概率的应用",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第六章 平面向量初步",
+          "sections": [
+            "6.1 平面向量及其线性运算",
+            "6.1.1 向量的概念",
+            "6.1.2 向量的加法",
+            "6.1.3 向量的减法",
+            "6.1.4 数乘向量",
+            "6.1.5 向量的线性运算",
+            "6.2 向量基本定理与向量的坐标",
+            "6.2.1 向量基本定理",
+            "6.2.2 直线上向量的坐标及其运算",
+            "6.2.3 平面向量的坐标及其运算",
+            "6.3 平面向量线性运算的应用",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "本书拓展阅读目录",
+          "sections": [
+            "对数发明起源的简介",
+            "素数个数与对数",
+            "指数运算与生活哲学",
+            "我国古代统计工作简介",
+            "用样本估计总体的失败案例",
+            "“黄金72小时”中的概率",
+            "向量的推广与应用"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "必修第三册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbbx3/",
+      "units": [
+        {
+          "title": "第七章 三角函数",
+          "sections": [
+            "7.1 任意角的概念与弧度制",
+            "7.1.1 角的推广",
+            "7.1.2 弧度制及其与角度制的换算",
+            "7.2 任意角的三角函数",
+            "7.2.1 三角函数的定义",
+            "7.2.2 单位圆与三角函数线",
+            "7.2.3 同角三角函数的基本关系式",
+            "7.2.4 诱导公式",
+            "7.2.1 三角函数的定",
+            "7.3 三角函数的性质与图像",
+            "7.3.1 正弦函数的性质与图像",
+            "7.3.2 正弦型函数的性质与图像",
+            "7.3.3 余弦函数的性质与图像",
+            "7.3.4 正切函数的性质与图像",
+            "7.3.5 已知三角函数值求角",
+            "7.4 数学建模活动，周期现象的描述",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第八章 向量的数量积与三角恒等变换",
+          "sections": [
+            "8.1 向量的数量积",
+            "8.1.1 向量数量积的概念",
+            "8.1.2 向量数量积的运算律",
+            "8.1.3 向量数量积的坐标运算",
+            "8.2 三角恒等变换",
+            "8.2.1 两角和与差的余弦",
+            "8.2.2 两角和与差的正弦、正切",
+            "8.2.3 倍角公式",
+            "8.2.4 三角恒等变换的应用",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "本书拓展阅读目录",
+          "sections": [
+            "更多三角函数及关系式",
+            "向量的数量积与三角形的面积",
+            "正弦型函数与信号处理"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "必修第四册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbbx4/",
+      "units": [
+        {
+          "title": "第九章 解三角形",
+          "sections": [
+            "9.1 正弦定理与余弦定理",
+            "9.1.1 正弦定理",
+            "9.1.2 余弦定理",
+            "9.2 正弦定理与余弦定理的应用",
+            "9.3 数学探究活动: 得到不可达两点之间的距离",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第十章 复数",
+          "sections": [
+            "10.1 复数及其几何意义",
+            "10.1.1 复数的概念",
+            "10.1.2 复数的几何意义",
+            "10.2 复数的运算",
+            "10.2.1 复数的加法与减法",
+            "10.2.2 复数的乘法与除法",
+            "10.3 复数的三角形式及其运算",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第十一章 立体几何初步",
+          "sections": [
+            "11.1 空间几何体",
+            "11.1.1 空间几何体与斜二测画法",
+            "11.1.2 构成空间几何体的基本元素",
+            "11.1.3 多面体与棱柱",
+            "11.1.4 棱锥与棱台",
+            "11.1.5 旋转体",
+            "11.1.6 祖暅原理与几何体的体积",
+            "11.2 平面的基本事实与推论",
+            "11.3 空间中的平行关系",
+            "11.3.1 平行直线与异面直线",
+            "11.3.2 直线与平面平行",
+            "11.3.3 平面与平面平行",
+            "11.4 空间中的垂直关系",
+            "11.4.1 直线与平面垂直",
+            "11.4.2 平面与平面垂直",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "本书拓展阅读目录",
+          "sections": [
+            "秦九韶的“三斜求积术”",
+            "利用复数产生分形图",
+            "四元数简介",
+            "我国古代数学中球的体积公式"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "选择性必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbxzxbx1/",
+      "units": [
+        {
+          "title": "第一章 空间向量与立体几何",
+          "sections": [
+            "1.1 空间向量及其运算",
+            "1.1.1 空间向量及其运算",
+            "1.1.2 空间向量基本定理",
+            "1.1.3 空间向量的坐标与空间直角坐标系",
+            "1.2 空间向量在立体几何中的应用",
+            "1.2.1 空间中的点、直线与空间向量",
+            "1.2.2 空间中的平面与空间向量",
+            "1.2.3 直线与平面的夹角",
+            "1.2.4 二面角",
+            "1.2.5 空间中的距离",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第二章 平面解析几何",
+          "sections": [
+            "2.1坐标法",
+            "2.2 直线及其方程",
+            "2.2.1 直线的倾斜角与斜率",
+            "2.2.2 直线的方程",
+            "2.2.3 两条直线的位置关系",
+            "2.2.4 点到直线的距离",
+            "2.3 圆及其方程",
+            "2.3.1 圆的标准方程",
+            "2.3.2 圆的一般方程",
+            "2.3.3 直线与圆的位置关系",
+            "2.3.4 圆与圆的位置关系",
+            "2.4 曲线与方程",
+            "2.5 椭圆及其方程",
+            "2.5.1 椭圆的标准方程",
+            "2.5.2 椭圆的几何性质",
+            "2.6 双曲线及其方程",
+            "2.6.1 双曲线的标准方程",
+            "2.6.2 双曲线的几何性质",
+            "2.7 抛物线及其方程",
+            "2.7.1 抛物线的标准方程",
+            "2.7.2 抛物线的几何性质",
+            "2.8 直线与圆锥曲线的位置关系",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "本书拓展阅读目录",
+          "sections": [
+            "立体几何与物质的性质",
+            "倾斜的试管液面轮廓一定是椭圆",
+            "圆锥曲线的光学性质"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "选择性必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbxzxbx2/",
+      "units": [
+        {
+          "title": "第三章 排列、组合与二项式定理",
+          "sections": [
+            "3.1 排列与组合",
+            "3.1.1 基本计数原理",
+            "3.1.2 排列与排列数",
+            "3.1.3 组合与组合数",
+            "3.2 数学探究活动：生日悖论的解释与模拟",
+            "3.3 二项式定理与杨辉三角",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第四章 概率与统计",
+          "sections": [
+            "4.1 条件概率与事件的独立性",
+            "4.1.1 条件概率",
+            "4.1.2 乘法公式与全概率公式",
+            "4.1.3 独立性与条件概率的关系",
+            "4.2 随机变量",
+            "4.2.1 随机变量及其与事件的联系",
+            "4.2.2 离散型随机变量的分布列",
+            "4.2.3 二项分布与超几何分布",
+            "4.2.4 随机变量的数字特征",
+            "4.2.5 正态分布",
+            "4.3 统计模型",
+            "4.3.1 一 元线性回归模型",
+            "4.3.2 独立性检验",
+            "4.4 数学探究活动：了解高考选考科目的确定是否与性别有关",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "本书拓展阅读目录",
+          "sections": [
+            "把相同的物品分给不同对象的分法种数",
+            "人工智能中的贝叶斯公式",
+            "“回归”一词的由来",
+            "相关系数与向量夹角的余弦"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "数学",
+      "publisher": "人教B版2019",
+      "title": "选择性必修第三册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shuxue/gzbxzxbx3/",
+      "units": [
+        {
+          "title": "第五章 数列",
+          "sections": [
+            "5.1 数列基础",
+            "5.1.1 数列的概念",
+            "5.1.2 数列中的递推",
+            "5.2 等差数列",
+            "5.2.1 等差数列",
+            "5.2.2 等差数列的前 n 项和",
+            "5.3 等比数列",
+            "5.3.1 等比数列",
+            "5.3.2 等比数列的前 n 项和",
+            "5.4 数列的应用",
+            "5.5 数学归纳法",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "第六章 导数及其应用",
+          "sections": [
+            "6.1 导数",
+            "6.1.1 函数的平均变化率",
+            "6.1.2 导数及其几何意义",
+            "6.1.3 基本初等函数的导数",
+            "6.1.4 求导法则及其应用",
+            "6.2 利用导数研究函数的性质",
+            "6.2.1 导数与函数的单调性",
+            "6.2.2 导数与函数的极值、最值",
+            "6.3 利用导数解决实际问题",
+            "6.4 数学建模活动：描述体重与脉搏率的关系",
+            "本章小结"
+          ]
+        },
+        {
+          "title": "本书拓展阅读目录",
+          "sections": [
+            "国际象棋与等比数列",
+            "利用导数由圆的周长得到圆的面积",
+            "利用导数来推导光的折射定律"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzbxd1c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "UNIT 1 LIFE CHOICES",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 LIFESTYLES",
+            "LESSON 2 UNDERSTANDING AND COPING WITH STRESS",
+            "LESSON 3 YOUR LIFE IS WHAT YOU MAKE IT",
+            "WRITING WORKSHOP A PERSONAL EMAIL",
+            "VIEWING WORKSHOP AMELIA EARHART",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 2 SPORTS AND FITNESS",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 THE UNDERDOG",
+            "LESSON 2 RULES OF THE GAME",
+            "LESSON 3 RUNNING AND FITNESS",
+            "WRITING WORKSHOP A TRUE STORY",
+            "VIEWING WORKSHOP PHYSICAL FITNESS AND HEALTH",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 3 CELEBRATIONS",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 SPRING FESTIVAL",
+            "LESSON 2 SPECIAL OCCASIONS",
+            "LESSON 3 MEMORIES OF CHRISTMAS",
+            "WRITING WORKSHOP AN EVENT DESCRIPTION",
+            "VIEWING WORKSHOP PAPER-CUTTING",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 1–3",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 1 LIFE CHOICES",
+            "WORKBOOK UNIT 2 SPORTS AND FITNESS",
+            "WORKBOOK UNIT 3 CELEBRATIONS"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        },
+        {
+          "title": "IRREGULAR VERBS",
+          "sections": []
+        },
+        {
+          "title": "后记",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzbxd2c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "UNIT 4 INFORMATION TECHNOLOGY",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 AVATARS",
+            "LESSON 2 APPS",
+            "LESSON 3 INTERNET AND FRIENDSHIPS",
+            "WRITING WORKSHOP A PERSONAL PROFILE",
+            "VIEWING WORKSHOP PUBLISHING IN THE DIGITAL AGE",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 5 HUMANS AND NATURE",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 A SEA STORY",
+            "LESSON 2 PROFESSIONAL RESCUE TEAM",
+            "LESSON 3 RACE TO THE POLE",
+            "WRITING WORKSHOP A BROCHURE",
+            "VIEWING WORKSHOP HOW BIG IS THE UNIVERSE",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 6 THE ADMIRABLE",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 A MEDICAL PIONEER",
+            "LESSON 2 HISTORY MAKERS",
+            "LESSON 3 THE SUPERHERO BEHIND SUPERMAN",
+            "WRITING WORKSHOP A SUMMARY(1)",
+            "VIEWING WORKSHOP I HAVE A DREAM",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 4–6",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 4 INFORMATION TECHNOLOGY",
+            "WORKBOOK UNIT 5 HUMANS AND NATURE",
+            "WORKBOOK UNIT 6 THE ADMIRABLE"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        },
+        {
+          "title": "IRREGULAR VERBS",
+          "sections": []
+        },
+        {
+          "title": "后记",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "必修第三册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzbxd3c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "UNIT 7 ART",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 MASTERPIECES",
+            "LESSON 2 BEIJING OPERA",
+            "LESSON 3 A MUSICAL GENIUS",
+            "WRITING WORKSHOP A FORMAL EMAIL",
+            "VIEWING WORKSHOP TWO FAMOUS PAINTINGS",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 8 GREEN LIVING",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 ROOTS AND SHOOTS",
+            "LESSON 2 GREENING THE DESERT",
+            "LESSON 3 \"WHITE BIKES\" ON THE ROAD",
+            "WRITING WORKSHOP A SURVEY REPORT",
+            "VIEWING WORKSHOP SOLAR ENERGY",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 9 LEARNING",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 ACTIVATE LEARNING",
+            "LESSON 2 LANGUAGE LEARNING TIPS",
+            "LESSON 3 THE SECRETS OF YOUR MEMORY",
+            "WRITING WORKSHOP A LEARNING REFLECTION",
+            "VIEWING WORKSHOP THE DYNAMIC BRAIN",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 7–9",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 7 ART",
+            "WORKBOOK UNIT 8 GREEN LIVING",
+            "WORKBOOK UNIT 9 LEARNING"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        },
+        {
+          "title": "IRREGULAR VERBS",
+          "sections": []
+        },
+        {
+          "title": "后记",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "选择性必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzxzxbxd1c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "Unit 1 RELATIONSHIPS",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 TEACHERS",
+            "LESSON 2 HOW DO WE LIKE TEACHERS' FEEDBACK",
+            "LESSON 3 SO CLOSE, YET SO FAR",
+            "WRITING WORKSHOP AN INVITATION LETTER",
+            "VIEWING WORKSHOP REMEMBER TO SAY THANK YOU",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 2 SUCCESS",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 MONEY VS SUCCESS",
+            "LESSON 2 TOP SECRETS OF SUCCESS",
+            "LESSON 3 GETTING TO THE TOP",
+            "WRITING WORKSHOP A LIFE STORY",
+            "VIEWING WORKSHOP SUCCESS IS A CONTINUOUS JOURNEY",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 3 CONSERVATION",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 THE SIXTH EXTINCTION",
+            "LESSON 2 WAR ON PLASTIC PACKETS",
+            "LESSON 3 THE ROAD TO DESTRUCTION",
+            "WRITING WORKSHOP A \"FOR\" AND \"AGAINST\" ESSAY",
+            "VIEWING WORKSHOP CRAZY BRIDGES FOR ANIMALS",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 1–3",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 1 RELATIONSHIPS",
+            "WORKBOOK UNIT 2 SUCCESS",
+            "WORKBOOK UNIT 3 CONSERVATION"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "选择性必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzxzxbxd2c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "UNIT 4 HUMOUR",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 WHAT'S SO FUNNY?",
+            "LESSON 2 WHY DO WE NEED HUMOUR?",
+            "LESSON 3 MY FAVOURITE COMEDIAN",
+            "WRITING WORKSHOP A FUNNY STORY",
+            "VIEWING WORKSHOP AN ENQUIRY",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 5 EDUCATION",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 ENLIGHTENING A MIND",
+            "LESSON 2 THE OBJECTIVES OF EDUCATION",
+            "LESSON 3 UNDERSTANDING",
+            "WRITING WORKSHOP A PICTURE DESCRIPTION",
+            "VIEWING WORKSHOP MONTESSORI EDUCATION",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 6 THE MEDIA",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 FROM PAGE TO SCREEN",
+            "LESSON 2 QUESTIONS ABOUT MEDIA",
+            "LESSON 3 THE ADVERTISING GAME",
+            "WRITING WORKSHOP A FILM REVIEW",
+            "VIEWING WORKSHOP THE RISE OF DIGITAL ADVERTISING IN ASIA",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 4—6",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 4 HUMOUR",
+            "WORKBOOK UNIT 5 EDUCATION",
+            "WORKBOOK UNIT 6 THE MEDIA"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "选择性必修第三册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzxzxbxd3c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "UNIT 7 CAREERS",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 EQ: IQ",
+            "LESSON 2 CAREER SKILLS",
+            "LESSON 3 MEET THE NEW BOSS: YOU",
+            "WRITING WORKSHOP A LETTER OF APPLICATION",
+            "VIEWING WORKSHOP WHAT JOBS WILL SURVIVE THE ROBOT ECONOMY?",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 8 LITERATURE",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 THE LAST LEAF",
+            "LESSON 2 POETRY",
+            "LESSON 3 20,000 LEAGUES UNDER THE SEA",
+            "WRITING WORKSHOP A CONTINUATION OF A STORY",
+            "VIEWING WORKSHOP FAIRY TALES",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 9 HUMAN BIOLOGY",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 TO CLONE OR NOT TO CLONE?",
+            "LESSON 2 BRAIN POWER",
+            "LESSON 3 EPIDEMICS EXPLAINED",
+            "WRITING WORKSHOP A SUMMARY (2)",
+            "VIEWING WORKSHOP ANIMAL EXPERIMENTS",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 7—9",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 7 CAREERS",
+            "WORKBOOK UNIT 8 LITERATURE",
+            "WORKBOOK UNIT 9 HUMAN BIOLOGY"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "英语",
+      "publisher": "北师大版2019",
+      "title": "选择性必修第四册",
+      "sourceUrl": "http://www.dzkbw.com/books/bsd/yingyu/gzxzxbxd4c/",
+      "units": [
+        {
+          "title": "主编寄语",
+          "sections": []
+        },
+        {
+          "title": "LEARNING TO LEARN",
+          "sections": []
+        },
+        {
+          "title": "UNIT 10 CONNECTIONS",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 HOW CLOSELY CONNECTED ARE WE?",
+            "LESSON 2 COMMUNITY SPIRIT",
+            "LESSON 3 ANNE OF GREEN GABLES",
+            "WRITING WORKSHOP A NEWS REPORT",
+            "VIEWING WORKSHOP SHOULD YOU TRUST YOUR FIRST IMPRESSIONS？",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 11 CONFLICT AND COMPROMISE",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 LIVING IN A COMMUNITY",
+            "LESSON 2 DEALING WITH CONFLICT",
+            "LESSON 3 WAR MEMORIES",
+            "WRITING WORKSHOP AN OPINION ESSAY",
+            "VIEWING WORKSHOP GIVING OPINIONS",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "UNIT 12 INNOVATION",
+          "sections": [
+            "TOPIC TALK",
+            "LESSON 1 SCIENTIFIC BREAKTHROUGHS",
+            "LESSON 2 AHA MOMENT",
+            "LESSON 3 STEPHEN HAWKING",
+            "WRITING WORKSHOP AN INTRODUCTION OF AN INVENTOR AND HIS/HER INVENTION",
+            "VIEWING WORKSHOP HOW NEW TECHNOLOGY HELPS BLIND PEOPLE EXPLORE THE WORLD",
+            "READING CLUB",
+            "ASSESSMENT"
+          ]
+        },
+        {
+          "title": "LITERATURE SPOT",
+          "sections": []
+        },
+        {
+          "title": "PROJECTS 10—12",
+          "sections": []
+        },
+        {
+          "title": "WORKBOOK",
+          "sections": [
+            "WORKBOOK UNIT 10 CONNECTIONS",
+            "WORKBOOK UNIT 11 CONFLICT AND COMPROMISE",
+            "WORKBOOK UNIT 12 INNOVATION"
+          ]
+        },
+        {
+          "title": "PEER EDITING SHEET",
+          "sections": []
+        },
+        {
+          "title": "GRAMMAR SUMMARY",
+          "sections": []
+        },
+        {
+          "title": "NOTES ON THE TEXTS",
+          "sections": []
+        },
+        {
+          "title": "TAPESCRIPTS",
+          "sections": []
+        },
+        {
+          "title": "VOCABULARY IN EACH UNIT",
+          "sections": []
+        },
+        {
+          "title": "WORD LIST",
+          "sections": []
+        },
+        {
+          "title": "NAMES AND PLACES",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "物理",
+      "publisher": "人教版2019",
+      "title": "必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/wuli/pgzd1c/",
+      "units": [
+        {
+          "title": "序言 物理学：研究物质及其运动规律的科学",
+          "sections": []
+        },
+        {
+          "title": "第一章 运动的描述",
+          "sections": [
+            "1.质点 参考系",
+            "2.时间 位移",
+            "3.位置变化快慢的描述——速度",
+            "4.速度变化快慢的描述——加速度"
+          ]
+        },
+        {
+          "title": "第二章 匀变速直线运动的研究",
+          "sections": [
+            "1.实验：探究小车速度随时间变化的规律",
+            "2.匀变速直线运动的速度与时间的关系",
+            "3.匀变速直线运动的位移与时间的关系",
+            "4.自由落体运动"
+          ]
+        },
+        {
+          "title": "第三章 相互作用——力",
+          "sections": [
+            "1.重力与弹力",
+            "2.摩擦力",
+            "3.牛顿第三定律",
+            "4.力的合成和分解",
+            "5.共点力的平衡"
+          ]
+        },
+        {
+          "title": "第四章 运动和力的关系",
+          "sections": [
+            "1.牛顿第一定律",
+            "2.实验：探究加速度与力、质量的关系",
+            "3.牛顿第二定律",
+            "4.力学单位制",
+            "5.牛顿运动定律的应用",
+            "6.超重和失重"
+          ]
+        },
+        {
+          "title": "课题研究",
+          "sections": []
+        },
+        {
+          "title": "学生实验",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "物理",
+      "publisher": "人教版2019",
+      "title": "必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/wuli/pgzd2c/",
+      "units": [
+        {
+          "title": "第五章 抛体运动",
+          "sections": [
+            "1.曲线运动",
+            "2.运动的合成与分解",
+            "3.实验：探究平抛运动的特点",
+            "4.抛体运动的规律"
+          ]
+        },
+        {
+          "title": "第六章 圆周运动",
+          "sections": [
+            "1.圆周运动",
+            "2.向心力",
+            "3.向心加速度",
+            "4.生活中的圆周运动"
+          ]
+        },
+        {
+          "title": "第七章 万有引力与宇宙航行",
+          "sections": [
+            "1.行星的运动",
+            "2.万有引力定律",
+            "3.万有引力理论的成就",
+            "4.宇宙航行",
+            "5.相对论时空观与牛顿力学的局限性"
+          ]
+        },
+        {
+          "title": "第八章 机械能守恒定律",
+          "sections": [
+            "1.功与功率",
+            "2.重力势能",
+            "3.动能和动能定理",
+            "4.机械能守恒定律",
+            "5.实验：验证机械能守恒定律"
+          ]
+        },
+        {
+          "title": "课题研究",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "物理",
+      "publisher": "人教版2019",
+      "title": "必修第三册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/wuli/pgzd3c/",
+      "units": [
+        {
+          "title": "第九章 静电场及其应用",
+          "sections": [
+            "1.电荷",
+            "2.库仑定律",
+            "3.电场 电场强度",
+            "4.静电的防止与利用"
+          ]
+        },
+        {
+          "title": "第十章 静电场中的能量",
+          "sections": [
+            "1.电势能和电势",
+            "2.电势差",
+            "3.电势差与电场强度的关系",
+            "4.电容器的电容",
+            "5.带电粒子在电场中的运动"
+          ]
+        },
+        {
+          "title": "第十一章 电路及其应用",
+          "sections": [
+            "1.电源和电流",
+            "2.导体的电阻",
+            "3.实验：导体电阻率的测量",
+            "4.串联电路和并联电路",
+            "5.实验：练习使用多用电表"
+          ]
+        },
+        {
+          "title": "第十二章 电能 能量守恒定律",
+          "sections": [
+            "1.电路中的能量转化",
+            "2.闭合电路的欧姆定律",
+            "3.实验：电池电动势和内阻的测量",
+            "4.能源与可持续发展"
+          ]
+        },
+        {
+          "title": "第十三章 电磁感应与电磁波初步",
+          "sections": [
+            "1.磁场 磁感线",
+            "2.磁感应强度 磁通量",
+            "3.电磁感应现象及应用",
+            "4.电磁波的发现及应用",
+            "5.能量量子化"
+          ]
+        },
+        {
+          "title": "课题研究",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "物理",
+      "publisher": "人教版2019",
+      "title": "选择性必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/wuli/pgzxbd1c/",
+      "units": [
+        {
+          "title": "第一章 动量守恒定律",
+          "sections": [
+            "1.动量",
+            "2.动量定理",
+            "3.动量守恒定律",
+            "4.实验：验证动量守恒定律",
+            "5.弹性碰撞和非弹性碰撞",
+            "6.反冲现象 火箭"
+          ]
+        },
+        {
+          "title": "第二章 机械振动",
+          "sections": [
+            "1.简谐运动",
+            "2.简谐运动的描述",
+            "3.简谐运动的回复力和能量",
+            "4.单摆",
+            "5.实验：用单摆测量重力加速度",
+            "6.受迫振动 共振"
+          ]
+        },
+        {
+          "title": "第三章 机械波",
+          "sections": [
+            "1.波的形成",
+            "2.波的描述",
+            "3.波的反射、折射和衍射",
+            "4.波的干涉",
+            "5.多普勒效应"
+          ]
+        },
+        {
+          "title": "第四章 光",
+          "sections": [
+            "1.光的折射",
+            "2.全反射",
+            "3.光的干涉",
+            "4.实验：用双缝干涉测量光的波长",
+            "5.光的衍射",
+            "6.光的偏振 激光"
+          ]
+        },
+        {
+          "title": "课题研究",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "物理",
+      "publisher": "人教版2019",
+      "title": "选择性必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/wuli/pgzxbd2c/",
+      "units": [
+        {
+          "title": "第一章 安培力与洛伦兹力",
+          "sections": [
+            "1.磁场对通电导线的作用力",
+            "2.磁场对运动电荷的作用力",
+            "3.带电粒子在匀强磁场中的运动",
+            "4.质谱仪与回旋加速器"
+          ]
+        },
+        {
+          "title": "第二章 电磁感应",
+          "sections": [
+            "1.楞次定律",
+            "2.法拉第电磁感应定律",
+            "3.涡流、电磁阻尼和电磁驱动",
+            "4.互感和自感"
+          ]
+        },
+        {
+          "title": "第三章 交变电流",
+          "sections": [
+            "1.交变电流",
+            "2.交变电流的描述",
+            "3.变压器",
+            "4.电能的输送"
+          ]
+        },
+        {
+          "title": "第四章 电磁振荡与电磁波",
+          "sections": [
+            "1.电磁振荡",
+            "2.电磁场与电磁波",
+            "3.无线电波的发射和接收",
+            "4.电磁波谱"
+          ]
+        },
+        {
+          "title": "第五章 传感器",
+          "sections": [
+            "1.认识传感器",
+            "2.常见传感器的工作原理及应用",
+            "3.利用传感器制作简单的自动控制装置"
+          ]
+        },
+        {
+          "title": "课题研究",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "物理",
+      "publisher": "人教版2019",
+      "title": "选择性必修第三册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/wuli/pgzxbd3c/",
+      "units": [
+        {
+          "title": "第一章 分子动理论",
+          "sections": [
+            "1.分子动理论的基本内容",
+            "2.实验：用油膜法估测油酸分子的大小",
+            "3.分子运动速率分布规律",
+            "4.分子动能和分子势能"
+          ]
+        },
+        {
+          "title": "第二章 气体、固体和液体",
+          "sections": [
+            "1.温度和温标",
+            "2.气体的等温变化",
+            "3.气体的等压变化和等容变化",
+            "4.固体",
+            "5.液体"
+          ]
+        },
+        {
+          "title": "第三章 热力学定律",
+          "sections": [
+            "1.功、热和内能的改变",
+            "2.热力学第一定律",
+            "3.能量守恒定律",
+            "4.热力学第二定律"
+          ]
+        },
+        {
+          "title": "第四章 原子结构和波粒二象性",
+          "sections": [
+            "1.普朗克黑体辐射理论",
+            "2.光电效应",
+            "3.原子的核式结构模型",
+            "4.氢原子光谱和玻尔的原子模型",
+            "5.粒子的波动性和量子力学的建立"
+          ]
+        },
+        {
+          "title": "第五章 原子核",
+          "sections": [
+            "1.原子核的组成",
+            "2.放射性元素的衰变",
+            "3.核力与结合能",
+            "4.核裂变与核聚变",
+            "5.“基本”粒子"
+          ]
+        },
+        {
+          "title": "课题研究",
+          "sections": []
+        }
+      ]
+    },
+    {
+      "subject": "化学",
+      "publisher": "人教版2019",
+      "title": "必修第一册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/huaxue/pgzbxd1c/",
+      "units": [
+        {
+          "title": "绪言",
+          "sections": []
+        },
+        {
+          "title": "第一章 物质及其变化",
+          "sections": [
+            "第一节 物质的分类及转化",
+            "第二节 离子反应",
+            "第三节 氧化还原反应",
+            "整理与提升",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第二章 海水中的重要元素——钠和氯",
+          "sections": [
+            "第一节 钠及其化合物",
+            "第二节 氯及其化合物",
+            "第三节 物质的量",
+            "整理与提升",
+            "实验活动1 配制一定物质的量浓度的溶液",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第三章 铁 金属材料",
+          "sections": [
+            "第一节 铁及其化合物",
+            "第二节 金属材料",
+            "整理与提升",
+            "实验活动2 铁及其化合物的性质",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第四章 物质结构 元素周期律",
+          "sections": [
+            "第一节 原子结构与元素周期表",
+            "第二节 元素周期律",
+            "第三节 化学键",
+            "整理与提升",
+            "实验活动3 同周期、同主族元素性质的递变",
+            "全章复习"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "化学",
+      "publisher": "人教版2019",
+      "title": "必修第二册",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/huaxue/pgzbxd2c/",
+      "units": [
+        {
+          "title": "第五章 化工生产中的重要非金属元素",
+          "sections": [
+            "第一节 硫及其化合物",
+            "硫和二氧化硫",
+            "硫酸和硫酸根离子的检验",
+            "浓硫酸的性质",
+            "不同价态含硫物质的转化",
+            "练习与应用",
+            "第二节 氮及其化合物",
+            "氮气与氮的固定、一氧化氮和二氧化氮",
+            "氨",
+            "铵盐和氨的制法",
+            "硝酸",
+            "酸雨及防治、研究与实践——测定雨水的pH",
+            "第三节 无机非金属材料",
+            "整理与提升",
+            "实验活动4 用化学沉淀法去除粗盐中的杂质离子",
+            "实验活动5 不同价态含硫物质的转化",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第六章 化学反应与能量",
+          "sections": [
+            "第一节 化学反应与能量变化",
+            "化学反应与热能",
+            "化学反应与电能",
+            "练习与应用",
+            "第二节 化学反应的速率与限度",
+            "化学反应的速率",
+            "影响化学反应速率的因素",
+            "化学反应的限度、化学反应条件的控制",
+            "整理与提升",
+            "实验活动6 化学能转化成电能",
+            "实验活动7 化学反应速率的影响因素",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第七章 有机化合物",
+          "sections": [
+            "第一节 认识有机化合物",
+            "第二节 乙烯与有机高分子材料",
+            "乙烯",
+            "烃、同分异构体的书写",
+            "有机高分子材料",
+            "练习与应用",
+            "第三节 乙醇与乙酸",
+            "第四节 基本营养物质",
+            "糖类",
+            "蛋白质",
+            "油脂",
+            "整理与提升",
+            "实验活动8 搭建球棍模型认识有机化合物分子结构的特点",
+            "实验活动9 乙醇、乙酸的主要性质",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第八章 化学与可持续发展",
+          "sections": [
+            "第一节 自然资源的开发利用",
+            "第二节 化学品的合理使用",
+            "第三节 环境保护与绿色化学",
+            "整理与提升",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "综合专题",
+          "sections": [
+            "突破无机推断题",
+            "探究性实验设计的一般思路",
+            "物质制备实验设计的一般思路"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "化学",
+      "publisher": "人教版2019",
+      "title": "选择性必修1 化学反应原理",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/huaxue/pgzxzxbxd1c/",
+      "units": [
+        {
+          "title": "第一章 化学反应的热效应",
+          "sections": [
+            "第一节 反应热",
+            "第二节 反应热的计算",
+            "整理与提升",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第二章 化学反应速率与化学平衡",
+          "sections": [
+            "第一节 化学反应速率",
+            "第二节 化学平衡",
+            "第三节 化学反应的方向",
+            "第四节 化学反应的调控",
+            "整理与提升",
+            "实验活动1 探究影响化学平衡移动的因素",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第三章 水溶液中的离子反应与平衡",
+          "sections": [
+            "第一节 电离平衡",
+            "第二节 水的电离和溶液的pH",
+            "第三节 盐类的水解",
+            "第四节 沉淀溶解平衡",
+            "整理与提升",
+            "实验活动2 强酸与强碱的中和滴定",
+            "实验活动3 盐类水解的应用",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "第四章 化学反应与电能",
+          "sections": [
+            "第一节 原电池",
+            "第二节 电解池",
+            "第三节 金属的腐蚀与防护",
+            "整理与提升",
+            "实验活动4 简单的电镀实验",
+            "实验活动5 制作简单的燃料电池",
+            "全章复习"
+          ]
+        },
+        {
+          "title": "综合专题",
+          "sections": [
+            "电化学专题",
+            "化学反应速率与平衡专题",
+            "水溶液中的离子平衡专题",
+            "化学反应进行的方向",
+            "各类平衡常数的应用",
+            "探究性化学实验专题"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "化学",
+      "publisher": "人教版2019",
+      "title": "选择性必修2 物质结构与性质",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/huaxue/pgzxzxbxd2c/",
+      "units": [
+        {
+          "title": "第一章 原子结构与性质",
+          "sections": [
+            "第一节 原子结构",
+            "第二节 原子结构与元素的性质",
+            "整理与提升"
+          ]
+        },
+        {
+          "title": "第二章 分子结构与性质",
+          "sections": [
+            "第一节 共价键",
+            "第二节 分子的空间结构",
+            "第三节 分子结构与物质的性质"
+          ]
+        },
+        {
+          "title": "第三章 晶体结构与性质",
+          "sections": [
+            "第一节 物质的聚集状态与晶体的常识",
+            "第二节 分子晶体与共价晶体",
+            "第三节 金属晶体与离子晶体",
+            "第四节 配合物与超分子",
+            "整理与提升",
+            "实验活动 简单配合物的形成"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "化学",
+      "publisher": "人教版2019",
+      "title": "选择性必修3 有机化学基础",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/huaxue/pgzxzxbxd3c/",
+      "units": [
+        {
+          "title": "引言",
+          "sections": []
+        },
+        {
+          "title": "第一章 有机化合物的结构特点与研究方法",
+          "sections": [
+            "第一节 有机化合物的结构特点",
+            "第二节 研究有机化合物的一般方法",
+            "整理与提升"
+          ]
+        },
+        {
+          "title": "第二章 烃",
+          "sections": [
+            "第一节 烷烃",
+            "第二节 烯烃 炔烃",
+            "第三节 芳香烃",
+            "整理与提升"
+          ]
+        },
+        {
+          "title": "第三章 烃的衍生物",
+          "sections": [
+            "第一节 卤代烃",
+            "第二节 醇 酚",
+            "第三节 醛 酮",
+            "第四节 羧酸 羧酸衍生物",
+            "第五节 有机合成",
+            "整理与提升",
+            "实验活动1 乙酸乙酯的制备与性质",
+            "实验活动2 有机化合物中常见官能团的检验"
+          ]
+        },
+        {
+          "title": "第四章 生物大分子",
+          "sections": [
+            "第一节 糖类",
+            "第二节 蛋白质",
+            "第三节 核酸",
+            "整理与提升",
+            "实验活动3 糖类的性质"
+          ]
+        },
+        {
+          "title": "第五章 合成高分子",
+          "sections": [
+            "第一节 合成高分子的基本方法",
+            "第二节 高分子材料",
+            "整理与提升"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "生物",
+      "publisher": "人教版2019",
+      "title": "必修1 分子与细胞",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shengwu/pgzbx1/",
+      "units": [
+        {
+          "title": "科学家访谈 探究微观生命世界的奥秘——与施一公院士一席谈",
+          "sections": []
+        },
+        {
+          "title": "第1章 走近细胞",
+          "sections": [
+            "第1节 细胞是生命活动的基本单位",
+            "第2节 细胞的多样性和统一性",
+            "探究·实践 使用高倍显微镜观察几种细胞",
+            "生物科技进展 人工合成生命的探索"
+          ]
+        },
+        {
+          "title": "第2章 组成细胞的分子",
+          "sections": [
+            "第1节 细胞中的元素和化合物",
+            "探究·实践 检测生物组织中的糖类、脂肪和蛋白质",
+            "第2节 细胞中的无机物",
+            "第3节 细胞中的糖类和脂质",
+            "第4节 蛋白质是生命活动的主要承担者",
+            "生物科学史话 世界上第一个人工合成蛋白质的诞生",
+            "第5节 核酸是遗传信息的携带者"
+          ]
+        },
+        {
+          "title": "第3章 细胞的基本结构",
+          "sections": [
+            "第1节 细胞膜的结构和功能",
+            "第2节 细胞器之间的分工合作",
+            "探究·实践 用高倍显微镜观察叶绿体和细胞质的流动",
+            "第3节 细胞核的结构和功能",
+            "探究·实践 尝试制作真核细胞的三维结构模型",
+            "生物科技进展 世界上首例体细胞克隆猴的诞生"
+          ]
+        },
+        {
+          "title": "第4章 细胞的物质输入和输出",
+          "sections": [
+            "第1节 被动运输",
+            "探究·实践 探究植物细胞的吸水和失水",
+            "生物科学史话 人类对通道蛋白的探索历程",
+            "第2节 主动运输与胞吞、胞吐"
+          ]
+        },
+        {
+          "title": "第5章 细胞的能量供应与利用",
+          "sections": [
+            "第1节 降低化学反应活化能的酶",
+            "一 酶的作用和本质",
+            "探究·实践 比较过氧化氢在不同条件下的分解",
+            "二 酶的特性",
+            "探究·实践 淀粉酶对淀粉和蔗糖的水解作用",
+            "探究·实践 影响酶活性的条件",
+            "科学·技术·社会 酶为生活添姿彩",
+            "第2节 细胞的能量“货币”ATP",
+            "第3节 细胞呼吸的原理和应用",
+            "探究·实践 探究酵母菌细胞呼吸的方式",
+            "第4节 光合作用与能量转化",
+            "一 捕获光能的色素和结构",
+            "探究·实践 绿叶中色素的提取和分离",
+            "二 光合作用的原理和应用",
+            "探究·实践 探究环境因素对光合作用强度的影响"
+          ]
+        },
+        {
+          "title": "第6章 细胞的生命历程",
+          "sections": [
+            "第1节 细胞的增殖",
+            "探究·实践 观察根尖分生区组织细胞的有丝分裂",
+            "第2节 细胞的分化",
+            "科学·技术·社会 骨髓移植和中华骨髓库",
+            "第3节 细胞的衰老和死亡",
+            "生物科技进展 秀丽隐杆线虫与细胞凋亡研究",
+            "与生物学有关的职业 病理科医师"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "生物",
+      "publisher": "人教版2019",
+      "title": "必修2 遗传与进化",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shengwu/pgzbx2/",
+      "units": [
+        {
+          "title": "科学家访谈 毕生追求的“禾下乘凉梦”——与袁隆平院士一席谈",
+          "sections": []
+        },
+        {
+          "title": "第1章 遗传因子的发现",
+          "sections": [
+            "第1节 孟德尔的豌豆杂交实验（一）",
+            "探究·实践 性状分离比的模拟实验",
+            "第2节 孟德尔的豌豆杂交实验（二）",
+            "与生物学有关的职业 育种工作者"
+          ]
+        },
+        {
+          "title": "第2章 基因和染色体的关系",
+          "sections": [
+            "第1节 减数分裂和受精作用",
+            "一 减数分裂",
+            "探究·实践 观察蝗虫精母细胞减数分裂装片",
+            "二 受精作用",
+            "探究·实践 建立减数分裂中染色体变化的模型",
+            "科学·技术·社会 人类辅助生殖技术",
+            "第2节 基因在染色体上",
+            "科学家的故事 染色体遗传理论的奠基人摩尔根",
+            "第3节 伴性遗传"
+          ]
+        },
+        {
+          "title": "第3章 基因的本质",
+          "sections": [
+            "第1节 DNA是主要的遗传物质",
+            "生物科技进展 生物信息学及其应用",
+            "第2节 DNA的结构",
+            "探究·实践 制作DNA双螺旋结构模型",
+            "科学·技术·社会 DNA指纹技术",
+            "第3节 DNA的复制",
+            "第4节 基因通常是有遗传效应的DNA片段",
+            "生物科技进展 单细胞基因组测序",
+            "与生物学有关的职业 测序工程师"
+          ]
+        },
+        {
+          "title": "第4章 基因的表达",
+          "sections": [
+            "第1节 基因指导蛋白质的合成",
+            "生物科学史话 遗传密码的破译",
+            "第2节 基因表达与性状的关系",
+            "科学·技术·社会 基因工程的应用"
+          ]
+        },
+        {
+          "title": "第5章 基因突变及其他变异",
+          "sections": [
+            "第1节 基因突变和基因重组",
+            "生物科技进展 基因组编辑",
+            "科学·技术·社会 精准医疗",
+            "第2节 染色体变异",
+            "探究·实践 低温诱导植物细胞染色体数目的变化",
+            "第3节 人类遗传病",
+            "探究·实践 调查人群中的遗传病",
+            "与生物学有关的职业 遗传咨询师"
+          ]
+        },
+        {
+          "title": "第6章 生物的进化",
+          "sections": [
+            "第1节 生物有共同祖先的证据",
+            "科学·技术·社会 理想的“地质时钟”",
+            "与生物学有关的职业 化石标本的制作人员",
+            "第2节 自然选择与适应的形成",
+            "第3节 种群基因组成的变化与物种的形成",
+            "一 种群基因组成的变化",
+            "探究·实践 探究自然选择对种群基因频率变化的影响",
+            "探究·实践 探究抗生素对细菌的选择作用",
+            "二 隔离在物种形成中的作用",
+            "第4节 协同进化与生物多样性的形成"
+          ]
+        },
+        {
+          "title": "综合专题",
+          "sections": [
+            "高一的你应该了解的2019-nCOV",
+            "（合格考水平）高一的你应该了解的2019-nCOV",
+            "遗传定律与伴性遗传专题",
+            "基因的本质及表达专题",
+            "细胞分裂与变异专题"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "生物",
+      "publisher": "人教版2019",
+      "title": "选择性必修1 稳态与调节",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shengwu/pgzxzxbx1/",
+      "units": [
+        {
+          "title": "科学家访谈 探索生命活动调节的奥秘——与许智宏院士一席谈",
+          "sections": []
+        },
+        {
+          "title": "第1章 人体的内环境与稳态",
+          "sections": [
+            "第1节 细胞生活的环境",
+            "第2节 内环境的稳态",
+            "探究·实践 模拟生物体维持pH的稳定"
+          ]
+        },
+        {
+          "title": "第2章 神经调节",
+          "sections": [
+            "第1节 神经调节的结构基础",
+            "生物科技进展 脑细胞真的是死一个少一个吗",
+            "第2节 神经调节的基本方式",
+            "与生物学有关的职业 影像技师",
+            "第3节 神经冲动的产生和传导",
+            "生物科学史话 生物电的发现",
+            "第4节 神经系统的分级调节",
+            "生物科技进展 中国脑计划",
+            "第5节 人脑的高级功能",
+            "科学·技术·社会 脑机接口让工具真正实现“随心所欲”"
+          ]
+        },
+        {
+          "title": "第3章 体液调节",
+          "sections": [
+            "第1节 激素与内分泌系统",
+            "第2节 激素调节的过程",
+            "科学·技术·社会 评价应用激素类药物的利与弊",
+            "第3节 体液调节与神经调节的关系"
+          ]
+        },
+        {
+          "title": "第4章 免疫调节",
+          "sections": [
+            "第1节 免疫系统的组成和功能",
+            "生物科技进展 免疫系统的新发现",
+            "第2节 特异性免疫",
+            "科学·技术·社会 流行性感冒及其预防",
+            "生物科技进展 癌症的免疫疗法",
+            "第3节 免疫失调",
+            "科学·技术·社会 HIV与艾滋病",
+            "第4节 免疫学的应用",
+            "与生物学有关的职业 疫苗制品工"
+          ]
+        },
+        {
+          "title": "第5章 植物生命活动的调节",
+          "sections": [
+            "第1节 植物生长素",
+            "第2节 其他植物激素",
+            "第3节 植物生长调节剂的应用",
+            "探究·实践 探索植物生长调节剂的应用",
+            "第4节 环境因素参与调节植物的生命活动",
+            "科学·技术·社会 调控花期创造美好生活"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "生物",
+      "publisher": "人教版2019",
+      "title": "选择性必修2 生物与环境",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shengwu/pgzxzxbx2/",
+      "units": [
+        {
+          "title": "科学家访谈 尊重自然、顺应自然、保护自然——与方精云院士一席谈",
+          "sections": []
+        },
+        {
+          "title": "第1章 种群及其动态",
+          "sections": [
+            "第1节 种群的数量特征",
+            "探究·实践 调查草地中某种双子叶植物的种群密度",
+            "生物科技进展 调查种群数量的其他方法",
+            "第2节 种群数量的变化",
+            "探究·实践 培养液中酵母菌种群数量的变化",
+            "科学家的故事 生态学巨匠马世骏",
+            "第3节 影响种群数量变化的因素",
+            "与生物学有关的职业 植保员"
+          ]
+        },
+        {
+          "title": "第2章 群落及其演替",
+          "sections": [
+            "第1节 群落的结构",
+            "探究·实践 研究土壤中小动物类群的丰富度",
+            "科学·技术·社会 立体农业",
+            "第2节 群落的主要类型",
+            "与生物学有关的职业 林业工程师",
+            "第3节 群落的演替"
+          ]
+        },
+        {
+          "title": "第3章 生态系统及其稳定性",
+          "sections": [
+            "第1节 生态系统的结构",
+            "科学·技术·社会 黄石公园灭狼与引狼入园的启示",
+            "第2节 生态系统的能量流动",
+            "探究·实践 调查当地某生态系统中的能量流动情况",
+            "第3节 生态系统的物质循环",
+            "探究·实践 探究土壤微生物的分解作用",
+            "与生物学有关的职业 景观设计师",
+            "第4节 生态系统的信息传递",
+            "第5节 生态系统的稳定性",
+            "探究·实践 设计制作生态缸，观察其稳定性"
+          ]
+        },
+        {
+          "title": "第4章 人与环境",
+          "sections": [
+            "第1节 人类活动对生态环境的影响",
+            "探究·实践 调查当地的环境状况，提出保护环境的建议或行动计划",
+            "科学·技术·社会 塞罕坝今昔",
+            "第2节 生物多样性及其保护",
+            "探究·实践 搜集保护生物多样性的实例",
+            "科学·技术·社会 关注生态伦理道德",
+            "第3节 生态工程",
+            "一 生态工程的基本原理",
+            "二 生态工程的实例和发展前景",
+            "生物科技进展 定量评估我国陆地生态系统的固碳效应",
+            "科学·技术·社会 前景广阔的沼气工程"
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "生物",
+      "publisher": "人教版2019",
+      "title": "选择性必修3 生物技术与工程",
+      "sourceUrl": "http://www.dzkbw.com/books/rjb/shengwu/pgzxzxbx3/",
+      "units": [
+        {
+          "title": "科学家访谈 生物科技创造美好未来——与杨焕明院士一席谈",
+          "sections": []
+        },
+        {
+          "title": "第1章 发酵工程",
+          "sections": [
+            "科技探索之路 从传统发酵技术到发酵工程",
+            "第1节 传统发酵技术的应用",
+            "探究?实践 制作传统发酵食品",
+            "第2节 微生物的培养技术及应用",
+            "一 微生物的基本培养技术",
+            "探究?实践 酵母菌的纯培养",
+            "拓展视野 微生物菌种的高通量筛选",
+            "二 微生物的选择培养和计数",
+            "探究?实践 土壤中分解尿素的细菌的分离与计数",
+            "与生物学有关的职业 发酵工程制药工",
+            "第3节 发酵工程及其应用"
+          ]
+        },
+        {
+          "title": "第2章 细胞工程",
+          "sections": [
+            "科技探索之路 细胞工程的发展历程",
+            "第1节 植物细胞工程",
+            "一 植物细胞工程的基本技术",
+            "探究?实践 菊花的组织培养",
+            "二 植物细胞工程的应用",
+            "第2节 动物细胞工程",
+            "一 动物细胞培养",
+            "二 动物细胞融合技术与单克隆抗体",
+            "与生物学有关的职业 细胞培养工程师",
+            "三 动物体细胞核移植技术和克隆动物",
+            "第3节 胚胎工程",
+            "一 胚胎工程的理论基础",
+            "二 胚胎工程技术及其应用"
+          ]
+        },
+        {
+          "title": "第3章 基因工程",
+          "sections": [
+            "科技探索之路 基因工程的诞生和发展",
+            "第1节 重组DNA技术的基本工具",
+            "探究?实践 DNA的粗提取与鉴定",
+            "第2节 基因工程的基本操作程序",
+            "探究?实践 DNA 片段的扩增及电泳鉴定",
+            "拓展视野 历史不能忘记中国科学家对PCR的贡献",
+            "第3节 基因工程的应用",
+            "第4节 蛋白质工程的原理和应用"
+          ]
+        },
+        {
+          "title": "第4章 生物技术的安全性与伦理问题",
+          "sections": [
+            "科技探索之路 生物技术发展与社会进步",
+            "第1节 转基因产品的安全性",
+            "第2节 关注生殖性克隆人",
+            "第3节 禁止生物武器",
+            "综合专题",
+            "细胞的物质基础",
+            "细胞的结构和功能",
+            "细胞的物质运输",
+            "酶专题",
+            "细胞分化、衰老、死亡和植物细胞工程",
+            "细胞增殖、癌变和动物细胞培养",
+            "单克隆抗体和免疫",
+            "细胞的物质基础和结构基础习题课",
+            "细胞的物质运输和酶专题习题课",
+            "细胞与细胞工程习题课"
+          ]
+        },
+        {
+          "title": "高考复习",
+          "sections": [
+            "生物学核心素养中的科学探究（上）",
+            "生物学核心素养中的科学探究（中）",
+            "生物学核心素养中的科学探究（下）",
+            "高考生物复习（一）",
+            "高考生物复习（二）",
+            "高考生物复习（三）",
+            "高考生物复习（四）—— 生物学核心素养中的生命观念（2）",
+            "生物学核心素养中的科学思维（1）",
+            "生物学核心素养中的生命观念（3）",
+            "科学方法提高复习效率",
+            "领会学科思想和掌握学科方法",
+            "生物学中的内环境稳态及其调节机制"
+          ]
+        }
+      ]
+    }
+  ]
+}
