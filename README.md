@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.1.2-preview`。这是个人使用预览版，尚未完成小米 HyperOS 真机验收，也未上架应用商店。
+> 当前版本：`0.1.2-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -200,6 +200,12 @@ python tools/fetch_catalog.py
 - PDF 只输出知识点和错因汇总，不包含具体题目。
 - 整页识别依赖 AI 对颜色、批改符号和版面的判断，结果需要人工复核。
 - 仅收错题数据时，不能把错题占比解释为完整知识掌握率。
+
+## 设备验证
+
+- 小米 15：安装和主要流程运行正常。
+- 小米 13：安装和主要流程运行正常。
+- 两台设备均使用未 Root 的正式系统环境。
 
 ## 贡献
 

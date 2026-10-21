@@ -18,7 +18,11 @@ Verification:
 - Per-question contextual AI chat with local history: implemented
 - AI knowledge-point matching into the textbook knowledge network: implemented
 
+Device verification:
+- Xiaomi 15: installed and main flows run normally.
+- Xiaomi 13: installed and main flows run normally.
+- Both devices use non-rooted production system builds.
+
 Not yet verified:
-- Runtime installation on a physical Xiaomi 15 or Xiaomi 13.
-- Camera and file picker behavior on Xiaomi HyperOS.
-- DeepSeek responses using the user's real API key.
+- Automated continuous integration on physical devices.
+- Multi-device automatic synchronization (not implemented).
