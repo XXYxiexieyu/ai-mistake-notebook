@@ -40,7 +40,8 @@ enum class AnalysisState(val label: String) {
 
 enum class ErrorCauseState(val label: String) {
     UNSUPPLEMENTED("未补充错因"),
-    AI_CANDIDATE("AI 推测，待确认"),
+    AI_CANDIDATE("AI 识别"),
+    AI_ACCEPTED("AI 识别"),
     CONFIRMED("已确认")
 }
 
@@ -209,7 +210,7 @@ data class QuestionDraft(
     val answerText: String = "",
     val explanation: String = "",
     val errorCause: String = "",
-    val errorCauseState: ErrorCauseState = ErrorCauseState.UNSUPPLEMENTED,
+    val errorCauseState: ErrorCauseState = ErrorCauseState.AI_ACCEPTED,
     val errorSubpart: String = "",
     val questionImage: String = "",
     val sourceImage: String = "",
@@ -224,6 +225,7 @@ data class QuestionDraft(
 
 data class AnalysisPayload(
     val questionText: String = "",
+    val originalAnswerText: String = "",
     val answerText: String = "",
     val explanation: String = "",
     val subject: String = "",
@@ -255,6 +257,7 @@ data class ScannedQuestionPayload(
     val evidenceType: String = "",
     val wrongEvidence: String = "",
     val questionText: String = "",
+    val originalAnswerText: String = "",
     val answerText: String = "",
     val explanation: String = "",
     val subject: String = "",

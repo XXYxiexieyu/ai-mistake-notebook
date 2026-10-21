@@ -157,10 +157,10 @@ fun QuestionEditorScreen(
     }
     LaunchedEffect(subject) {
         if (loaded && books.none { it.title == book }) {
-            book = books.firstOrNull()?.title.orEmpty()
+            book = ""
             unit = ""
             chapter = ""
-            questionType = Subjects.questionTypes(subject).firstOrNull().orEmpty()
+            questionType = ""
         }
     }
 
@@ -254,9 +254,12 @@ fun QuestionEditorScreen(
             errorCause = if (noErrorCause) "" else errorCause,
             errorCauseState = when {
                 noErrorCause -> ErrorCauseState.UNSUPPLEMENTED
-                errorCause.isBlank() -> ErrorCauseState.AI_CANDIDATE
+                errorCause.isBlank() -> ErrorCauseState.AI_ACCEPTED
                 errorCause == originalErrorCause &&
-                    originalErrorCauseState == ErrorCauseState.AI_CANDIDATE.name -> ErrorCauseState.AI_CANDIDATE
+                    originalErrorCauseState in setOf(
+                        ErrorCauseState.AI_CANDIDATE.name,
+                        ErrorCauseState.AI_ACCEPTED.name
+                    ) -> ErrorCauseState.AI_ACCEPTED
                 else -> ErrorCauseState.CONFIRMED
             },
             errorSubpart = errorSubpart,
@@ -294,10 +297,13 @@ fun QuestionEditorScreen(
                     errorCause = if (noErrorCause) "" else errorCause,
                     errorCauseState = when {
                         noErrorCause -> ErrorCauseState.UNSUPPLEMENTED.name
-                        errorCause.isBlank() -> ErrorCauseState.AI_CANDIDATE.name
+                        errorCause.isBlank() -> ErrorCauseState.AI_ACCEPTED.name
                         errorCause == originalErrorCause &&
-                            originalErrorCauseState == ErrorCauseState.AI_CANDIDATE.name ->
-                            ErrorCauseState.AI_CANDIDATE.name
+                            originalErrorCauseState in setOf(
+                                ErrorCauseState.AI_CANDIDATE.name,
+                                ErrorCauseState.AI_ACCEPTED.name
+                            ) ->
+                            ErrorCauseState.AI_ACCEPTED.name
                         else -> ErrorCauseState.CONFIRMED.name
                     },
                     errorSubpart = errorSubpart,
@@ -411,51 +417,62 @@ fun QuestionEditorScreen(
                         includeAll = false,
                         onSelected = {
                             subject = it
-                            book = viewModel.catalog.booksFor(it).firstOrNull()?.title.orEmpty()
+                            book = ""
                             unit = ""
                             chapter = ""
-                            questionType = Subjects.questionTypes(it).firstOrNull().orEmpty()
+                            questionType = ""
                         }
                     )
                     DropdownField(
                         label = "教材书目",
-                        options = books.map { "${it.publisher} · ${it.title}" },
+                        options = listOf(AUTO_OPTION) + books.map { "${it.publisher} · ${it.title}" },
                         selected = books.firstOrNull { it.title == book }
                             ?.let { "${it.publisher} · ${it.title}" }
-                            .orEmpty(),
+                            ?: AUTO_OPTION,
                         onSelected = { value ->
-                            book = books.firstOrNull { "${it.publisher} · ${it.title}" == value }?.title.orEmpty()
+                            book = if (value == AUTO_OPTION) {
+                                ""
+                            } else {
+                                books.firstOrNull { "${it.publisher} · ${it.title}" == value }
+                                    ?.title.orEmpty()
+                            }
                             unit = ""
                             chapter = ""
                         }
                     )
                     DropdownField(
                         label = "单元 / 章",
-                        options = units.map { it.title },
-                        selected = unit,
+                        options = listOf(AUTO_OPTION) + units.map { it.title },
+                        selected = unit.ifBlank { AUTO_OPTION },
                         onSelected = {
-                            unit = it
+                            unit = it.takeUnless { value -> value == AUTO_OPTION }.orEmpty()
                             chapter = ""
                         }
                     )
                     DropdownField(
                         label = "章节 / 课",
-                        options = sections,
-                        selected = chapter,
-                        onSelected = { chapter = it }
+                        options = listOf(AUTO_OPTION) + sections,
+                        selected = chapter.ifBlank { AUTO_OPTION },
+                        onSelected = {
+                            chapter = it.takeUnless { value -> value == AUTO_OPTION }.orEmpty()
+                        }
                     )
                     DropdownField(
                         label = "题型",
-                        options = Subjects.questionTypes(subject),
-                        selected = questionType,
-                        onSelected = { questionType = it }
+                        options = listOf(AUTO_OPTION) + Subjects.questionTypes(subject),
+                        selected = questionType.ifBlank { AUTO_OPTION },
+                        onSelected = {
+                            questionType = it.takeUnless { value -> value == AUTO_OPTION }.orEmpty()
+                        }
                     )
                     if (subject == "数学" && questionType == "解答题") {
                         DropdownField(
                             label = "数学大题专题",
-                            options = Subjects.mathTopics(),
-                            selected = mathTopic,
-                            onSelected = { mathTopic = it }
+                            options = listOf(AUTO_OPTION) + Subjects.mathTopics(),
+                            selected = mathTopic.ifBlank { AUTO_OPTION },
+                            onSelected = {
+                                mathTopic = it.takeUnless { value -> value == AUTO_OPTION }.orEmpty()
+                            }
                         )
                     }
                     OutlinedTextField(
@@ -466,7 +483,7 @@ fun QuestionEditorScreen(
                         minLines = 2
                     )
                     Text(
-                        "智能知识点匹配：AI 识别后会自动查找对应书目、单元和章节；无法匹配的项会标记为待人工确认。",
+                        "知识点默认采用 AI 识别结果，并自动匹配教材书目、单元和章节。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -571,7 +588,7 @@ fun QuestionEditorScreen(
                         OutlinedTextField(
                             value = errorCause,
                             onValueChange = { errorCause = it },
-                            label = { Text("错因（AI 分析后自动填入，可修改）") },
+                            label = { Text("错因（AI 识别后自动填入）") },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 2
                         )
@@ -735,3 +752,5 @@ private fun DropdownField(
         }
     }
 }
+
+private const val AUTO_OPTION = "AI 自动识别（默认）"

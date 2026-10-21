@@ -46,6 +46,7 @@ class DeepSeekClient(
         val schema = """
             {
               "questionText": "完整题干，含公式和选项",
+              "originalAnswerText": "图片中学生原始作答、草稿或错误步骤；没有则填空字符串，绝不能填标准答案",
               "answerText": "正确答案",
               "explanation": "完整解题过程",
               "subject": "语文|数学|英语|物理|化学|生物",
@@ -56,7 +57,7 @@ class DeepSeekClient(
               "questionType": "必须从该科目提供的题型中选择",
               "mathTopic": "仅数学解答题使用：三角函数与解三角形|立体几何|概率与统计|解析几何|导数与函数|新定义创新题|其他",
               "errorCause": "有原作答证据时给出有证据的错因；没有原作答时只能给出谨慎候选；用户选择不补充错因时留空",
-              "errorCauseIsCandidate": true,
+              "errorCauseIsCandidate": false,
               "difficulty": "基础|中等|较难",
               "confidence": 0.0
             }
@@ -73,10 +74,11 @@ class DeepSeekClient(
             appendLine("知识树：${question.book} / ${question.unit} / ${question.chapter}")
             appendLine("用户已填写知识点：${question.knowledgePointsJson}")
             appendLine("原作答文字：${question.originalAnswerText.ifBlank { "未填写" }}")
+            appendLine("请自动识别图片中的学生原始作答并填入 originalAnswerText；印刷标准答案或解析不能充当原作答。")
             if (question.errorCauseState == "UNSUPPLEMENTED") {
                 appendLine("用户选择不补充错因，因此 errorCause 必须为空字符串。")
             } else if (answerImage == null) {
-                appendLine("没有提供原作答图片，errorCause 只能作为候选，errorCauseIsCandidate 必须为 true。")
+                appendLine("如果图片中能识别学生原始作答，应据此分析错因；不能把标准答案当原作答。")
             } else {
                 appendLine("第二张图片是用户原作答或草稿，应基于实际答案和步骤分析错误。")
             }
@@ -192,6 +194,7 @@ class DeepSeekClient(
                   "evidenceType": "蓝色笔订正|红笔订正|其他颜色批注|叉号|错误圈划|扣分标记|无明确批改",
                   "wrongEvidence": "描述批改痕迹和位置",
                   "questionText": "完整题干，含公式和选项",
+                  "originalAnswerText": "学生在本题中的原始作答或草稿；没有则留空，不能填标准答案",
                   "answerText": "正确答案",
                   "explanation": "完整解题过程",
                   "subject": "语文|数学|英语|物理|化学|生物",
@@ -237,6 +240,7 @@ class DeepSeekClient(
             已识别知识点：${question.knowledgePointsJson}
             知识网定位：${question.knowledgeMappingJson}
             题目：${question.questionText}
+            学生原作答：${question.originalAnswerText}
             标准答案：${question.answerText}
             解析：${question.explanation}
             已知错因：${question.errorCause}

@@ -135,7 +135,7 @@ class QuestionRepository(
         } else if (confirmedCause.isBlank()) {
             ErrorCauseState.UNSUPPLEMENTED.name
         } else {
-            ErrorCauseState.AI_CANDIDATE.name
+            ErrorCauseState.AI_ACCEPTED.name
         }
         val finalQuestionText = current.questionText.ifBlank { payload.questionText }
         val finalBook = current.book.ifBlank { payload.book }
@@ -178,6 +178,9 @@ class QuestionRepository(
                 mathTopic = current.mathTopic.ifBlank { payload.mathTopic },
                 errorCause = confirmedCause,
                 errorCauseState = causeState,
+                originalAnswerText = current.originalAnswerText.ifBlank {
+                    payload.originalAnswerText
+                },
                 difficulty = payload.difficulty,
                 aiConfidence = payload.confidence?.toFloat(),
                 aiRawJson = rawJson,
@@ -209,6 +212,9 @@ class QuestionRepository(
                     sourceImagePath = duplicate.sourceImagePath.ifBlank { draft.sourceImage },
                     wrongEvidence = payload.wrongEvidence.ifBlank { duplicate.wrongEvidence },
                     evidenceType = payload.evidenceType.ifBlank { duplicate.evidenceType },
+                    originalAnswerText = duplicate.originalAnswerText.ifBlank {
+                        payload.originalAnswerText
+                    },
                     updatedAt = System.currentTimeMillis()
                 )
             )
@@ -250,8 +256,9 @@ class QuestionRepository(
                     errorCauseState = if (payload.errorCause.isBlank()) {
                         ErrorCauseState.UNSUPPLEMENTED.name
                     } else {
-                        ErrorCauseState.AI_CANDIDATE.name
+                        ErrorCauseState.AI_ACCEPTED.name
                     },
+                    originalAnswerText = payload.originalAnswerText,
                     difficulty = payload.difficulty,
                     status = QuestionStatus.UNREVIEWED.name,
                     captureTime = draft.captureTime,

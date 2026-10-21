@@ -5,6 +5,9 @@ import com.hiro.mistakebook.data.KnowledgeTreeData
 import com.hiro.mistakebook.data.FullPageScanPayload
 import com.hiro.mistakebook.data.KnowledgeMatcher
 import com.hiro.mistakebook.ai.InkColorAnalyzer
+import com.hiro.mistakebook.data.AnalysisPayload
+import com.hiro.mistakebook.data.ErrorCauseState
+import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.Subjects
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -100,5 +103,23 @@ class CatalogTest {
         val grayPrint = InkColorAnalyzer.analyze(72, 72, 72)
         assertFalse(grayPrint.coloredInk)
         assertFalse(grayPrint.blueFamily)
+    }
+
+    @Test
+    fun aiRecognitionDefaultsAreAcceptedAndOriginalAnswerParses() {
+        assertEquals(ErrorCauseState.AI_ACCEPTED, QuestionDraft().errorCauseState)
+        val payload = Gson().fromJson(
+            """
+            {
+              "questionText": "题目",
+              "originalAnswerText": "学生在答题区写下的原始步骤",
+              "answerText": "标准答案",
+              "errorCause": "在定义域判断处出错"
+            }
+            """.trimIndent(),
+            AnalysisPayload::class.java
+        )
+        assertEquals("学生在答题区写下的原始步骤", payload.originalAnswerText)
+        assertEquals("在定义域判断处出错", payload.errorCause)
     }
 }

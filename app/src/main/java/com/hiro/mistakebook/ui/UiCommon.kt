@@ -253,6 +253,6 @@ fun errorCauseLabel(question: QuestionEntity): String = when (
         .getOrDefault(ErrorCauseState.UNSUPPLEMENTED)
 ) {
     ErrorCauseState.UNSUPPLEMENTED -> "未补充错因"
-    ErrorCauseState.AI_CANDIDATE -> "AI 推测：${question.errorCause.ifBlank { "待确认" }}"
+    ErrorCauseState.AI_CANDIDATE, ErrorCauseState.AI_ACCEPTED -> question.errorCause
     ErrorCauseState.CONFIRMED -> question.errorCause
 }

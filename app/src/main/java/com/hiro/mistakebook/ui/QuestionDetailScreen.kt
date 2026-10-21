@@ -178,7 +178,7 @@ fun QuestionDetailScreen(
                                     Text(
                                         node.knowledgePoint,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = if (node.matched) Green else Amber
+                                        color = if (node.matched) Green else Muted
                                     )
                                     Text(
                                         listOf(node.book, node.unit, node.chapter)
@@ -191,7 +191,7 @@ fun QuestionDetailScreen(
                                     Text(
                                         node.matchMethod,
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = if (node.matched) Green else Amber
+                                        color = if (node.matched) Green else Muted
                                     )
                                 }
                             }
@@ -240,15 +240,6 @@ fun QuestionDetailScreen(
                             errorCauseLabel(item),
                             color = if (item.errorCauseState == ErrorCauseState.UNSUPPLEMENTED.name) Muted else MaterialTheme.colorScheme.onSurface
                         )
-                        if (item.errorCauseState == ErrorCauseState.AI_CANDIDATE.name) {
-                            OutlinedButton(onClick = {
-                                viewModel.updateQuestion(
-                                    item.copy(errorCauseState = ErrorCauseState.CONFIRMED.name)
-                                )
-                            }) {
-                                Text("确认此错因")
-                            }
-                        }
                     }
                 }
             }

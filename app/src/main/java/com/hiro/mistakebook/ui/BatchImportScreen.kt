@@ -273,7 +273,7 @@ fun BatchImportScreen(
                             source.crops.map { crop ->
                                 QuestionDraft(
                                     subject = subject,
-                                    errorCauseState = ErrorCauseState.AI_CANDIDATE,
+                                    errorCauseState = ErrorCauseState.AI_ACCEPTED,
                                     questionImage = crop,
                                     sourceImage = source.sourcePath,
                                     captureTime = captureTime,

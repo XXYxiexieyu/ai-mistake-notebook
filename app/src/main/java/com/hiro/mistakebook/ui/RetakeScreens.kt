@@ -365,6 +365,7 @@ fun RetakeRunScreen(
     var itemStartedAt by remember(sessionId) { mutableLongStateOf(System.currentTimeMillis()) }
     var elapsed by remember(sessionId) { mutableLongStateOf(0) }
     var error by remember { mutableStateOf("") }
+    var showGradeOptions by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -528,16 +529,20 @@ fun RetakeRunScreen(
                 }
             }
             item {
-                Text("人工修正", fontWeight = FontWeight.SemiBold)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    GradeChip("通过", RetakeGrade.CORRECT, item) {
-                        persistCurrent { viewModel.applyManualGrade(item, it) }
-                    }
-                    GradeChip("部分正确", RetakeGrade.PARTIAL, item) {
-                        persistCurrent { viewModel.applyManualGrade(item, it) }
-                    }
-                    GradeChip("未通过", RetakeGrade.WRONG, item) {
-                        persistCurrent { viewModel.applyManualGrade(item, it) }
+                TextButton(onClick = { showGradeOptions = !showGradeOptions }) {
+                    Text(if (showGradeOptions) "收起评分选项" else "评分选项")
+                }
+                if (showGradeOptions) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        GradeChip("通过", RetakeGrade.CORRECT, item) {
+                            persistCurrent { viewModel.applyManualGrade(item, it) }
+                        }
+                        GradeChip("部分正确", RetakeGrade.PARTIAL, item) {
+                            persistCurrent { viewModel.applyManualGrade(item, it) }
+                        }
+                        GradeChip("未通过", RetakeGrade.WRONG, item) {
+                            persistCurrent { viewModel.applyManualGrade(item, it) }
+                        }
                     }
                 }
             }

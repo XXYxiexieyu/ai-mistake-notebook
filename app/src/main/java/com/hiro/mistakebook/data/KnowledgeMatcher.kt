@@ -75,7 +75,7 @@ object KnowledgeMatcher {
                     unit = exactUnit?.title ?: unitHint,
                     chapter = chapterHint,
                     matched = false,
-                    matchMethod = "待人工确认"
+                    matchMethod = "未匹配"
                 )
             }
         }
