@@ -15,7 +15,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PageScanEntity::class,
         QuestionChatMessageEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -86,9 +86,20 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE page_scans ADD COLUMN stage TEXT NOT NULL DEFAULT 'QUEUED'"
+                )
+                db.execSQL(
+                    "ALTER TABLE page_scans ADD COLUMN progress INTEGER NOT NULL DEFAULT 0"
+                )
+            }
+        }
+
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "mistake_book.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
     }
 }

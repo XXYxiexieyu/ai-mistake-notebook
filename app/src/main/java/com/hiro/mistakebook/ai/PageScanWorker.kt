@@ -25,15 +25,32 @@ class PageScanWorker(
         val scan = repository.getPageScan(scanId) ?: return Result.failure()
         if (repository.settings.apiKey().isBlank()) {
             repository.updatePageScan(
-                scan.copy(status = AnalysisState.PENDING.name, error = "等待配置 DeepSeek API 密钥")
+                scan.copy(
+                    status = AnalysisState.PENDING.name,
+                    stage = "WAITING_KEY",
+                    progress = 0,
+                    error = "等待配置 DeepSeek API 密钥"
+                )
             )
             return Result.failure()
         }
-        repository.updatePageScan(scan.copy(status = AnalysisState.PROCESSING.name, error = ""))
+        repository.updatePageScan(
+            scan.copy(
+                status = AnalysisState.PROCESSING.name,
+                stage = "ENHANCING",
+                progress = 15,
+                error = ""
+            )
+        )
         val sourceFile = repository.images.resolve(scan.sourceImagePath)
         if (!sourceFile.isFile) {
             repository.updatePageScan(
-                scan.copy(status = AnalysisState.FAILED.name, error = "整页图片不存在")
+                scan.copy(
+                    status = AnalysisState.FAILED.name,
+                    stage = "FAILED",
+                    progress = 0,
+                    error = "整页图片不存在"
+                )
             )
             return Result.failure()
         }
@@ -41,6 +58,14 @@ class PageScanWorker(
         return try {
             val enhancedFile = File(applicationContext.cacheDir, "ink_enhanced_${scan.id}.jpg")
             val enhancedCreated = InkImageEnhancer.createEnhancedImage(sourceFile, enhancedFile)
+            repository.updatePageScan(
+                scan.copy(
+                    status = AnalysisState.PROCESSING.name,
+                    stage = "AI_ANALYZING",
+                    progress = 40,
+                    error = ""
+                )
+            )
             val (payload, rawJson) = try {
                 app.container.aiClient.scanWrongPage(
                     sourceFile,
@@ -50,6 +75,14 @@ class PageScanWorker(
             } finally {
                 if (enhancedFile.exists()) enhancedFile.delete()
             }
+            repository.updatePageScan(
+                scan.copy(
+                    status = AnalysisState.PROCESSING.name,
+                    stage = "SAVING",
+                    progress = 80,
+                    error = ""
+                )
+            )
             val source = BitmapFactory.decodeFile(sourceFile.absolutePath)
                 ?: error("无法读取整页图片")
             var saved = 0
@@ -96,6 +129,8 @@ class PageScanWorker(
             repository.updatePageScan(
                 scan.copy(
                     status = AnalysisState.DONE.name,
+                    stage = "COMPLETE",
+                    progress = 100,
                     detectedCount = saved,
                     error = ""
                 )
@@ -109,6 +144,8 @@ class PageScanWorker(
                     } else {
                         AnalysisState.FAILED.name
                     },
+                    stage = if (error is IOException && runAttemptCount < 2) "RETRY_WAIT" else "FAILED",
+                    progress = 0,
                     error = error.message.orEmpty().take(1000)
                 )
             )

@@ -164,6 +164,8 @@ data class PageScanEntity(
     val subject: String,
     val captureTime: Long,
     val status: String = AnalysisState.PENDING.name,
+    val stage: String = "QUEUED",
+    val progress: Int = 0,
     val detectedCount: Int = 0,
     val error: String = "",
     val createdAt: Long = System.currentTimeMillis(),

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,11 +28,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -46,7 +49,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hiro.mistakebook.MainViewModel
@@ -79,6 +85,7 @@ fun FullPageScanScreen(
     var scanId by rememberSaveable { mutableStateOf<Long?>(null) }
     var importing by remember { mutableStateOf(false) }
     var launchError by remember { mutableStateOf("") }
+    var showProgress by rememberSaveable { mutableStateOf(false) }
 
     var scan by remember { mutableStateOf<PageScanEntity?>(null) }
     androidx.compose.runtime.LaunchedEffect(scanId) {
@@ -263,12 +270,16 @@ fun FullPageScanScreen(
                 Button(
                     onClick = {
                         launchError = ""
+                        showProgress = true
                         viewModel.startPageScan(
                             sourcePath,
                             subject,
                             captureTime,
                             onCreated = { scanId = it },
-                            onError = { launchError = it }
+                            onError = {
+                                showProgress = false
+                                launchError = it
+                            }
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -281,6 +292,21 @@ fun FullPageScanScreen(
             }
             item { Spacer(Modifier.height(28.dp)) }
         }
+    }
+
+    if (showProgress) {
+        ScanProgressDialog(
+            sourcePath = sourcePath,
+            scan = scan,
+            onBackground = { showProgress = false },
+            onRetry = {
+                scan?.let { viewModel.enqueuePageScan(it.id) }
+            },
+            onViewResults = {
+                showProgress = false
+                onViewResults()
+            }
+        )
     }
 }
 
@@ -310,14 +336,18 @@ private fun ScanStatusCard(
                     CircularProgressIndicator(Modifier.height(22.dp))
                 }
                 Text(
-                    when (status) {
-                        AnalysisState.PENDING -> " 已保存，等待联网分析"
-                        AnalysisState.PROCESSING -> " AI 正在检查整页批改痕迹"
-                        AnalysisState.DONE -> " 识别完成，已保存 ${scan.detectedCount} 道错题"
-                        AnalysisState.FAILED -> " 识别失败"
-                        AnalysisState.MANUAL -> " 等待处理"
+                    if (status == AnalysisState.DONE) {
+                        " 识别完成，已保存 ${scan.detectedCount} 道错题"
+                    } else {
+                        " ${scanStageLabel(scan.stage)}"
                     },
                     fontWeight = FontWeight.SemiBold
+                )
+            }
+            if (status == AnalysisState.PENDING || status == AnalysisState.PROCESSING) {
+                LinearProgressIndicator(
+                    progress = { scan.progress.coerceIn(0, 100) / 100f },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
             if (scan.error.isNotBlank()) {
@@ -334,4 +364,147 @@ private fun ScanStatusCard(
             }
         }
     }
+}
+
+@Composable
+private fun ScanProgressDialog(
+    sourcePath: String,
+    scan: PageScanEntity?,
+    onBackground: () -> Unit,
+    onRetry: () -> Unit,
+    onViewResults: () -> Unit
+) {
+    val status = scan?.let {
+        runCatching { AnalysisState.valueOf(it.status) }.getOrDefault(AnalysisState.PENDING)
+    } ?: AnalysisState.PENDING
+    Dialog(
+        onDismissRequest = onBackground,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .systemBarsPadding()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "整页识别进度",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "当前页面 · ${scan?.let { "任务 ${it.id}" } ?: "正在创建任务"}",
+                    color = Muted,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                if (sourcePath.isNotBlank()) {
+                    ImagePanel(sourcePath, Modifier.fillMaxWidth().height(270.dp))
+                }
+                Text(
+                    when {
+                        scan == null -> "正在保存当前页"
+                        status == AnalysisState.DONE -> "本页识别完成，已保存 ${scan.detectedCount} 道错题"
+                        status == AnalysisState.FAILED -> "本页识别失败"
+                        else -> scanStageLabel(scan.stage)
+                    },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = when (status) {
+                        AnalysisState.DONE -> Green
+                        AnalysisState.FAILED -> Red
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                )
+                LinearProgressIndicator(
+                    progress = {
+                        when {
+                            scan == null -> 0.05f
+                            status == AnalysisState.DONE -> 1f
+                            status == AnalysisState.FAILED -> 0f
+                            else -> scan.progress.coerceIn(0, 100) / 100f
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                val activeStage = scan?.stage.orEmpty()
+                ScanStageRow("页面已保存", scan != null)
+                ScanStageRow(
+                    "彩色笔迹增强",
+                    activeStage in setOf("AI_ANALYZING", "SAVING", "COMPLETE")
+                )
+                ScanStageRow(
+                    "AI 检查批改痕迹",
+                    activeStage in setOf("SAVING", "COMPLETE")
+                )
+                ScanStageRow("裁题并保存到错题本", activeStage == "COMPLETE")
+                if (scan?.error?.isNotBlank() == true) {
+                    Text(scan.error, color = Red, style = MaterialTheme.typography.bodySmall)
+                }
+                if (status != AnalysisState.DONE && status != AnalysisState.FAILED) {
+                    Text(
+                        "可以转到后台；关闭本页面后 WorkManager 仍会继续处理当前页。",
+                        color = Muted,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                when (status) {
+                    AnalysisState.DONE -> {
+                        Button(onClick = onViewResults, modifier = Modifier.fillMaxWidth()) {
+                            Text("查看识别结果")
+                        }
+                        TextButton(onClick = onBackground, modifier = Modifier.fillMaxWidth()) {
+                            Text("留在此页")
+                        }
+                    }
+                    AnalysisState.FAILED -> {
+                        Button(onClick = onRetry, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Outlined.Refresh, null)
+                            Text(" 重新识别本页")
+                        }
+                        TextButton(onClick = onBackground, modifier = Modifier.fillMaxWidth()) {
+                            Text("关闭")
+                        }
+                    }
+                    else -> {
+                        OutlinedButton(onClick = onBackground, modifier = Modifier.fillMaxWidth()) {
+                            Text("转到后台运行")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScanStageRow(label: String, complete: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(9.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
+        Text(
+            if (complete) "✓" else "○",
+            color = if (complete) Green else Muted,
+            fontWeight = FontWeight.Bold
+        )
+        Text(label, color = if (complete) MaterialTheme.colorScheme.onSurface else Muted)
+    }
+}
+
+private fun scanStageLabel(stage: String): String = when (stage) {
+    "QUEUED" -> "当前页已保存，等待处理"
+    "WAITING_KEY" -> "等待配置 API 密钥"
+    "RETRY_WAIT" -> "等待网络后重试"
+    "ENHANCING" -> "正在生成彩色笔迹增强图"
+    "AI_ANALYZING" -> "AI 正在检查当前页的题目和批改痕迹"
+    "SAVING" -> "正在切分题目并保存到本地"
+    "COMPLETE" -> "当前页识别完成"
+    "FAILED" -> "当前页识别失败"
+    else -> "正在处理当前页"
 }

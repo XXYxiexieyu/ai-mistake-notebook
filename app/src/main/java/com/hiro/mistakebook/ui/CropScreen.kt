@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -62,12 +63,20 @@ fun CropDialog(
             BitmapFactory.decodeFile(ImageStore(context).resolve(imagePath).absolutePath)
         }
     }
+    val points = remember(imagePath) {
+        mutableStateListOf(
+            Offset(0.04f, 0.04f),
+            Offset(0.96f, 0.04f),
+            Offset(0.96f, 0.96f),
+            Offset(0.04f, 0.96f)
+        )
+    }
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().navigationBarsPadding()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -101,14 +110,6 @@ fun CropDialog(
                         val left = (widthPx - drawWidth) / 2f
                         val top = (heightPx - drawHeight) / 2f
                         val displayRect = RectF(left, top, left + drawWidth, top + drawHeight)
-                        val points = remember(imagePath) {
-                            mutableStateListOf(
-                                Offset(0.04f, 0.04f),
-                                Offset(0.96f, 0.04f),
-                                Offset(0.96f, 0.96f),
-                                Offset(0.04f, 0.96f)
-                            )
-                        }
                         Canvas(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -170,26 +171,27 @@ fun CropDialog(
                                 drawCircle(ComposeColor(0xFF176B57), radius = 7.dp.toPx(), center = point)
                             }
                         }
-                        Button(
-                            onClick = {
-                                val pxPoints = points.map {
-                                    Offset(
-                                        it.x * source.width,
-                                        it.y * source.height
-                                    )
-                                }
-                                onCropped(perspectiveCrop(source, pxPoints))
-                            },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Text("使用此框选")
-                        }
                     } else {
                         Text("正在读取图片…", color = androidx.compose.ui.graphics.Color.White)
                     }
+                }
+                Button(
+                    onClick = {
+                        val source = bitmap ?: return@Button
+                        val pxPoints = points.map {
+                            Offset(
+                                it.x * source.width,
+                                it.y * source.height
+                            )
+                        }
+                        onCropped(perspectiveCrop(source, pxPoints))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    enabled = bitmap != null
+                ) {
+                    Text("使用此框选")
                 }
             }
         }
