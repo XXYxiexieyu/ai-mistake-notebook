@@ -60,7 +60,10 @@ class BackupManager(
                 zip.closeEntry()
 
                 val paths = questions.flatMap {
-                    listOf(it.imagePath, it.sourceImagePath, it.originalAnswerImagePath)
+                    listOf(it.imagePath, it.sourceImagePath, it.originalAnswerImagePath) +
+                        runCatching {
+                            gson.fromJson(it.sourceImagePathsJson, Array<String>::class.java).toList()
+                        }.getOrDefault(emptyList())
                 } + items.map { it.answerImagePath } + chatMessages.map { it.imagePath }
                 paths.filter { it.isNotBlank() }.distinct().forEach { relative ->
                     val file = images.resolve(relative)
@@ -113,6 +116,9 @@ class BackupManager(
                             restoreImage(source.imagePath, imported.extractedDir)
                         }
                     },
+                    sourceImagePathsJson = gson.toJson(
+                        restoreImageList(source.sourceImagePathsJson, imported.extractedDir)
+                    ),
                     originalAnswerImagePath = duplicate.originalAnswerImagePath.ifBlank {
                         restoreImage(source.originalAnswerImagePath, imported.extractedDir)
                     },
@@ -126,6 +132,9 @@ class BackupManager(
                     id = 0,
                     imagePath = restoreImage(source.imagePath, imported.extractedDir),
                     sourceImagePath = restoreImage(source.sourceImagePath, imported.extractedDir),
+                    sourceImagePathsJson = gson.toJson(
+                        restoreImageList(source.sourceImagePathsJson, imported.extractedDir)
+                    ),
                     originalAnswerImagePath = restoreImage(
                         source.originalAnswerImagePath,
                         imported.extractedDir
@@ -206,6 +215,13 @@ class BackupManager(
                             if (!question.has("knowledgeMappingJson")) {
                                 question.addProperty("knowledgeMappingJson", "[]")
                             }
+                            if (!question.has("sourceImagePathsJson")) {
+                                val fallback = question.get("sourceImagePath")?.asString.orEmpty()
+                                question.addProperty(
+                                    "sourceImagePathsJson",
+                                    gson.toJson(listOfNotNull(fallback.takeIf { it.isNotBlank() }))
+                                )
+                            }
                         }
                         if (!root.has("chatMessages")) {
                             root.add("chatMessages", com.google.gson.JsonArray())
@@ -240,6 +256,13 @@ class BackupManager(
         val source = File(extractedDir, path)
         return if (source.isFile) images.importFile(source) else ""
     }
+
+    private fun restoreImageList(json: String, extractedDir: File): List<String> =
+        runCatching {
+            gson.fromJson(json, Array<String>::class.java).toList()
+        }.getOrDefault(emptyList()).mapNotNull { path ->
+            restoreImage(path, extractedDir).takeIf { it.isNotBlank() }
+        }.distinct()
 
     private fun QuestionEntity.isSameQuestion(other: QuestionEntity): Boolean {
         if (imageHash.isNotBlank() && other.imageHash.isNotBlank() && imageHash == other.imageHash) {

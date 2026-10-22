@@ -145,7 +145,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startPageScan(
-        sourcePath: String,
+        sourcePaths: List<String>,
         subject: String,
         captureTime: Long,
         onCreated: (Long) -> Unit,
@@ -153,7 +153,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             runCatching {
-                val id = repository.createPageScan(sourcePath, subject, captureTime)
+                require(sourcePaths.isNotEmpty()) { "请先添加页面照片" }
+                val id = repository.createPageScan(sourcePaths, subject, captureTime)
                 if (repository.settings.hasApiKey()) enqueuePageScan(id)
                 id
             }.onSuccess(onCreated).onFailure { onError(it.message ?: "无法创建整页扫描任务") }

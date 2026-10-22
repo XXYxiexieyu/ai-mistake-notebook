@@ -1,12 +1,12 @@
 AI错题本 Android 预览版
 
-Version: 0.1.5-preview
+Version: 0.2.0-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.1.5-preview.apk
-Size: 61,870,734 bytes (59.00 MB)
-SHA-256: 26C6B0E51E679FDE8E0BA98536A47B6D56EC86428AAF51067A1E252760317AF9
+APK: AI_Mistake_Notebook_0.2.0-preview.apk
+Size: 61,936,274 bytes (59.07 MB)
+SHA-256: B8DEF8533908978B979E2AE200172A343A5C76B455258AF5D047DC19B4460510
 
 Verification:
 - assembleDebug: passed
@@ -22,6 +22,8 @@ Verification:
 - AI textbook knowledge mapping accepted by default, with optional manual adjustment: implemented
 - Crop confirmation button inset above the system navigation area: implemented
 - Full-page scan progress page with persisted stage and progress: implemented
+- Cross-page scan with up to 10 ordered pages: implemented
+- Cross-page question merging and vertical crop composition: implemented
 
 Device verification:
 - Xiaomi 15: installed and main flows run normally.

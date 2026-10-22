@@ -67,6 +67,11 @@ class QuestionRepository(
             sourceImagePath = draft.sourceImage,
             originalAnswerImagePath = draft.originalAnswerImage,
             originalAnswerText = draft.originalAnswerText,
+            sourceImagePathsJson = gson.toJson(
+                draft.sourceImages.ifEmpty {
+                    listOfNotNull(draft.sourceImage.takeIf { it.isNotBlank() })
+                }
+            ),
             analysisState = if (draft.autoAnalyze || autoAnalyze == true) {
                 AnalysisState.PENDING.name
             } else {
@@ -275,6 +280,11 @@ class QuestionRepository(
                     imageHash = hash,
                     wrongEvidence = payload.wrongEvidence,
                     evidenceType = payload.evidenceType,
+                    sourceImagePathsJson = gson.toJson(
+                        draft.sourceImages.ifEmpty {
+                            listOfNotNull(draft.sourceImage.takeIf { it.isNotBlank() })
+                        }
+                    ),
                     knowledgeMappingJson = gson.toJson(mapping)
                 )
             )
@@ -308,12 +318,13 @@ class QuestionRepository(
     }
 
     suspend fun createPageScan(
-        sourceImagePath: String,
+        sourceImagePaths: List<String>,
         subject: String,
         captureTime: Long
     ): Long = database.pageScanDao().insert(
         PageScanEntity(
-            sourceImagePath = sourceImagePath,
+            sourceImagePath = sourceImagePaths.first(),
+            sourceImagePathsJson = gson.toJson(sourceImagePaths),
             subject = subject,
             captureTime = captureTime
         )
@@ -390,6 +401,9 @@ class QuestionRepository(
             database.questionDao().countOtherImageReferences(id, question.sourceImagePath) > 0 ||
                 database.pageScanDao().countBySourcePath(question.sourceImagePath) > 0
             )
+        val multiPageSources = runCatching {
+            gson.fromJson(question.sourceImagePathsJson, Array<String>::class.java).toList()
+        }.getOrDefault(emptyList()).filter { it.isNotBlank() }
         val answerReferenced = question.originalAnswerImagePath.isNotBlank() &&
             database.questionDao().countOtherImageReferences(
                 id,
@@ -402,14 +416,15 @@ class QuestionRepository(
         if (!imageReferenced && question.imagePath != question.sourceImagePath) {
             images.delete(question.imagePath)
         }
-        if (!sourceReferenced && question.sourceImagePath != question.imagePath) {
+        if (!sourceReferenced && multiPageSources.size <= 1 && question.sourceImagePath != question.imagePath) {
             images.delete(question.sourceImagePath)
         }
         if (
             question.imagePath.isNotBlank() &&
             question.imagePath == question.sourceImagePath &&
             !imageReferenced &&
-            !sourceReferenced
+            !sourceReferenced &&
+            multiPageSources.size <= 1
         ) {
             images.delete(question.imagePath)
         }

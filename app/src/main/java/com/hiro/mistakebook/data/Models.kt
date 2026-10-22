@@ -115,6 +115,7 @@ data class QuestionEntity(
     val duplicateKey: String = "",
     val imageHash: String = "",
     val originalAnswerText: String = "",
+    val sourceImagePathsJson: String = "[]",
     val wrongEvidence: String = "",
     val evidenceType: String = "",
     val knowledgeMappingJson: String = "[]"
@@ -167,6 +168,7 @@ data class PageScanEntity(
     val stage: String = "QUEUED",
     val progress: Int = 0,
     val detectedCount: Int = 0,
+    val sourceImagePathsJson: String = "[]",
     val error: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
@@ -216,6 +218,7 @@ data class QuestionDraft(
     val errorSubpart: String = "",
     val questionImage: String = "",
     val sourceImage: String = "",
+    val sourceImages: List<String> = emptyList(),
     val originalAnswerImage: String = "",
     val originalAnswerText: String = "",
     val wrongEvidence: String = "",
@@ -255,6 +258,7 @@ data class FullPageScanPayload(
 
 data class ScannedQuestionPayload(
     val box: List<Float> = emptyList(),
+    val segments: List<ScannedQuestionSegment> = emptyList(),
     val isWrong: Boolean = false,
     val evidenceType: String = "",
     val wrongEvidence: String = "",
@@ -272,6 +276,11 @@ data class ScannedQuestionPayload(
     val errorCause: String = "",
     val difficulty: String = "",
     val confidence: Double? = null
+)
+
+data class ScannedQuestionSegment(
+    val pageIndex: Int = 0,
+    val box: List<Float> = emptyList()
 )
 
 data class KnowledgeNodeRef(

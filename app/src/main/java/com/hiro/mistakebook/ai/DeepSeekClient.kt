@@ -157,10 +157,24 @@ class DeepSeekClient(
         imageFile: File,
         subjectHint: String,
         enhancedInkImage: File? = null
+    ): Pair<FullPageScanPayload, String> = scanWrongPages(
+        originalPages = listOf(imageFile),
+        enhancedPages = listOfNotNull(enhancedInkImage?.takeIf { it.isFile }),
+        subjectHint = subjectHint
+    )
+
+    fun scanWrongPages(
+        originalPages: List<File>,
+        enhancedPages: List<File>,
+        subjectHint: String
     ): Pair<FullPageScanPayload, String> {
+        require(originalPages.isNotEmpty()) { "缺少页面图片" }
+        require(originalPages.size <= 10) { "单次最多上传 10 页" }
         val typeList = Subjects.questionTypes(subjectHint).joinToString("、")
         val prompt = """
-            你是高三北京高考整页错题识别助手。请检查整页作业或试卷，只找出有明确批改证据的错题。
+            你是高三北京高考跨页错题识别助手。本次共有 ${originalPages.size} 页，图片顺序与页面顺序一致。
+            前 ${originalPages.size} 张是原始页面；随后 ${enhancedPages.size} 张是对应的彩色笔迹增强图。
+            请跨页综合分析，只找出有明确批改证据的错题。
 
             判断错题时必须重点观察题目、作答区域和答案附近是否有：
             - 蓝色笔的叉号、圈划、波浪线、删除线、订正或补写答案；
@@ -169,7 +183,7 @@ class DeepSeekClient(
             - 原先答案被另一颜色笔改写，或旁边出现正确步骤。
 
             注意：
-            - 如果提供了第二张图，第二张是彩色笔迹增强图：浅灰代表原纸张和印刷内容，蓝色、红色、绿色和紫色高饱和笔画代表检测到的彩笔痕迹；
+            - 彩色笔迹增强图中，浅灰代表原纸张和印刷内容，蓝色、红色、绿色和紫色高饱和笔画代表检测到的彩笔痕迹；
             - 必须同时对照原图和彩色笔迹增强图，特别留意蓝色圆珠笔、蓝色中性笔和蓝紫色钢笔；
             - 蓝色叉号、蓝笔下划线加订正、蓝色圈出错误、蓝笔补充过程都可能表示错题；
             - 蓝色勾号、普通蓝笔作答或没有订正意义的蓝色线条不能直接判错；
@@ -177,6 +191,8 @@ class DeepSeekClient(
             - 普通高亮、下划线、印刷粗体或题干颜色本身不等于错题；
             - 只有作答完成但没有批改痕迹时，不要擅自判错；
             - 同一大题的小问归入同一道题，不拆分；
+            - 大题可能从上一页底部延续到下一页顶部，必须合并为一个错题，不能拆成两题；
+            - 每道题用一个或多个 segments 表示各页中的区域，pageIndex 从 0 开始；
             - 最多返回 10 道错题，坐标使用 0 到 1000 的归一化值，原点在左上角；
             - wrongEvidence 必须描述实际看到的批改位置和颜色，不能编造。
 
@@ -189,7 +205,10 @@ class DeepSeekClient(
             {
               "questions": [
                 {
-                  "box": [左, 上, 右, 下],
+                  "segments": [
+                    {"pageIndex": 0, "box": [左, 上, 右, 下]},
+                    {"pageIndex": 1, "box": [左, 上, 右, 下]}
+                  ],
                   "isWrong": true,
                   "evidenceType": "蓝色笔订正|红笔订正|其他颜色批注|叉号|错误圈划|扣分标记|无明确批改",
                   "wrongEvidence": "描述批改痕迹和位置",
@@ -211,8 +230,9 @@ class DeepSeekClient(
               ]
             }
         """.trimIndent()
-        val content = arrayListOf(textPart(prompt), imagePart(imageFile))
-        if (enhancedInkImage?.isFile == true) content += imagePart(enhancedInkImage)
+        val content = arrayListOf(textPart(prompt))
+        originalPages.forEach { content += imagePart(it) }
+        enhancedPages.forEach { content += imagePart(it) }
         val raw = request(content)
         val json = extractJson(raw)
         val payload = gson.fromJson(json, FullPageScanPayload::class.java)

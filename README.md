@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.1.5-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.2.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -45,6 +45,7 @@
 | 原作答提取 | 自动识别图片中的学生原作答、草稿和错误步骤并填入原作答字段 |
 | 整页扫描 | 根据对错号、蓝笔/红笔订正、扣分和其他颜色批注识别错题，并生成彩笔增强图辅助判断 |
 | 扫描进度 | 显示当前页的保存、彩笔增强、AI 分析和裁题入库阶段，可转到后台继续 |
+| 跨页识别 | 单次最多 10 页，可按页排序；跨页大题合并为一个错题并纵向拼接题目图 |
 | AI 分析 | 题干、答案、解析、题型、知识点、错因、难度和置信度 |
 | 原作答证据 | 错误答案、草稿照片、具体小问或错误步骤 |
 | 教材知识网 | 35 册教材、259 个单元、1156 个章节条目 |
@@ -186,6 +187,7 @@ python tools/fetch_catalog.py
 | `0.1.3-preview` | 增加彩色笔迹增强图，重点提升蓝色笔订正和圈划的整页识别能力 |
 | `0.1.4-preview` | AI 知识点、原作答和错因默认生效；人工修改改为无提醒的可选入口 |
 | `0.1.5-preview` | 修复框选页底部按钮遮挡，增加逐页扫描进度提示和后台运行状态 |
+| `0.2.0-preview` | 支持多页上传、页序调整、跨页大题合并与多页区域拼接 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 

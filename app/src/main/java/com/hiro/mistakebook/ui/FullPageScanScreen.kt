@@ -14,11 +14,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
@@ -41,10 +47,14 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -79,7 +89,12 @@ fun FullPageScanScreen(
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val apiConfigured by viewModel.apiConfigured.collectAsStateWithLifecycle()
-    var sourcePath by rememberSaveable { mutableStateOf("") }
+    val sourcePaths: SnapshotStateList<String> = rememberSaveable(
+        saver = listSaver(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() }
+        )
+    ) { mutableStateListOf() }
     var subject by rememberSaveable { mutableStateOf("数学") }
     var captureTime by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
     var scanId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -93,18 +108,28 @@ fun FullPageScanScreen(
         val id = scanId ?: return@LaunchedEffect
         viewModel.repository.observePageScan(id).collect { scan = it }
     }
+    val scanBusy = scan?.status == AnalysisState.PENDING.name ||
+        scan?.status == AnalysisState.PROCESSING.name
 
-    val gallery = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        if (uri != null) {
+    val gallery = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(10)
+    ) { uris ->
+        if (uris.isNotEmpty()) {
             importing = true
-            viewModel.importImage(uri, "page", onResult = {
-                sourcePath = it
-                scanId = null
-                importing = false
-            }, onError = {
-                importing = false
-                scope.launch { snackbar.showSnackbar(it) }
-            })
+            viewModel.importImages(
+                uris.take((10 - sourcePaths.size).coerceAtLeast(0)),
+                "page",
+                onImported = {
+                    sourcePaths += it
+                    scanId = null
+                    showProgress = false
+                },
+                onDone = { importing = false },
+                onError = {
+                    importing = false
+                    scope.launch { snackbar.showSnackbar(it) }
+                }
+            )
         }
     }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
@@ -115,8 +140,9 @@ fun FullPageScanScreen(
         if (success && uri != null) {
             importing = true
             viewModel.importImage(uri, "page", onResult = {
-                sourcePath = it
+                if (sourcePaths.size < 10) sourcePaths += it
                 scanId = null
+                showProgress = false
                 importing = false
                 captured?.delete()
             }, onError = {
@@ -140,6 +166,8 @@ fun FullPageScanScreen(
                     set(year, month, day, 12, 0, 0)
                     set(Calendar.MILLISECOND, 0)
                 }.timeInMillis
+                scanId = null
+                showProgress = false
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -179,9 +207,7 @@ fun FullPageScanScreen(
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall
                         )
-                        if (sourcePath.isNotBlank()) {
-                            ImagePanel(sourcePath, Modifier.fillMaxWidth().height(330.dp))
-                        } else {
+                        if (sourcePaths.isEmpty()) {
                             Text("请拍下完整一页，并确保批改痕迹清晰可见。", color = Muted)
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -201,23 +227,75 @@ fun FullPageScanScreen(
                                         scope.launch { snackbar.showSnackbar("无法打开相机：${it.message}") }
                                     }
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                enabled = sourcePaths.size < 10 && !importing && !scanBusy
                             ) {
                                 Icon(Icons.Outlined.CameraAlt, null)
-                                Text(" 拍摄整页")
+                                Text(if (sourcePaths.isEmpty()) " 拍摄第一页" else " 继续拍下一页")
                             }
                             OutlinedButton(
-                                onClick = { gallery.launch("image/*") },
-                                modifier = Modifier.weight(1f)
+                                onClick = {
+                                    val remaining = (10 - sourcePaths.size).coerceAtLeast(0)
+                                    if (remaining > 0) {
+                                        gallery.launch(
+                                            androidx.activity.result.PickVisualMediaRequest(
+                                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                                            )
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                enabled = sourcePaths.size < 10 && !importing && !scanBusy
                             ) {
                                 Icon(Icons.Outlined.PhotoLibrary, null)
-                                Text(" 从相册选择")
+                                Text(" 多页选择")
                             }
                         }
                         if (importing) {
                             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                 CircularProgressIndicator(Modifier.height(20.dp))
                                 Text(" 正在保存整页图片…")
+                            }
+                        }
+                        Text(
+                            "已添加 ${sourcePaths.size}/10 页。跨页大题会合并为一道错题。",
+                            color = if (sourcePaths.isEmpty()) Muted else MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        if (sourcePaths.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(9.dp)
+                            ) {
+                                sourcePaths.forEachIndexed { index, path ->
+                                    PagePreviewEditor(
+                                        path = path,
+                                        index = index,
+                                        pageCount = sourcePaths.size,
+                                        onMoveUp = {
+                                            if (index > 0) {
+                                                val previous = sourcePaths[index - 1]
+                                                sourcePaths[index - 1] = path
+                                                sourcePaths[index] = previous
+                                                scanId = null
+                                            }
+                                        },
+                                        onMoveDown = {
+                                            if (index < sourcePaths.lastIndex) {
+                                                val next = sourcePaths[index + 1]
+                                                sourcePaths[index + 1] = path
+                                                sourcePaths[index] = next
+                                                scanId = null
+                                            }
+                                        },
+                                        onRemove = {
+                                            sourcePaths.removeAt(index)
+                                            scanId = null
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
@@ -233,7 +311,15 @@ fun FullPageScanScreen(
                         verticalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
                         Text("识别设置", fontWeight = FontWeight.SemiBold)
-                        SubjectChips(selected = subject, includeAll = false, onSelected = { subject = it })
+                        SubjectChips(
+                            selected = subject,
+                            includeAll = false,
+                            onSelected = {
+                                subject = it
+                                scanId = null
+                                showProgress = false
+                            }
+                        )
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -243,7 +329,10 @@ fun FullPageScanScreen(
                                 Text("拍摄日期", fontWeight = FontWeight.SemiBold)
                                 Text(formatDate(captureTime), color = Muted)
                             }
-                            TextButton(onClick = { pickDate() }) { Text("选择日期") }
+                            TextButton(
+                                onClick = { pickDate() },
+                                enabled = !scanBusy
+                            ) { Text("选择日期") }
                         }
                         if (!apiConfigured) {
                             Text(
@@ -272,7 +361,7 @@ fun FullPageScanScreen(
                         launchError = ""
                         showProgress = true
                         viewModel.startPageScan(
-                            sourcePath,
+                            sourcePaths.toList(),
                             subject,
                             captureTime,
                             onCreated = { scanId = it },
@@ -283,7 +372,7 @@ fun FullPageScanScreen(
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = sourcePath.isNotBlank() && !importing &&
+                    enabled = sourcePaths.isNotEmpty() && !importing &&
                         scan?.status != AnalysisState.PROCESSING.name &&
                         scan?.status != AnalysisState.DONE.name
                 ) {
@@ -296,7 +385,7 @@ fun FullPageScanScreen(
 
     if (showProgress) {
         ScanProgressDialog(
-            sourcePath = sourcePath,
+            sourcePaths = sourcePaths,
             scan = scan,
             onBackground = { showProgress = false },
             onRetry = {
@@ -317,6 +406,7 @@ private fun ScanStatusCard(
     onViewResults: () -> Unit
 ) {
     val status = runCatching { AnalysisState.valueOf(scan.status) }.getOrDefault(AnalysisState.PENDING)
+    val pageCount = scanPagePaths(scan).size.coerceAtLeast(1)
     Card(
         colors = CardDefaults.cardColors(
             containerColor = when (status) {
@@ -339,7 +429,7 @@ private fun ScanStatusCard(
                     if (status == AnalysisState.DONE) {
                         " 识别完成，已保存 ${scan.detectedCount} 道错题"
                     } else {
-                        " ${scanStageLabel(scan.stage)}"
+                        " ${scanStageLabel(scan.stage)} · $pageCount 页"
                     },
                     fontWeight = FontWeight.SemiBold
                 )
@@ -368,7 +458,7 @@ private fun ScanStatusCard(
 
 @Composable
 private fun ScanProgressDialog(
-    sourcePath: String,
+    sourcePaths: List<String>,
     scan: PageScanEntity?,
     onBackground: () -> Unit,
     onRetry: () -> Unit,
@@ -395,12 +485,24 @@ private fun ScanProgressDialog(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    "当前页面 · ${scan?.let { "任务 ${it.id}" } ?: "正在创建任务"}",
+                    "当前任务 · ${sourcePaths.size} 页 · ${scan?.let { "任务 ${it.id}" } ?: "正在创建任务"}",
                     color = Muted,
                     style = MaterialTheme.typography.bodySmall
                 )
-                if (sourcePath.isNotBlank()) {
-                    ImagePanel(sourcePath, Modifier.fillMaxWidth().height(270.dp))
+                if (sourcePaths.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        sourcePaths.forEachIndexed { index, path ->
+                            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                                ImagePanel(path, Modifier.width(145.dp).height(210.dp))
+                                Text("第 ${index + 1} 页", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                    }
                 }
                 Text(
                     when {
@@ -479,6 +581,47 @@ private fun ScanProgressDialog(
             }
         }
     }
+}
+
+@Composable
+private fun PagePreviewEditor(
+    path: String,
+    index: Int,
+    pageCount: Int,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onRemove: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.width(126.dp).padding(7.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            ImagePanel(path, Modifier.fillMaxWidth().height(132.dp))
+            Text("第 ${index + 1} 页", style = MaterialTheme.typography.labelMedium)
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                IconButton(onClick = onMoveUp, enabled = index > 0) {
+                    Icon(Icons.Outlined.ArrowUpward, "上移")
+                }
+                IconButton(onClick = onMoveDown, enabled = index < pageCount - 1) {
+                    Icon(Icons.Outlined.ArrowDownward, "下移")
+                }
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Outlined.DeleteOutline, "移除")
+                }
+            }
+        }
+    }
+}
+
+private fun scanPagePaths(scan: PageScanEntity): List<String> = runCatching {
+    com.google.gson.Gson().fromJson(scan.sourceImagePathsJson, Array<String>::class.java).toList()
+}.getOrDefault(emptyList()).filter { it.isNotBlank() }.ifEmpty {
+    listOfNotNull(scan.sourceImagePath.takeIf { it.isNotBlank() })
 }
 
 @Composable

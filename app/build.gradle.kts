@@ -13,8 +13,8 @@ android {
         applicationId = "com.hiro.mistakebook"
         minSdk = 29
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.1.5-preview"
+        versionCode = 7
+        versionName = "0.2.0-preview"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

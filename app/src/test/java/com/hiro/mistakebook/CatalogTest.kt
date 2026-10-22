@@ -56,7 +56,10 @@ class CatalogTest {
         val json = """
             {
               "questions": [{
-                "box": [100, 200, 800, 500],
+                "segments": [
+                  {"pageIndex": 0, "box": [100, 700, 900, 980]},
+                  {"pageIndex": 1, "box": [80, 40, 920, 420]}
+                ],
                 "isWrong": true,
                 "evidenceType": "红笔订正",
                 "wrongEvidence": "答案右侧有红笔叉号，并在下方补写正确步骤",
@@ -70,7 +73,9 @@ class CatalogTest {
         assertEquals(1, payload.questions.size)
         assertTrue(payload.questions.first().isWrong)
         assertEquals("红笔订正", payload.questions.first().evidenceType)
-        assertEquals(4, payload.questions.first().box.size)
+        assertEquals(2, payload.questions.first().segments.size)
+        assertEquals(1, payload.questions.first().segments[1].pageIndex)
+        assertEquals(4, payload.questions.first().segments[1].box.size)
     }
 
     @Test
