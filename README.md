@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.2.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.2.1-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -55,6 +55,7 @@
 | 针对题目提问 | 连续 AI 问答，自动携带题目照片和分析上下文 |
 | 重考 | 按科目与拍摄日期组卷、隐藏答案、计时、AI 判分，可选调整评分 |
 | 统计 | 科目、状态、错因、知识点和易错知识点排行 |
+| 总结层级 | 全部总结、各科目总结、各书目总结三级视图 |
 | PDF | 仅导出错误知识点和错因总结，不包含具体题目 |
 | 换机 | 普通 ZIP 完整导出、合并导入、重复题累计 |
 | 数据提醒 | 一年前已重考通过错题的删除提醒，可在设置中关闭 |
@@ -188,6 +189,7 @@ python tools/fetch_catalog.py
 | `0.1.4-preview` | AI 知识点、原作答和错因默认生效；人工修改改为无提醒的可选入口 |
 | `0.1.5-preview` | 修复框选页底部按钮遮挡，增加逐页扫描进度提示和后台运行状态 |
 | `0.2.0-preview` | 支持多页上传、页序调整、跨页大题合并与多页区域拼接 |
+| `0.2.1-preview` | 总结页改为全部/科目/书目三级视图，设置页版本号改为动态读取构建版本 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 

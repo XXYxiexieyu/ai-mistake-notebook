@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.hiro.mistakebook.BuildConfig
 import com.hiro.mistakebook.MainViewModel
 import com.hiro.mistakebook.data.ImportResult
 import com.hiro.mistakebook.ui.theme.Green
@@ -298,7 +299,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             item {
                 Text(
-                    "AI错题本 0.1.0 预览版",
+                    "AI错题本 ${BuildConfig.VERSION_NAME} · Build ${BuildConfig.VERSION_CODE}",
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.labelSmall,
                     color = Muted
