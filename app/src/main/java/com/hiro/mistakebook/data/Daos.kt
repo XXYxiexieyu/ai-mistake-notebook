@@ -97,6 +97,19 @@ interface QuestionDao {
     @Query("SELECT COUNT(*) FROM questions WHERE reviewState = 'APPROVED'")
     fun observeCount(): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM questions WHERE reviewState = 'PENDING'")
+    fun observePendingReviewCount(): Flow<Int>
+
+    @Query(
+        """
+        SELECT scanJobId FROM questions
+        WHERE reviewState = 'PENDING' AND scanJobId IS NOT NULL
+        ORDER BY createdAt DESC
+        LIMIT 1
+        """
+    )
+    fun observeLatestPendingReviewScanId(): Flow<Long?>
+
     @Query(
         """
         SELECT * FROM questions

@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.4.1-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.5.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -46,7 +46,7 @@
 | AI 错题审查 | 根据选项差异、答案解析和异色笔订正筛选，确认后才进入正式错题本 |
 | 裁剪控制 | 四角透视校正，四边中点抓手可平行移动整条边 |
 | 知识点目录 | 点击错题中的知识点，直接进入该知识点独立错题目录 |
-| 处理进度泡 | 首页加号上方显示整页扫描、批量分题和待分析进度 |
+| 处理进度球 | 首页加号上方常驻显示已完成与剩余数量，点击进入添加历史和处理进度 |
 | 原作答提取 | 自动识别图片中的学生原作答、草稿和错误步骤并填入原作答字段 |
 | 整页扫描 | 根据对错号、蓝笔/红笔订正、扣分和其他颜色批注识别错题，并生成彩笔增强图辅助判断 |
 | 扫描进度 | 显示当前页的保存、彩笔增强、AI 分析和裁题入库阶段，可转到后台继续 |
@@ -198,6 +198,7 @@ python tools/fetch_catalog.py
 | `0.3.0-preview` | 批量导入一键 AI 分题、逐题预览删除，裁剪框增加边平行移动抓手 |
 | `0.4.0-preview` | 增加 AI 错题审查、详情页重排、知识点目录跳转和处理进度悬浮泡 |
 | `0.4.1-preview` | 裁剪页改用固定底部操作栏，取消与确认按钮不再被挤压或遮挡 |
+| `0.5.0-preview` | 常驻处理进度球、错题添加历史和当前导入进度页，新增整页候选错题审查 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 

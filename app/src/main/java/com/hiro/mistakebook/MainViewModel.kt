@@ -59,6 +59,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val activePageScan: StateFlow<PageScanEntity?> = repository.observeActivePageScan()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    val pendingReviewCount: StateFlow<Int> = repository.observePendingReviewCount()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+
+    val latestPendingReviewScanId: StateFlow<Long?> =
+        repository.observeLatestPendingReviewScanId()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     private val _batchSplitProgress = MutableStateFlow<BatchSplitProgress?>(null)
     val batchSplitProgress: StateFlow<BatchSplitProgress?> = _batchSplitProgress
 
@@ -117,10 +124,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             onError("请先在设置中配置 DeepSeek API 密钥")
             return
         }
-        _batchSplitProgress.value = BatchSplitProgress(0, 1)
+        _batchSplitProgress.value = BatchSplitProgress(0, 1, 0)
         viewModelScope.launch(Dispatchers.IO) {
             runCatching { splitSinglePage(sourcePath, subject, 10) }.onSuccess { crops ->
-                _batchSplitProgress.value = BatchSplitProgress(1, 1)
+                _batchSplitProgress.value = BatchSplitProgress(1, 1, crops.size)
                 withContext(Dispatchers.Main) { onDone(crops) }
             }.onFailure { error ->
                 _batchSplitProgress.value = null
@@ -143,7 +150,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             onError("请先在设置中配置 DeepSeek API 密钥")
             return
         }
-        _batchSplitProgress.value = BatchSplitProgress(0, sourcePaths.size)
+        _batchSplitProgress.value = BatchSplitProgress(0, sourcePaths.size, 0)
         viewModelScope.launch(Dispatchers.IO) {
             var remaining = maxTotal.coerceAtLeast(0)
             var generated = 0
@@ -163,7 +170,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         }
                 }
                 withContext(Dispatchers.Main) { onProgress(index + 1, sourcePaths.size) }
-                _batchSplitProgress.value = BatchSplitProgress(index + 1, sourcePaths.size)
+                _batchSplitProgress.value = BatchSplitProgress(
+                    index + 1,
+                    sourcePaths.size,
+                    generated
+                )
             }
             _batchSplitProgress.value = null
             withContext(Dispatchers.Main) { onDone(generated, failures) }
@@ -572,5 +583,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 data class BatchSplitProgress(
     val current: Int,
-    val total: Int
+    val total: Int,
+    val generated: Int
 )

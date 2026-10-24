@@ -215,6 +215,9 @@ class BackupManager(
                             if (!question.has("knowledgeMappingJson")) {
                                 question.addProperty("knowledgeMappingJson", "[]")
                             }
+                            if (!question.has("reviewState")) {
+                                question.addProperty("reviewState", "APPROVED")
+                            }
                             if (!question.has("sourceImagePathsJson")) {
                                 val fallback = question.get("sourceImagePath")?.asString.orEmpty()
                                 question.addProperty(

@@ -26,6 +26,9 @@ class QuestionRepository(
 
     fun observeQuestions(): Flow<List<QuestionEntity>> = database.questionDao().observeAll()
     fun observeQuestion(id: Long): Flow<QuestionEntity?> = database.questionDao().observeById(id)
+    fun observePendingReviewCount(): Flow<Int> = database.questionDao().observePendingReviewCount()
+    fun observeLatestPendingReviewScanId(): Flow<Long?> =
+        database.questionDao().observeLatestPendingReviewScanId()
     fun observePendingForScan(scanJobId: Long): Flow<List<QuestionEntity>> =
         database.questionDao().observePendingForScan(scanJobId)
     fun observeRetakeSessions(): Flow<List<RetakeSessionEntity>> = database.retakeDao().observeSessions()

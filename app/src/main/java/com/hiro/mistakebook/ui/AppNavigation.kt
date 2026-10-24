@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import android.net.Uri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -64,9 +65,20 @@ fun MistakeBookApp(viewModel: MainViewModel) {
     val questions by viewModel.questions.collectAsStateWithLifecycle()
     val activePageScan by viewModel.activePageScan.collectAsStateWithLifecycle()
     val batchSplitProgress by viewModel.batchSplitProgress.collectAsStateWithLifecycle()
+    val pendingReviewCount by viewModel.pendingReviewCount.collectAsStateWithLifecycle()
+    val latestPendingReviewScanId by viewModel.latestPendingReviewScanId.collectAsStateWithLifecycle()
     val pendingAnalysis = questions.count {
         it.analysisState == "PENDING" || it.analysisState == "PROCESSING"
     }
+    val completedQuestions = questions.count {
+        it.analysisState == "DONE" || it.analysisState == "MANUAL"
+    }
+    val batchRemaining = batchSplitProgress?.let {
+        (it.total - it.current).coerceAtLeast(0)
+    } ?: 0
+    val scanRemaining = if (activePageScan != null) 1 else 0
+    val completedCount = completedQuestions + (batchSplitProgress?.generated ?: 0)
+    val remainingCount = pendingAnalysis + pendingReviewCount + batchRemaining + scanRemaining
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -99,9 +111,9 @@ fun MistakeBookApp(viewModel: MainViewModel) {
             if (route == "home") {
                 Column(horizontalAlignment = Alignment.End) {
                     ProcessingBubble(
-                        pageScan = activePageScan,
-                        batchSplitProgress = batchSplitProgress,
-                        pendingAnalysis = pendingAnalysis
+                        completed = completedCount,
+                        remaining = remainingCount,
+                        onClick = { navController.navigate("processing") }
                     )
                     Spacer(Modifier.height(10.dp))
                     FloatingActionButton(
@@ -130,6 +142,16 @@ fun MistakeBookApp(viewModel: MainViewModel) {
             }
             composable("stats") {
                 StatsScreen(viewModel)
+            }
+            composable("processing") {
+                ProcessingHistoryScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() },
+                    onOpenQuestion = { navController.navigate("question/$it") },
+                    onReviewScan = { scanId ->
+                        navController.navigate("scan-review/$scanId")
+                    }
+                )
             }
             composable("retake") {
                 RetakeHomeScreen(
@@ -288,36 +310,29 @@ fun MistakeBookApp(viewModel: MainViewModel) {
 
 @Composable
 private fun ProcessingBubble(
-    pageScan: com.hiro.mistakebook.data.PageScanEntity?,
-    batchSplitProgress: com.hiro.mistakebook.BatchSplitProgress?,
-    pendingAnalysis: Int
+    completed: Int,
+    remaining: Int,
+    onClick: () -> Unit
 ) {
-    val text = when {
-        pageScan != null && pageScan.status == "PROCESSING" ->
-            "整页识别 ${pageScan.progress.coerceIn(0, 100)}%"
-        pageScan != null -> "整页任务等待处理"
-        batchSplitProgress != null -> {
-            "AI 分题 ${batchSplitProgress.current.coerceAtMost(batchSplitProgress.total)}/${batchSplitProgress.total}"
-        }
-        pendingAnalysis > 0 -> "AI 分析待处理 $pendingAnalysis"
-        else -> return
-    }
-    Surface(
-        shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        shadowElevation = 5.dp
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
     ) {
-        androidx.compose.foundation.layout.Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            CircularProgressIndicator(
-                modifier = Modifier.height(16.dp),
-                strokeWidth = 2.dp
+            Text(
+                "完成 $completed",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 9.sp
             )
-            Text(text, style = MaterialTheme.typography.labelMedium)
+            Text(
+                "剩余 $remaining",
+                style = MaterialTheme.typography.labelSmall,
+                fontSize = 9.sp
+            )
         }
     }
 }
