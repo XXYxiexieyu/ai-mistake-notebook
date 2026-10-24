@@ -86,7 +86,7 @@ fun CropDialog(
                     Column {
                         Text("框选题目", style = MaterialTheme.typography.titleLarge)
                         Text(
-                            "拖动四个角进行透视校正；只框一道题。",
+                            "拖动四角透视校正；拖动边中点可平行移动整条边；只框一道题。",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -114,27 +114,73 @@ fun CropDialog(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .pointerInput(imagePath, displayRect) {
-                                    detectDragGestures { change, dragAmount ->
-                                        val screenPoints = points.map {
-                                            Offset(
-                                                displayRect.left + it.x * displayRect.width(),
-                                                displayRect.top + it.y * displayRect.height()
+                                    var activeHandle: CropHandle? = null
+                                    fun currentScreenPoints() = points.map {
+                                        Offset(
+                                            displayRect.left + it.x * displayRect.width(),
+                                            displayRect.top + it.y * displayRect.height()
+                                        )
+                                    }
+                                    fun findNearest(position: Offset): CropHandle {
+                                        return buildList {
+                                            points.indices.forEach { add(CropHandle.Corner(it)) }
+                                            add(CropHandle.Edge(0, intArrayOf(0, 1)))
+                                            add(CropHandle.Edge(1, intArrayOf(1, 2)))
+                                            add(CropHandle.Edge(2, intArrayOf(2, 3)))
+                                            add(CropHandle.Edge(3, intArrayOf(3, 0)))
+                                        }.minBy { handle ->
+                                            val anchor = handle.anchor(currentScreenPoints())
+                                            hypot(
+                                                anchor.x - position.x,
+                                                anchor.y - position.y
                                             )
                                         }
-                                        val nearest = screenPoints.indices.minByOrNull { index ->
-                                            val distance = hypot(
-                                                screenPoints[index].x - change.position.x,
-                                                screenPoints[index].y - change.position.y
-                                            )
-                                            distance
-                                        } ?: 0
-                                        val current = points[nearest]
-                                        points[nearest] = Offset(
-                                            (current.x + dragAmount.x / displayRect.width()).coerceIn(0f, 1f),
-                                            (current.y + dragAmount.y / displayRect.height()).coerceIn(0f, 1f)
-                                        )
+                                    }
+                                    detectDragGestures(
+                                        onDragStart = { position ->
+                                            activeHandle = findNearest(position)
+                                        },
+                                        onDragEnd = { activeHandle = null },
+                                        onDragCancel = { activeHandle = null }
+                                    ) { change, dragAmount ->
+                                        val handle = activeHandle ?: findNearest(change.position)
+                                        val dx = dragAmount.x / displayRect.width()
+                                        val dy = dragAmount.y / displayRect.height()
+                                        when (handle) {
+                                            is CropHandle.Corner -> {
+                                                val current = points[handle.index]
+                                                points[handle.index] = Offset(
+                                                    (current.x + dx).coerceIn(0f, 1f),
+                                                    (current.y + dy).coerceIn(0f, 1f)
+                                                )
+                                            }
+                                            is CropHandle.Edge -> {
+                                                val xValues = handle.points.map { points[it].x }
+                                                val yValues = handle.points.map { points[it].y }
+                                                val safeDx = dx.coerceIn(
+                                                    -xValues.min(),
+                                                    1f - xValues.max()
+                                                )
+                                                val safeDy = dy.coerceIn(
+                                                    -yValues.min(),
+                                                    1f - yValues.max()
+                                                )
+                                                handle.points.forEach { index ->
+                                                    val current = points[index]
+                                                    points[index] = Offset(
+                                                        current.x + safeDx,
+                                                        current.y + safeDy
+                                                    )
+                                                }
+                                            }
+                                        }
                                         change.consume()
                                     }
+                                    /*
+                                     * Keep the active handle for the whole gesture so touching near
+                                     * the middle of an edge moves that edge in parallel.
+                                     */
+                                    Unit
                                 }
                         ) {
                             val image = source.asImageBitmap()
@@ -167,8 +213,17 @@ fun CropDialog(
                             drawPath(path, ComposeColor(0x5527C38A))
                             drawPath(path, ComposeColor(0xFF67E8B9), style = Stroke(width = 3.dp.toPx()))
                             screenPoints.forEach { point ->
-                                drawCircle(ComposeColor.White, radius = 10.dp.toPx(), center = point)
+                                drawCircle(ComposeColor.White, radius = 11.dp.toPx(), center = point)
                                 drawCircle(ComposeColor(0xFF176B57), radius = 7.dp.toPx(), center = point)
+                            }
+                            listOf(
+                                (screenPoints[0] + screenPoints[1]) / 2f,
+                                (screenPoints[1] + screenPoints[2]) / 2f,
+                                (screenPoints[2] + screenPoints[3]) / 2f,
+                                (screenPoints[3] + screenPoints[0]) / 2f
+                            ).forEach { point ->
+                                drawCircle(ComposeColor.White, radius = 9.dp.toPx(), center = point)
+                                drawCircle(ComposeColor(0xFFE0A23B), radius = 5.dp.toPx(), center = point)
                             }
                         }
                     } else {
@@ -195,6 +250,19 @@ fun CropDialog(
                 }
             }
         }
+    }
+}
+
+private sealed interface CropHandle {
+    fun anchor(points: List<Offset>): Offset
+
+    data class Corner(val index: Int) : CropHandle {
+        override fun anchor(points: List<Offset>): Offset = points[index]
+    }
+
+    data class Edge(val edgeIndex: Int, val points: IntArray) : CropHandle {
+        override fun anchor(points: List<Offset>): Offset =
+            (points[this.points[0]] + points[this.points[1]]) / 2f
     }
 }
 

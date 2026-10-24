@@ -110,38 +110,75 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
         viewModelScope.launch(Dispatchers.IO) {
-            runCatching {
-                val file = repository.images.resolve(sourcePath)
-                val (boxes, _) = app.container.aiClient.detectQuestionBoxes(file)
-                val source = BitmapFactory.decodeFile(file.absolutePath)
-                    ?: error("无法读取待分题图片")
-                val crops = boxes.mapNotNull { box ->
-                    val left = (box.left.coerceIn(0f, 1f) * source.width).toInt()
-                    val top = (box.top.coerceIn(0f, 1f) * source.height).toInt()
-                    val right = (box.right.coerceIn(0f, 1f) * source.width).toInt()
-                    val bottom = (box.bottom.coerceIn(0f, 1f) * source.height).toInt()
-                    val width = right - left
-                    val height = bottom - top
-                    if (width < 40 || height < 40) return@mapNotNull null
-                    val crop = Bitmap.createBitmap(
-                        source,
-                        left.coerceIn(0, source.width - 1),
-                        top.coerceIn(0, source.height - 1),
-                        width.coerceAtMost(source.width - left),
-                        height.coerceAtMost(source.height - top)
-                    )
-                    val path = repository.images.saveBitmap(crop, "auto_question")
-                    if (crop !== source) crop.recycle()
-                    path
-                }
-                source.recycle()
-                crops
-            }.onSuccess { paths ->
+            runCatching { splitSinglePage(sourcePath, 10) }.onSuccess { paths ->
                 withContext(Dispatchers.Main) { onDone(paths) }
             }.onFailure { error ->
                 withContext(Dispatchers.Main) { onError(error.message ?: "AI 自动分题失败") }
             }
         }
+    }
+
+    fun autoSplitAll(
+        sourcePaths: List<String>,
+        maxTotal: Int,
+        onPageDone: (Int, List<String>) -> Unit,
+        onProgress: (Int, Int) -> Unit,
+        onDone: (Int, Int) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (!repository.settings.hasApiKey()) {
+            onError("请先在设置中配置 DeepSeek API 密钥")
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            var remaining = maxTotal.coerceAtLeast(0)
+            var generated = 0
+            var failures = 0
+            sourcePaths.forEachIndexed { index, path ->
+                if (remaining > 0) {
+                    runCatching { splitSinglePage(path, remaining.coerceAtMost(10)) }
+                        .onSuccess { crops ->
+                            remaining -= crops.size
+                            generated += crops.size
+                            withContext(Dispatchers.Main) { onPageDone(index, crops) }
+                        }
+                        .onFailure {
+                            failures++
+                        }
+                }
+                withContext(Dispatchers.Main) { onProgress(index + 1, sourcePaths.size) }
+            }
+            withContext(Dispatchers.Main) { onDone(generated, failures) }
+        }
+    }
+
+    private suspend fun splitSinglePage(sourcePath: String, limit: Int): List<String> {
+        val file = repository.images.resolve(sourcePath)
+        require(file.isFile) { "待分题图片不存在" }
+        val (boxes, _) = app.container.aiClient.detectQuestionBoxes(file)
+        val source = BitmapFactory.decodeFile(file.absolutePath)
+            ?: error("无法读取待分题图片")
+        val crops = boxes.take(limit).mapNotNull { box ->
+            val left = (box.left.coerceIn(0f, 1f) * source.width).toInt()
+            val top = (box.top.coerceIn(0f, 1f) * source.height).toInt()
+            val right = (box.right.coerceIn(0f, 1f) * source.width).toInt()
+            val bottom = (box.bottom.coerceIn(0f, 1f) * source.height).toInt()
+            val width = right - left
+            val height = bottom - top
+            if (width < 40 || height < 40) return@mapNotNull null
+            val crop = Bitmap.createBitmap(
+                source,
+                left.coerceIn(0, source.width - 1),
+                top.coerceIn(0, source.height - 1),
+                width.coerceAtMost(source.width - left),
+                height.coerceAtMost(source.height - top)
+            )
+            val path = repository.images.saveBitmap(crop, "auto_question")
+            if (crop !== source) crop.recycle()
+            path
+        }
+        source.recycle()
+        return crops
     }
 
     fun startPageScan(
@@ -241,6 +278,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     withContext(Dispatchers.Main) { onResult(path) }
                 }
                 .onFailure { bitmap.recycle() }
+        }
+    }
+
+    fun deleteStoredImage(path: String) {
+        if (path.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.images.delete(path)
         }
     }
 

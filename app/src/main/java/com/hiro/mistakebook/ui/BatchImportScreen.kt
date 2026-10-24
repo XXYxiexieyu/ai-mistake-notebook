@@ -5,6 +5,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,12 +14,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.Button
@@ -27,6 +33,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -58,7 +65,8 @@ import java.util.Calendar
 
 private data class BatchSource(
     val sourcePath: String,
-    val crops: List<String> = emptyList()
+    val crops: List<String> = emptyList(),
+    val aiSplitDone: Boolean = false
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,6 +87,8 @@ fun BatchImportScreen(
     var loading by remember { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
     var splittingIndex by remember { mutableStateOf<Int?>(null) }
+    var bulkSplitting by remember { mutableStateOf(false) }
+    var bulkProgress by remember { mutableStateOf(0 to 0) }
     val apiConfigured by viewModel.apiConfigured.collectAsStateWithLifecycle()
 
     val picker = rememberLauncherForActivityResult(
@@ -179,10 +189,75 @@ fun BatchImportScreen(
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !loading && sources.size < 50
+                    enabled = !loading && !bulkSplitting && sources.size < 50
                 ) {
                     Icon(Icons.Outlined.AddPhotoAlternate, null)
                     Text(if (loading) " 正在导入…" else " 从相册批量选择（最多 50 张）")
+                }
+            }
+            item {
+                val pendingIndexes = sources.indices.filter { !sources[it].aiSplitDone }
+                OutlinedButton(
+                    onClick = {
+                        if (pendingIndexes.isEmpty()) return@OutlinedButton
+                        bulkSplitting = true
+                        bulkProgress = 0 to pendingIndexes.size
+                        val remaining = (50 - cropCount).coerceAtLeast(0)
+                        viewModel.autoSplitAll(
+                            sourcePaths = pendingIndexes.map { sources[it].sourcePath },
+                            maxTotal = remaining,
+                            onPageDone = { relativeIndex, crops ->
+                                pendingIndexes.getOrNull(relativeIndex)?.let { sourceIndex ->
+                                    sources.getOrNull(sourceIndex)?.let { current ->
+                                        val stillAvailable = (50 - cropCount).coerceAtLeast(0)
+                                        sources[sourceIndex] = current.copy(
+                                            crops = current.crops + crops.take(stillAvailable),
+                                            aiSplitDone = true
+                                        )
+                                    }
+                                }
+                            },
+                            onProgress = { done, total ->
+                                bulkProgress = done to total
+                            },
+                            onDone = { generated, failures ->
+                                bulkSplitting = false
+                                scope.launch {
+                                    snackbar.showSnackbar(
+                                        if (failures > 0) {
+                                            "AI 分题完成：新增 $generated 题，$failures 张图片失败"
+                                        } else {
+                                            "AI 分题完成：新增 $generated 题"
+                                        }
+                                    )
+                                }
+                            },
+                            onError = {
+                                bulkSplitting = false
+                                scope.launch { snackbar.showSnackbar(it) }
+                            }
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = apiConfigured && pendingIndexes.isNotEmpty() &&
+                        cropCount < 50 && !bulkSplitting && splittingIndex == null && !loading
+                ) {
+                    Icon(Icons.Outlined.AutoAwesome, null)
+                    Text(
+                        when {
+                            bulkSplitting -> " 正在分题 ${bulkProgress.first}/${bulkProgress.second}"
+                            pendingIndexes.isEmpty() && sources.isNotEmpty() -> " 全部图片已完成 AI 分题"
+                            else -> " 一键全部 AI 分题"
+                        }
+                    )
+                }
+                if (bulkSplitting) {
+                    LinearProgressIndicator(
+                        progress = {
+                            bulkProgress.first.toFloat() / bulkProgress.second.coerceAtLeast(1)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
             if (sources.isEmpty()) {
@@ -207,15 +282,69 @@ fun BatchImportScreen(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text("原图 ${index + 1}", fontWeight = FontWeight.SemiBold)
-                            IconButton(onClick = { sources.removeAt(index) }) {
+                            IconButton(
+                                onClick = {
+                                    val removed = sources.removeAt(index)
+                                    viewModel.deleteStoredImage(removed.sourcePath)
+                                    removed.crops.forEach(viewModel::deleteStoredImage)
+                                },
+                                enabled = !bulkSplitting && splittingIndex == null
+                            ) {
                                 Icon(Icons.Outlined.DeleteOutline, "移除原图")
                             }
                         }
                         ImagePanel(item.sourcePath, Modifier.fillMaxWidth().height(180.dp))
                         if (item.crops.isNotEmpty()) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                item.crops.take(4).forEach { crop ->
-                                    ImagePanel(crop, Modifier.height(70.dp).fillMaxWidth(0.22f))
+                            Text(
+                                "分题结果预览（${item.crops.size} 题）",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                item.crops.forEachIndexed { cropIndex, crop ->
+                                    Column(
+                                        modifier = Modifier.width(112.dp),
+                                        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                                    ) {
+                                        Box {
+                                            ImagePanel(crop, Modifier.width(112.dp).height(92.dp))
+                                            IconButton(
+                                                onClick = {
+                                                    val current = sources.getOrNull(index)
+                                                    if (current != null) {
+                                                        val remainingCrops = current.crops.filterIndexed { i, _ ->
+                                                            i != cropIndex
+                                                        }
+                                                        sources[index] = current.copy(
+                                                            crops = remainingCrops,
+                                                            aiSplitDone = current.aiSplitDone &&
+                                                                remainingCrops.isNotEmpty()
+                                                        )
+                                                    }
+                                                    viewModel.deleteStoredImage(crop)
+                                                },
+                                                enabled = !bulkSplitting && splittingIndex == null,
+                                                modifier = Modifier
+                                                    .align(androidx.compose.ui.Alignment.TopEnd)
+                                                    .size(32.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Outlined.DeleteOutline,
+                                                    "删除第 ${cropIndex + 1} 题",
+                                                    tint = MaterialTheme.colorScheme.error
+                                                )
+                                            }
+                                        }
+                                        Text(
+                                            "第 ${cropIndex + 1} 题",
+                                            style = MaterialTheme.typography.labelSmall
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -223,7 +352,8 @@ fun BatchImportScreen(
                             OutlinedButton(
                                 onClick = { cropSourceIndex = index },
                                 modifier = Modifier.weight(1f),
-                                enabled = item.crops.size < 10 && cropCount < 50
+                                enabled = item.crops.size < 10 && cropCount < 50 &&
+                                    !bulkSplitting && splittingIndex == null
                             ) {
                                 Icon(Icons.Outlined.ContentCut, null)
                                 Text(" 手动框选")
@@ -238,9 +368,11 @@ fun BatchImportScreen(
                                             val remaining = (50 - cropCount).coerceAtLeast(0)
                                             if (paths.isNotEmpty() && remaining > 0) {
                                                 sources[index] = sources[index].copy(
-                                                    crops = sources[index].crops + paths.take(remaining)
+                                                    crops = sources[index].crops + paths.take(remaining),
+                                                    aiSplitDone = true
                                                 )
                                             } else {
+                                                sources[index] = sources[index].copy(aiSplitDone = true)
                                                 scope.launch { snackbar.showSnackbar("未生成可用的题目区域") }
                                             }
                                         },
@@ -251,9 +383,16 @@ fun BatchImportScreen(
                                     )
                                 },
                                 modifier = Modifier.weight(1f),
-                                enabled = apiConfigured && cropCount < 50 && splittingIndex == null
+                                enabled = apiConfigured && cropCount < 50 && splittingIndex == null &&
+                                    !bulkSplitting && !item.aiSplitDone
                             ) {
-                                Text(if (splittingIndex == index) "分题中…" else "AI 自动分题")
+                                Text(
+                                    when {
+                                        splittingIndex == index -> "分题中…"
+                                        item.aiSplitDone -> "已完成 AI 分题"
+                                        else -> "AI 自动分题"
+                                    }
+                                )
                             }
                         }
                         Text("已框 ${item.crops.size}/10；整批最多 50 题", color = Muted, style = MaterialTheme.typography.labelSmall)
@@ -299,7 +438,7 @@ fun BatchImportScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = cropCount > 0 && !saving
+                    enabled = cropCount > 0 && !saving && !bulkSplitting && splittingIndex == null
                 ) {
                     Text(if (saving) "正在保存…" else "保存全部 $cropCount 道题")
                 }
