@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.4.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.4.1-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -197,6 +197,7 @@ python tools/fetch_catalog.py
 | `0.2.1-preview` | 总结页改为全部/科目/书目三级视图，设置页版本号改为动态读取构建版本 |
 | `0.3.0-preview` | 批量导入一键 AI 分题、逐题预览删除，裁剪框增加边平行移动抓手 |
 | `0.4.0-preview` | 增加 AI 错题审查、详情页重排、知识点目录跳转和处理进度悬浮泡 |
+| `0.4.1-preview` | 裁剪页改用固定底部操作栏，取消与确认按钮不再被挤压或遮挡 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 

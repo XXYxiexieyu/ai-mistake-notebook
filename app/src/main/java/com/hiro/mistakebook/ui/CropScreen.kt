@@ -15,10 +15,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -73,28 +74,21 @@ fun CropDialog(
     }
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
+        properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Surface(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
+        Surface(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.fillMaxSize()) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 8.dp)
                 ) {
-                    Column {
-                        Text("框选题目", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            "拖动四角透视校正；拖动边中点可平行移动整条边；只框一道题。",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    OutlinedButton(onClick = onDismiss) { Text("取消") }
+                    Text("框选题目", style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        "拖动四角透视校正；拖动边中点可平行移动整条边；只框一道题。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 BoxWithConstraints(
                     modifier = Modifier
@@ -233,23 +227,45 @@ fun CropDialog(
                         Text("正在读取图片…", color = androidx.compose.ui.graphics.Color.White)
                     }
                 }
-                Button(
-                    onClick = {
-                        val source = bitmap ?: return@Button
-                        val pxPoints = points.map {
-                            Offset(
-                                it.x * source.width,
-                                it.y * source.height
-                            )
-                        }
-                        onCropped(perspectiveCrop(source, pxPoints))
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    enabled = bitmap != null
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    tonalElevation = 4.dp,
+                    shadowElevation = 8.dp
                 ) {
-                    Text("使用此框选")
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, top = 10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            OutlinedButton(
+                                onClick = onDismiss,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("取消")
+                            }
+                            Button(
+                                onClick = {
+                                    val source = bitmap ?: return@Button
+                                    val pxPoints = points.map {
+                                        Offset(
+                                            it.x * source.width,
+                                            it.y * source.height
+                                        )
+                                    }
+                                    onCropped(perspectiveCrop(source, pxPoints))
+                                },
+                                modifier = Modifier.weight(1f),
+                                enabled = bitmap != null
+                            ) {
+                                Text("使用此框选")
+                            }
+                        }
+                        Spacer(Modifier.height(52.dp))
+                    }
                 }
             }
         }
