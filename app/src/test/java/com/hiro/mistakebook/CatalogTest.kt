@@ -5,6 +5,7 @@ import com.hiro.mistakebook.data.KnowledgeTreeData
 import com.hiro.mistakebook.data.FullPageScanPayload
 import com.hiro.mistakebook.data.KnowledgeMatcher
 import com.hiro.mistakebook.ai.InkColorAnalyzer
+import com.hiro.mistakebook.ai.AutoSplitPayload
 import com.hiro.mistakebook.data.AnalysisPayload
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.data.QuestionDraft
@@ -126,5 +127,31 @@ class CatalogTest {
         )
         assertEquals("学生在答题区写下的原始步骤", payload.originalAnswerText)
         assertEquals("在定义域判断处出错", payload.errorCause)
+    }
+
+    @Test
+    fun aiSplitReviewUsesAnswerDifferenceAndCorrectionEvidence() {
+        val payload = Gson().fromJson(
+            """
+            {
+              "questions": [{
+                "box": [80, 200, 920, 620],
+                "isWrong": true,
+                "evidenceType": "选项错误",
+                "wrongEvidence": "作答 B，但正确选项为 C",
+                "selectedAnswer": "B",
+                "correctAnswer": "C",
+                "questionText": "完整选择题及配图",
+                "confidence": 0.93
+              }]
+            }
+            """.trimIndent(),
+            AutoSplitPayload::class.java
+        )
+        val item = payload.questions.single()
+        assertTrue(item.isWrong)
+        assertEquals("B", item.selectedAnswer)
+        assertEquals("C", item.correctAnswer)
+        assertTrue(item.wrongEvidence.contains("正确选项"))
     }
 }

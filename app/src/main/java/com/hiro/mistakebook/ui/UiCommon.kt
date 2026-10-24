@@ -55,6 +55,14 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+data class KnowledgePointTarget(
+    val subject: String,
+    val book: String,
+    val unit: String,
+    val chapter: String,
+    val knowledgePoint: String
+)
+
 fun formatDate(millis: Long, includeTime: Boolean = false): String {
     val pattern = if (includeTime) "yyyy年M月d日 HH:mm" else "yyyy年M月d日"
     return SimpleDateFormat(pattern, Locale.CHINA).format(Date(millis))

@@ -57,15 +57,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.hiro.mistakebook.MainViewModel
+import com.hiro.mistakebook.data.AutoSplitCropCandidate
 import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.ui.theme.Muted
+import com.hiro.mistakebook.ui.theme.Red
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
 private data class BatchSource(
     val sourcePath: String,
-    val crops: List<String> = emptyList(),
+    val crops: List<AutoSplitCropCandidate> = emptyList(),
     val aiSplitDone: Boolean = false
 )
 
@@ -205,13 +207,14 @@ fun BatchImportScreen(
                         val remaining = (50 - cropCount).coerceAtLeast(0)
                         viewModel.autoSplitAll(
                             sourcePaths = pendingIndexes.map { sources[it].sourcePath },
+                            subject = subject,
                             maxTotal = remaining,
-                            onPageDone = { relativeIndex, crops ->
+                            onPageDone = { relativeIndex, candidates ->
                                 pendingIndexes.getOrNull(relativeIndex)?.let { sourceIndex ->
                                     sources.getOrNull(sourceIndex)?.let { current ->
                                         val stillAvailable = (50 - cropCount).coerceAtLeast(0)
                                         sources[sourceIndex] = current.copy(
-                                            crops = current.crops + crops.take(stillAvailable),
+                                            crops = current.crops + candidates.take(stillAvailable),
                                             aiSplitDone = true
                                         )
                                     }
@@ -286,7 +289,9 @@ fun BatchImportScreen(
                                 onClick = {
                                     val removed = sources.removeAt(index)
                                     viewModel.deleteStoredImage(removed.sourcePath)
-                                    removed.crops.forEach(viewModel::deleteStoredImage)
+                                    removed.crops.forEach {
+                                        viewModel.deleteStoredImage(it.imagePath)
+                                    }
                                 },
                                 enabled = !bulkSplitting && splittingIndex == null
                             ) {
@@ -312,7 +317,7 @@ fun BatchImportScreen(
                                         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
                                     ) {
                                         Box {
-                                            ImagePanel(crop, Modifier.width(112.dp).height(92.dp))
+                                            ImagePanel(crop.imagePath, Modifier.width(112.dp).height(92.dp))
                                             IconButton(
                                                 onClick = {
                                                     val current = sources.getOrNull(index)
@@ -326,7 +331,7 @@ fun BatchImportScreen(
                                                                 remainingCrops.isNotEmpty()
                                                         )
                                                     }
-                                                    viewModel.deleteStoredImage(crop)
+                                                    viewModel.deleteStoredImage(crop.imagePath)
                                                 },
                                                 enabled = !bulkSplitting && splittingIndex == null,
                                                 modifier = Modifier
@@ -343,6 +348,49 @@ fun BatchImportScreen(
                                         Text(
                                             "第 ${cropIndex + 1} 题",
                                             style = MaterialTheme.typography.labelSmall
+                                        )
+                                        Text(
+                                            crop.evidenceType,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            maxLines = 1,
+                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                            }
+                            Text(
+                                "AI 错题审查：以下题目均检测到明确错误依据。请删除误识别项后再保存。",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Muted
+                            )
+                            item.crops.forEachIndexed { cropIndex, crop ->
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(
+                                        "第 ${cropIndex + 1} 题 · ${crop.evidenceType}",
+                                        fontWeight = FontWeight.SemiBold,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                    if (crop.selectedAnswer.isNotBlank() || crop.correctAnswer.isNotBlank()) {
+                                        Text(
+                                            "作答 ${crop.selectedAnswer.ifBlank { "未识别" }} / 正确答案 ${crop.correctAnswer.ifBlank { "未识别" }}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (
+                                                crop.selectedAnswer.isNotBlank() &&
+                                                crop.correctAnswer.isNotBlank() &&
+                                                crop.selectedAnswer.trim() != crop.correctAnswer.trim()
+                                            ) {
+                                                Red
+                                            } else {
+                                                Muted
+                                            }
+                                        )
+                                    }
+                                    if (crop.wrongEvidence.isNotBlank()) {
+                                        Text(
+                                            crop.wrongEvidence,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = Muted
                                         )
                                     }
                                 }
@@ -363,12 +411,13 @@ fun BatchImportScreen(
                                     splittingIndex = index
                                     viewModel.autoSplit(
                                         item.sourcePath,
-                                        onDone = { paths ->
+                                        subject,
+                                        onDone = { candidates ->
                                             splittingIndex = null
                                             val remaining = (50 - cropCount).coerceAtLeast(0)
-                                            if (paths.isNotEmpty() && remaining > 0) {
+                                            if (candidates.isNotEmpty() && remaining > 0) {
                                                 sources[index] = sources[index].copy(
-                                                    crops = sources[index].crops + paths.take(remaining),
+                                                    crops = sources[index].crops + candidates.take(remaining),
                                                     aiSplitDone = true
                                                 )
                                             } else {
@@ -413,8 +462,10 @@ fun BatchImportScreen(
                                 QuestionDraft(
                                     subject = subject,
                                     errorCauseState = ErrorCauseState.AI_ACCEPTED,
-                                    questionImage = crop,
+                                    questionImage = crop.imagePath,
                                     sourceImage = source.sourcePath,
+                                    wrongEvidence = crop.wrongEvidence,
+                                    evidenceType = crop.evidenceType,
                                     captureTime = captureTime,
                                     autoAnalyze = autoAnalyze
                                 )
@@ -457,7 +508,19 @@ fun BatchImportScreen(
                     cropSourceIndex = null
                     viewModel.saveCrop(bitmap, "batch_question") { crop ->
                         if (cropCount < 50) {
-                            sources[index] = source.copy(crops = source.crops + crop)
+                            sources[index] = source.copy(
+                                crops = source.crops + AutoSplitCropCandidate(
+                                    imagePath = crop,
+                                    sourcePath = source.sourcePath,
+                                    isWrong = true,
+                                    evidenceType = "手动框选",
+                                    wrongEvidence = "用户手动指定为错题",
+                                    selectedAnswer = "",
+                                    correctAnswer = "",
+                                    questionText = "",
+                                    confidence = null
+                                )
+                            )
                         }
                     }
                 }

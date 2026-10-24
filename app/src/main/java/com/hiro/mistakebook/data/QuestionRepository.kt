@@ -26,6 +26,8 @@ class QuestionRepository(
 
     fun observeQuestions(): Flow<List<QuestionEntity>> = database.questionDao().observeAll()
     fun observeQuestion(id: Long): Flow<QuestionEntity?> = database.questionDao().observeById(id)
+    fun observePendingForScan(scanJobId: Long): Flow<List<QuestionEntity>> =
+        database.questionDao().observePendingForScan(scanJobId)
     fun observeRetakeSessions(): Flow<List<RetakeSessionEntity>> = database.retakeDao().observeSessions()
     fun observeRetakeSession(id: Long): Flow<RetakeSessionEntity?> = database.retakeDao().observeSession(id)
     fun observeRetakeItems(sessionId: Long): Flow<List<RetakeItemEntity>> = database.retakeDao().observeItems(sessionId)
@@ -201,7 +203,9 @@ class QuestionRepository(
         draft: QuestionDraft,
         payload: ScannedQuestionPayload,
         rawJson: String,
-        model: String
+        model: String,
+        pendingReview: Boolean = false,
+        scanJobId: Long? = null
     ): Boolean = database.withTransaction {
         val normalized = normalizeQuestionText(payload.questionText)
         val hash = images.sha256(draft.questionImage)
@@ -280,6 +284,8 @@ class QuestionRepository(
                     imageHash = hash,
                     wrongEvidence = payload.wrongEvidence,
                     evidenceType = payload.evidenceType,
+                    reviewState = if (pendingReview) "PENDING" else "APPROVED",
+                    scanJobId = scanJobId,
                     sourceImagePathsJson = gson.toJson(
                         draft.sourceImages.ifEmpty {
                             listOfNotNull(draft.sourceImage.takeIf { it.isNotBlank() })
@@ -317,6 +323,14 @@ class QuestionRepository(
         database.questionDao().markRetakeFailed(questionId, System.currentTimeMillis())
     }
 
+    suspend fun approveScanCandidate(questionId: Long) {
+        database.questionDao().approvePending(questionId, System.currentTimeMillis())
+    }
+
+    suspend fun approveAllScanCandidates(scanJobId: Long) {
+        database.questionDao().approveAllPendingForScan(scanJobId, System.currentTimeMillis())
+    }
+
     suspend fun createPageScan(
         sourceImagePaths: List<String>,
         subject: String,
@@ -333,6 +347,7 @@ class QuestionRepository(
     suspend fun getPageScan(id: Long): PageScanEntity? = database.pageScanDao().getById(id)
 
     fun observePageScan(id: Long): Flow<PageScanEntity?> = database.pageScanDao().observeById(id)
+    fun observeActivePageScan(): Flow<PageScanEntity?> = database.pageScanDao().observeActive()
 
     suspend fun updatePageScan(scan: PageScanEntity) {
         database.pageScanDao().update(scan.copy(updatedAt = System.currentTimeMillis()))

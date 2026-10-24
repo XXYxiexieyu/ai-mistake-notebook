@@ -1,7 +1,12 @@
 package com.hiro.mistakebook.ui
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Assessment
@@ -9,15 +14,22 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import android.net.Uri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -49,6 +61,12 @@ fun MistakeBookApp(viewModel: MainViewModel) {
     val showBottom = bottomItems.any { item ->
         backStack?.destination?.hierarchy?.any { it.route == item.route } == true
     }
+    val questions by viewModel.questions.collectAsStateWithLifecycle()
+    val activePageScan by viewModel.activePageScan.collectAsStateWithLifecycle()
+    val batchSplitProgress by viewModel.batchSplitProgress.collectAsStateWithLifecycle()
+    val pendingAnalysis = questions.count {
+        it.analysisState == "PENDING" || it.analysisState == "PROCESSING"
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -79,10 +97,18 @@ fun MistakeBookApp(viewModel: MainViewModel) {
         },
         floatingActionButton = {
             if (route == "home") {
-                FloatingActionButton(
-                    onClick = { navController.navigate("add") }
-                ) {
-                    Icon(Icons.Outlined.Add, contentDescription = "添加错题")
+                Column(horizontalAlignment = Alignment.End) {
+                    ProcessingBubble(
+                        pageScan = activePageScan,
+                        batchSplitProgress = batchSplitProgress,
+                        pendingAnalysis = pendingAnalysis
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    FloatingActionButton(
+                        onClick = { navController.navigate("add") }
+                    ) {
+                        Icon(Icons.Outlined.Add, contentDescription = "添加错题")
+                    }
                 }
             }
         }
@@ -164,7 +190,21 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                 FullPageScanScreen(
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
-                    onViewResults = {
+                    onViewResults = { scanId ->
+                        navController.navigate("scan-review/$scanId")
+                    }
+                )
+            }
+            composable(
+                "scan-review/{scanId}",
+                arguments = listOf(navArgument("scanId") { defaultValue = 0L })
+            ) { entry ->
+                val scanId = entry.arguments?.getLong("scanId") ?: 0L
+                ScanReviewScreen(
+                    viewModel = viewModel,
+                    scanId = scanId,
+                    onBack = { navController.popBackStack() },
+                    onFinished = {
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
                         }
@@ -181,7 +221,16 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                     questionId = id,
                     onBack = { navController.popBackStack() },
                     onEdit = { navController.navigate("edit/$id") },
-                    onChat = { navController.navigate("chat/$id") }
+                    onChat = { navController.navigate("chat/$id") },
+                    onKnowledgePoint = { target ->
+                        navController.navigate(
+                            "knowledge?subject=${Uri.encode(target.subject)}" +
+                                "&book=${Uri.encode(target.book)}" +
+                                "&unit=${Uri.encode(target.unit)}" +
+                                "&chapter=${Uri.encode(target.chapter)}" +
+                                "&kp=${Uri.encode(target.knowledgePoint)}"
+                        )
+                    }
                 )
             }
             composable(
@@ -209,6 +258,66 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                     onBack = { navController.popBackStack() }
                 )
             }
+            composable(
+                "knowledge?subject={subject}&book={book}&unit={unit}&chapter={chapter}&kp={kp}",
+                arguments = listOf(
+                    navArgument("subject") { defaultValue = "" },
+                    navArgument("book") { defaultValue = "" },
+                    navArgument("unit") { defaultValue = "" },
+                    navArgument("chapter") { defaultValue = "" },
+                    navArgument("kp") { defaultValue = "" }
+                )
+            ) { entry ->
+                val target = KnowledgePointTarget(
+                    subject = entry.arguments?.getString("subject").orEmpty(),
+                    book = entry.arguments?.getString("book").orEmpty(),
+                    unit = entry.arguments?.getString("unit").orEmpty(),
+                    chapter = entry.arguments?.getString("chapter").orEmpty(),
+                    knowledgePoint = entry.arguments?.getString("kp").orEmpty()
+                )
+                KnowledgePointDirectoryScreen(
+                    viewModel = viewModel,
+                    target = target,
+                    onBack = { navController.popBackStack() },
+                    onOpenQuestion = { navController.navigate("question/$it") }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProcessingBubble(
+    pageScan: com.hiro.mistakebook.data.PageScanEntity?,
+    batchSplitProgress: com.hiro.mistakebook.BatchSplitProgress?,
+    pendingAnalysis: Int
+) {
+    val text = when {
+        pageScan != null && pageScan.status == "PROCESSING" ->
+            "整页识别 ${pageScan.progress.coerceIn(0, 100)}%"
+        pageScan != null -> "整页任务等待处理"
+        batchSplitProgress != null -> {
+            "AI 分题 ${batchSplitProgress.current.coerceAtMost(batchSplitProgress.total)}/${batchSplitProgress.total}"
+        }
+        pendingAnalysis > 0 -> "AI 分析待处理 $pendingAnalysis"
+        else -> return
+    }
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        shadowElevation = 5.dp
+    ) {
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.height(16.dp),
+                strokeWidth = 2.dp
+            )
+            Text(text, style = MaterialTheme.typography.labelMedium)
         }
     }
 }

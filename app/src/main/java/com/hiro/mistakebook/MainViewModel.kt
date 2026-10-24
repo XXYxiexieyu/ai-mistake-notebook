@@ -22,6 +22,7 @@ import com.hiro.mistakebook.data.QuestionEntity
 import com.hiro.mistakebook.data.QuestionRepository
 import com.hiro.mistakebook.data.QuestionStatus
 import com.hiro.mistakebook.data.AnalysisState
+import com.hiro.mistakebook.data.AutoSplitCropCandidate
 import com.hiro.mistakebook.data.RetakeGrade
 import com.hiro.mistakebook.data.RetakeItemEntity
 import com.hiro.mistakebook.data.RetakeSessionEntity
@@ -54,6 +55,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _model = MutableStateFlow(repository.settings.model)
     val model: StateFlow<String> = _model
+
+    val activePageScan: StateFlow<PageScanEntity?> = repository.observeActivePageScan()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    private val _batchSplitProgress = MutableStateFlow<BatchSplitProgress?>(null)
+    val batchSplitProgress: StateFlow<BatchSplitProgress?> = _batchSplitProgress
 
     fun importImage(uri: Uri, prefix: String, onResult: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -102,26 +109,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun autoSplit(
         sourcePath: String,
-        onDone: (List<String>) -> Unit,
+        subject: String,
+        onDone: (List<AutoSplitCropCandidate>) -> Unit,
         onError: (String) -> Unit
     ) {
         if (!repository.settings.hasApiKey()) {
             onError("请先在设置中配置 DeepSeek API 密钥")
             return
         }
+        _batchSplitProgress.value = BatchSplitProgress(0, 1)
         viewModelScope.launch(Dispatchers.IO) {
-            runCatching { splitSinglePage(sourcePath, 10) }.onSuccess { paths ->
-                withContext(Dispatchers.Main) { onDone(paths) }
+            runCatching { splitSinglePage(sourcePath, subject, 10) }.onSuccess { crops ->
+                _batchSplitProgress.value = BatchSplitProgress(1, 1)
+                withContext(Dispatchers.Main) { onDone(crops) }
             }.onFailure { error ->
+                _batchSplitProgress.value = null
                 withContext(Dispatchers.Main) { onError(error.message ?: "AI 自动分题失败") }
             }
+            _batchSplitProgress.value = null
         }
     }
 
     fun autoSplitAll(
         sourcePaths: List<String>,
+        subject: String,
         maxTotal: Int,
-        onPageDone: (Int, List<String>) -> Unit,
+        onPageDone: (Int, List<AutoSplitCropCandidate>) -> Unit,
         onProgress: (Int, Int) -> Unit,
         onDone: (Int, Int) -> Unit,
         onError: (String) -> Unit
@@ -130,13 +143,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             onError("请先在设置中配置 DeepSeek API 密钥")
             return
         }
+        _batchSplitProgress.value = BatchSplitProgress(0, sourcePaths.size)
         viewModelScope.launch(Dispatchers.IO) {
             var remaining = maxTotal.coerceAtLeast(0)
             var generated = 0
             var failures = 0
             sourcePaths.forEachIndexed { index, path ->
                 if (remaining > 0) {
-                    runCatching { splitSinglePage(path, remaining.coerceAtMost(10)) }
+                    runCatching {
+                        splitSinglePage(path, subject, remaining.coerceAtMost(10))
+                    }
                         .onSuccess { crops ->
                             remaining -= crops.size
                             generated += crops.size
@@ -147,22 +163,32 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         }
                 }
                 withContext(Dispatchers.Main) { onProgress(index + 1, sourcePaths.size) }
+                _batchSplitProgress.value = BatchSplitProgress(index + 1, sourcePaths.size)
             }
+            _batchSplitProgress.value = null
             withContext(Dispatchers.Main) { onDone(generated, failures) }
         }
     }
 
-    private suspend fun splitSinglePage(sourcePath: String, limit: Int): List<String> {
+    private suspend fun splitSinglePage(
+        sourcePath: String,
+        subject: String,
+        limit: Int
+    ): List<AutoSplitCropCandidate> {
         val file = repository.images.resolve(sourcePath)
         require(file.isFile) { "待分题图片不存在" }
-        val (boxes, _) = app.container.aiClient.detectQuestionBoxes(file)
+        val (candidates, _) = app.container.aiClient.detectWrongQuestionCandidates(
+            file,
+            subject
+        )
         val source = BitmapFactory.decodeFile(file.absolutePath)
             ?: error("无法读取待分题图片")
-        val crops = boxes.take(limit).mapNotNull { box ->
-            val left = (box.left.coerceIn(0f, 1f) * source.width).toInt()
-            val top = (box.top.coerceIn(0f, 1f) * source.height).toInt()
-            val right = (box.right.coerceIn(0f, 1f) * source.width).toInt()
-            val bottom = (box.bottom.coerceIn(0f, 1f) * source.height).toInt()
+        val crops = candidates.take(limit).mapNotNull { candidate ->
+            val box = candidate.box
+            val left = (box[0].coerceIn(0f, 1000f) / 1000f * source.width).toInt()
+            val top = (box[1].coerceIn(0f, 1000f) / 1000f * source.height).toInt()
+            val right = (box[2].coerceIn(0f, 1000f) / 1000f * source.width).toInt()
+            val bottom = (box[3].coerceIn(0f, 1000f) / 1000f * source.height).toInt()
             val width = right - left
             val height = bottom - top
             if (width < 40 || height < 40) return@mapNotNull null
@@ -175,7 +201,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             )
             val path = repository.images.saveBitmap(crop, "auto_question")
             if (crop !== source) crop.recycle()
-            path
+            AutoSplitCropCandidate(
+                imagePath = path,
+                sourcePath = sourcePath,
+                isWrong = candidate.isWrong,
+                evidenceType = candidate.evidenceType,
+                wrongEvidence = candidate.wrongEvidence,
+                selectedAnswer = candidate.selectedAnswer,
+                correctAnswer = candidate.correctAnswer,
+                questionText = candidate.questionText,
+                confidence = candidate.confidence
+            )
         }
         source.recycle()
         return crops
@@ -211,6 +247,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             SharingStarted.WhileSubscribed(5_000),
             emptyList()
         )
+
+    fun observePendingScanQuestions(scanJobId: Long): StateFlow<List<QuestionEntity>> =
+        repository.observePendingForScan(scanJobId).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            emptyList()
+        )
+
+    fun approveScanCandidate(questionId: Long) {
+        viewModelScope.launch { repository.approveScanCandidate(questionId) }
+    }
+
+    fun approveAllScanCandidates(scanId: Long) {
+        viewModelScope.launch { repository.approveAllScanCandidates(scanId) }
+    }
 
     fun askQuestion(
         questionId: Long,
@@ -518,3 +569,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 }
+
+data class BatchSplitProgress(
+    val current: Int,
+    val total: Int
+)

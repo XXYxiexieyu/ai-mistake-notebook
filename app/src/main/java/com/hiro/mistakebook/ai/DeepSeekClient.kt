@@ -27,6 +27,21 @@ data class NormalizedBox(
     val bottom: Float
 )
 
+data class AutoSplitQuestionPayload(
+    val box: List<Float> = emptyList(),
+    val isWrong: Boolean = false,
+    val evidenceType: String = "",
+    val wrongEvidence: String = "",
+    val selectedAnswer: String = "",
+    val correctAnswer: String = "",
+    val questionText: String = "",
+    val confidence: Double? = null
+)
+
+data class AutoSplitPayload(
+    val questions: List<AutoSplitQuestionPayload> = emptyList()
+)
+
 class DeepSeekClient(
     private val apiKeyProvider: () -> String,
     private val modelProvider: () -> String
@@ -127,30 +142,52 @@ class DeepSeekClient(
         return normalized to json
     }
 
-    fun detectQuestionBoxes(imageFile: File): Pair<List<NormalizedBox>, String> {
+    fun detectWrongQuestionCandidates(
+        imageFile: File,
+        subjectHint: String
+    ): Pair<List<AutoSplitQuestionPayload>, String> {
         val prompt = """
-            识别图片中所有独立的试题区域。不要把同一大题的小问拆成多题，不要包含页码、答案、解析或大面积空白。
-            最多返回 10 个框。坐标采用 0 到 1000 的归一化值，原点在左上角。
+            你是高三北京高考错题审查助手。科目：$subjectHint。
+            识别图片中确实做错的独立题目，并返回足够精确的裁剪区域。
+
+            判为错题至少需要以下一种证据：
+            - 选择题中可见的作答选项与正确答案不同；
+            - 答案错误、空缺后被补写，或正确答案与作答明显不符；
+            - 蓝、红、紫、绿等异色笔存在叉号、圈划、删除线、订正或补充步骤；
+            - 有老师扣分、失分或其他明确错误批注。
+
+            重要规则：
+            - 正确题、无法确认的题一律不要返回；
+            - 普通下划线、高亮、蓝笔作答本身不是判错依据；
+            - 每个题目区域必须包含完整题干、图形、表格、选项和对应作答，不能夹带相邻题目；
+            - 同一大题的小问和图表属于一道题，不拆开；
+            - 最多返回 10 道错题；坐标采用 0 到 1000 的归一化值，原点在左上角；
+            - 错题依据必须描述实际看到的内容，不能编造。
+
             只返回合法 JSON，不要 Markdown：
-            {"questions":[{"box":[左,上,右,下],"type":"选择题|主观题|未知"}]}
+            {
+              "questions": [{
+                "box": [左, 上, 右, 下],
+                "isWrong": true,
+                "evidenceType": "选项错误|答案解析错误|蓝色笔订正|红笔订正|扣分标记|其他颜色批注",
+                "wrongEvidence": "具体判错依据",
+                "selectedAnswer": "选择题实际选项；非选择题留空",
+                "correctAnswer": "选择题正确选项；非选择题留空",
+                "questionText": "简短题目摘要",
+                "confidence": 0.0
+              }]
+            }
         """.trimIndent()
         val raw = request(arrayListOf(textPart(prompt), imagePart(imageFile)))
         val json = extractJson(raw)
-        val root = JsonParser.parseString(json).asJsonObject
-        val array = root.getAsJsonArray("questions") ?: throw IOException("AI 未返回题目区域")
-        val boxes = array.mapNotNull { element ->
-            runCatching {
-                val values = element.asJsonObject.getAsJsonArray("box")
-                NormalizedBox(
-                    left = values[0].asFloat / 1000f,
-                    top = values[1].asFloat / 1000f,
-                    right = values[2].asFloat / 1000f,
-                    bottom = values[3].asFloat / 1000f
-                )
-            }.getOrNull()
-        }.take(10)
-        if (boxes.isEmpty()) throw IOException("没有识别到完整题目区域")
-        return boxes to json
+        val payload = gson.fromJson(json, AutoSplitPayload::class.java)
+        val candidates = payload.questions
+            .filter { it.isWrong && it.box.size >= 4 }
+            .filter { it.evidenceType != "无明确批改" }
+            .filter { (it.confidence ?: 0.6) >= 0.35 }
+            .take(10)
+        if (candidates.isEmpty()) throw IOException("没有识别到有明确依据的错题")
+        return candidates to json
     }
 
     fun scanWrongPage(

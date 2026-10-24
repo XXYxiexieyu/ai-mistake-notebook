@@ -118,7 +118,9 @@ data class QuestionEntity(
     val sourceImagePathsJson: String = "[]",
     val wrongEvidence: String = "",
     val evidenceType: String = "",
-    val knowledgeMappingJson: String = "[]"
+    val knowledgeMappingJson: String = "[]",
+    val reviewState: String = "APPROVED",
+    val scanJobId: Long? = null
 )
 
 @Entity(tableName = "retake_sessions")
@@ -290,4 +292,16 @@ data class KnowledgeNodeRef(
     val chapter: String = "",
     val matched: Boolean = false,
     val matchMethod: String = ""
+)
+
+data class AutoSplitCropCandidate(
+    val imagePath: String,
+    val sourcePath: String,
+    val isWrong: Boolean,
+    val evidenceType: String,
+    val wrongEvidence: String,
+    val selectedAnswer: String,
+    val correctAnswer: String,
+    val questionText: String,
+    val confidence: Double?
 )

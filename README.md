@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.3.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.4.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -43,7 +43,10 @@
 | 错题录入 | 拍照、相册、手动四角框选、透视校正 |
 | 批量录入 | 多图导入、单图多题、AI 自动分题 |
 | 批量 AI 分题 | 一键处理全部未分题页面，逐题预览并可单独删除 |
+| AI 错题审查 | 根据选项差异、答案解析和异色笔订正筛选，确认后才进入正式错题本 |
 | 裁剪控制 | 四角透视校正，四边中点抓手可平行移动整条边 |
+| 知识点目录 | 点击错题中的知识点，直接进入该知识点独立错题目录 |
+| 处理进度泡 | 首页加号上方显示整页扫描、批量分题和待分析进度 |
 | 原作答提取 | 自动识别图片中的学生原作答、草稿和错误步骤并填入原作答字段 |
 | 整页扫描 | 根据对错号、蓝笔/红笔订正、扣分和其他颜色批注识别错题，并生成彩笔增强图辅助判断 |
 | 扫描进度 | 显示当前页的保存、彩笔增强、AI 分析和裁题入库阶段，可转到后台继续 |
@@ -193,6 +196,7 @@ python tools/fetch_catalog.py
 | `0.2.0-preview` | 支持多页上传、页序调整、跨页大题合并与多页区域拼接 |
 | `0.2.1-preview` | 总结页改为全部/科目/书目三级视图，设置页版本号改为动态读取构建版本 |
 | `0.3.0-preview` | 批量导入一键 AI 分题、逐题预览删除，裁剪框增加边平行移动抓手 |
+| `0.4.0-preview` | 增加 AI 错题审查、详情页重排、知识点目录跳转和处理进度悬浮泡 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -222,7 +226,7 @@ python tools/fetch_catalog.py
 ## 构建验证
 
 - `assembleDebug`：通过。
-- `testDebugUnitTest`：7 项通过，包括蓝笔颜色检测和 AI 默认值解析。
+- `testDebugUnitTest`：8 项通过，包括蓝笔颜色检测、AI 默认值解析和 AI 错题审查字段。
 - `lintDebug`：0 个问题。
 - GitHub Actions：通过。
 - APK v2 签名：通过。

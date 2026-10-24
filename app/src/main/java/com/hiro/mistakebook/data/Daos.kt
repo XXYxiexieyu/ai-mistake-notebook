@@ -10,7 +10,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface QuestionDao {
-    @Query("SELECT * FROM questions ORDER BY captureTime DESC, id DESC")
+    @Query(
+        """
+        SELECT * FROM questions
+        WHERE reviewState = 'APPROVED'
+        ORDER BY captureTime DESC, id DESC
+        """
+    )
     fun observeAll(): Flow<List<QuestionEntity>>
 
     @Query("SELECT * FROM questions WHERE id = :id")
@@ -26,6 +32,7 @@ interface QuestionDao {
         """
         SELECT * FROM questions
         WHERE status = 'REVIEWED'
+          AND reviewState = 'APPROVED'
           AND subject = :subject
           AND captureTime BETWEEN :start AND :end
         ORDER BY captureTime ASC, id ASC
@@ -39,12 +46,14 @@ interface QuestionDao {
     @Query(
         """
         SELECT * FROM questions
-        WHERE (:hash <> '' AND imageHash = :hash)
+        WHERE reviewState = 'APPROVED'
+          AND (
+                (:hash <> '' AND imageHash = :hash)
            OR (
                 subject = :subject
                 AND questionText <> ''
                 AND questionText = :normalizedText
-           )
+           ))
         LIMIT 20
         """
     )
@@ -85,8 +94,35 @@ interface QuestionDao {
     )
     suspend fun markRetakeFailed(id: Long, now: Long)
 
-    @Query("SELECT COUNT(*) FROM questions")
+    @Query("SELECT COUNT(*) FROM questions WHERE reviewState = 'APPROVED'")
     fun observeCount(): Flow<Int>
+
+    @Query(
+        """
+        SELECT * FROM questions
+        WHERE scanJobId = :scanJobId AND reviewState = 'PENDING'
+        ORDER BY createdAt ASC, id ASC
+        """
+    )
+    fun observePendingForScan(scanJobId: Long): Flow<List<QuestionEntity>>
+
+    @Query(
+        """
+        UPDATE questions
+        SET reviewState = 'APPROVED', updatedAt = :now
+        WHERE id = :questionId AND reviewState = 'PENDING'
+        """
+    )
+    suspend fun approvePending(questionId: Long, now: Long)
+
+    @Query(
+        """
+        UPDATE questions
+        SET reviewState = 'APPROVED', updatedAt = :now
+        WHERE scanJobId = :scanJobId AND reviewState = 'PENDING'
+        """
+    )
+    suspend fun approveAllPendingForScan(scanJobId: Long, now: Long)
 
     @Query(
         """
@@ -206,6 +242,16 @@ interface PageScanDao {
 
     @Query("SELECT * FROM page_scans WHERE id = :id")
     fun observeById(id: Long): Flow<PageScanEntity?>
+
+    @Query(
+        """
+        SELECT * FROM page_scans
+        WHERE status IN ('PENDING', 'PROCESSING')
+        ORDER BY createdAt DESC
+        LIMIT 1
+        """
+    )
+    fun observeActive(): Flow<PageScanEntity?>
 
     @Query("SELECT * FROM page_scans WHERE status IN ('PENDING', 'FAILED')")
     suspend fun getPendingOrFailed(): List<PageScanEntity>

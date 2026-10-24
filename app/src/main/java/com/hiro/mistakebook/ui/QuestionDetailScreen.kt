@@ -16,8 +16,9 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -25,7 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.outlined.QuestionAnswer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -56,7 +56,8 @@ fun QuestionDetailScreen(
     questionId: Long,
     onBack: () -> Unit,
     onEdit: () -> Unit,
-    onChat: () -> Unit
+    onChat: () -> Unit,
+    onKnowledgePoint: (KnowledgePointTarget) -> Unit
 ) {
     val question by remember(questionId) {
         viewModel.repository.observeQuestion(questionId)
@@ -101,25 +102,45 @@ fun QuestionDetailScreen(
             }
             return@Scaffold
         }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                ImagePanel(item.imagePath, Modifier.fillMaxWidth().height(270.dp))
+                DetailCard("题目") {
+                    Text(item.questionText.ifBlank { "尚未识别题目文字，请编辑补充。" })
+                }
             }
             item {
-                Button(
-                    onClick = onChat,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                DetailCard("答案与解析") {
+                    Text(
+                        item.answerText.ifBlank { "尚未生成答案。" },
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (item.explanation.isNotBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(item.explanation)
+                    }
+                }
+            }
+            item {
+                Button(onClick = onChat, modifier = Modifier.fillMaxWidth()) {
                     Icon(Icons.Outlined.QuestionAnswer, null)
                     Text(" 针对本题向 AI 提问")
                 }
             }
             item {
-                DetailCard("分类信息") {
+                DetailCard("题目照片") {
+                    ImagePanel(item.imagePath, Modifier.fillMaxWidth().height(270.dp))
+                }
+            }
+            item {
+                KnowledgeNetworkCard(item, onKnowledgePoint)
+            }
+            item {
+                DetailCard("分类与记录信息") {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -137,15 +158,6 @@ fun QuestionDetailScreen(
                         }
                         StatusPill(item.status)
                     }
-                    if (item.knowledgePointsJson != "[]") {
-                        val points = knowledgePoints(item.knowledgePointsJson)
-                        if (points.isNotEmpty()) {
-                            Text("知识点", style = MaterialTheme.typography.labelMedium, color = Muted)
-                            points.forEach { point ->
-                                AssistChip(onClick = {}, label = { Text(point) })
-                            }
-                        }
-                    }
                     if (item.mathTopic.isNotBlank()) {
                         Text("数学专题：${item.mathTopic}", color = Green)
                     }
@@ -158,61 +170,11 @@ fun QuestionDetailScreen(
             }
             if (item.wrongEvidence.isNotBlank() || item.evidenceType.isNotBlank()) {
                 item {
-                    DetailCard("整页扫描的错题依据") {
+                    DetailCard("AI 判错依据") {
                         if (item.evidenceType.isNotBlank()) {
-                            Text("批改类型：${item.evidenceType}", color = Amber)
+                            Text("依据类型：${item.evidenceType}", color = Amber)
                         }
-                        Text(item.wrongEvidence.ifBlank { "未记录具体批改痕迹" })
-                    }
-                }
-            }
-            if (item.knowledgeMappingJson != "[]") {
-                item {
-                    val mappings = knowledgeNodeRefs(item.knowledgeMappingJson)
-                    DetailCard("知识网定位") {
-                        if (mappings.isEmpty()) {
-                            Text("尚未匹配知识网节点。")
-                        } else {
-                            mappings.forEach { node ->
-                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(
-                                        node.knowledgePoint,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (node.matched) Green else Muted
-                                    )
-                                    Text(
-                                        listOf(node.book, node.unit, node.chapter)
-                                            .filter { it.isNotBlank() }
-                                            .joinToString(" → ")
-                                            .ifBlank { "待指定教材位置" },
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Muted
-                                    )
-                                    Text(
-                                        node.matchMethod,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (node.matched) Green else Muted
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            item {
-                DetailCard("题目") {
-                    Text(item.questionText.ifBlank { "尚未识别题目文字，请编辑补充。" })
-                }
-            }
-            item {
-                DetailCard("答案与解析") {
-                    Text(
-                        item.answerText.ifBlank { "尚未生成答案。" },
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if (item.explanation.isNotBlank()) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(item.explanation)
+                        Text(item.wrongEvidence.ifBlank { "未记录具体依据" })
                     }
                 }
             }
@@ -238,7 +200,11 @@ fun QuestionDetailScreen(
                         }
                         Text(
                             errorCauseLabel(item),
-                            color = if (item.errorCauseState == ErrorCauseState.UNSUPPLEMENTED.name) Muted else MaterialTheme.colorScheme.onSurface
+                            color = if (item.errorCauseState == ErrorCauseState.UNSUPPLEMENTED.name) {
+                                Muted
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
                         )
                     }
                 }
@@ -255,7 +221,10 @@ fun QuestionDetailScreen(
                         }
                     }
                     if (item.retakeFailures > 0) {
-                        Text("累计重考未通过 ${item.retakeFailures} 次", color = MaterialTheme.colorScheme.error)
+                        Text(
+                            "累计重考未通过 ${item.retakeFailures} 次",
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                         AnalysisPill(item.analysisState)
@@ -290,6 +259,74 @@ fun QuestionDetailScreen(
                 TextButton(onClick = { showDelete = false }) { Text("取消") }
             }
         )
+    }
+}
+
+@Composable
+private fun KnowledgeNetworkCard(
+    item: com.hiro.mistakebook.data.QuestionEntity,
+    onKnowledgePoint: (KnowledgePointTarget) -> Unit
+) {
+    val mappings = knowledgeNodeRefs(item.knowledgeMappingJson)
+    val rawPoints = knowledgePoints(item.knowledgePointsJson)
+    DetailCard("知识点与知识网") {
+        if (mappings.isNotEmpty()) {
+            mappings.forEach { node ->
+                OutlinedButton(
+                    onClick = {
+                        onKnowledgePoint(
+                            KnowledgePointTarget(
+                                subject = item.subject,
+                                book = node.book.ifBlank { item.book },
+                                unit = node.unit.ifBlank { item.unit },
+                                chapter = node.chapter.ifBlank { item.chapter },
+                                knowledgePoint = node.knowledgePoint
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            node.knowledgePoint,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (node.matched) Green else Muted
+                        )
+                        Text(
+                            listOf(node.book, node.unit, node.chapter)
+                                .filter { it.isNotBlank() }
+                                .joinToString(" → ")
+                                .ifBlank { "未匹配教材位置" },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Muted
+                        )
+                    }
+                    Icon(Icons.Outlined.KeyboardArrowRight, "查看该知识点错题")
+                }
+            }
+        } else if (rawPoints.isNotEmpty()) {
+            rawPoints.forEach { point ->
+                OutlinedButton(
+                    onClick = {
+                        onKnowledgePoint(
+                            KnowledgePointTarget(
+                                subject = item.subject,
+                                book = item.book,
+                                unit = item.unit,
+                                chapter = item.chapter,
+                                knowledgePoint = point
+                            )
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(point, modifier = Modifier.weight(1f))
+                    Icon(Icons.Outlined.KeyboardArrowRight, "查看该知识点错题")
+                }
+            }
+        } else {
+            Text("尚未识别知识点。", color = Muted)
+        }
     }
 }
 

@@ -165,7 +165,9 @@ class PageScanWorker(
                     ),
                     payload = item.payload,
                     rawJson = rawJson,
-                    model = repository.settings.model
+                    model = repository.settings.model,
+                    pendingReview = true,
+                    scanJobId = scan.id
                 )
                 saved++
             }

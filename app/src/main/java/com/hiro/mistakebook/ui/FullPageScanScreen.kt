@@ -83,7 +83,7 @@ import java.util.Calendar
 fun FullPageScanScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit,
-    onViewResults: () -> Unit
+    onViewResults: (Long) -> Unit
 ) {
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -348,7 +348,7 @@ fun FullPageScanScreen(
                     ScanStatusCard(
                         scan = current,
                         onRetry = { viewModel.enqueuePageScan(current.id) },
-                        onViewResults = onViewResults
+                        onViewResults = { onViewResults(current.id) }
                     )
                 }
             }
@@ -393,7 +393,7 @@ fun FullPageScanScreen(
             },
             onViewResults = {
                 showProgress = false
-                onViewResults()
+                scan?.let { onViewResults(it.id) }
             }
         )
     }
@@ -427,7 +427,7 @@ private fun ScanStatusCard(
                 }
                 Text(
                     if (status == AnalysisState.DONE) {
-                        " 识别完成，已保存 ${scan.detectedCount} 道错题"
+                        " 识别完成，发现 ${scan.detectedCount} 道候选题"
                     } else {
                         " ${scanStageLabel(scan.stage)} · $pageCount 页"
                     },
@@ -450,7 +450,7 @@ private fun ScanStatusCard(
                 }
             }
             if (status == AnalysisState.DONE) {
-                Button(onClick = onViewResults) { Text("查看错题本") }
+                Button(onClick = onViewResults) { Text("审查识别结果") }
             }
         }
     }
@@ -507,7 +507,7 @@ private fun ScanProgressDialog(
                 Text(
                     when {
                         scan == null -> "正在保存当前页"
-                        status == AnalysisState.DONE -> "本页识别完成，已保存 ${scan.detectedCount} 道错题"
+                        status == AnalysisState.DONE -> "本页识别完成，发现 ${scan.detectedCount} 道候选题"
                         status == AnalysisState.FAILED -> "本页识别失败"
                         else -> scanStageLabel(scan.stage)
                     },
@@ -557,7 +557,7 @@ private fun ScanProgressDialog(
                 when (status) {
                     AnalysisState.DONE -> {
                         Button(onClick = onViewResults, modifier = Modifier.fillMaxWidth()) {
-                            Text("查看识别结果")
+                            Text("审查识别结果")
                         }
                         TextButton(onClick = onBackground, modifier = Modifier.fillMaxWidth()) {
                             Text("留在此页")
