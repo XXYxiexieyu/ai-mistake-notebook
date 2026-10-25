@@ -5,6 +5,7 @@ import android.net.Uri
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
@@ -13,12 +14,13 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 data class BackupPayload(
-    val schemaVersion: Int = 2,
+    val schemaVersion: Int = 3,
     val exportedAt: Long = System.currentTimeMillis(),
     val questions: List<QuestionEntity> = emptyList(),
     val retakeSessions: List<RetakeSessionEntity> = emptyList(),
     val retakeItems: List<RetakeItemEntity> = emptyList(),
-    val chatMessages: List<QuestionChatMessageEntity> = emptyList()
+    val chatMessages: List<QuestionChatMessageEntity> = emptyList(),
+    val wordEntries: List<WordEntryEntity> = emptyList()
 )
 
 data class ImportPreview(
@@ -46,11 +48,13 @@ class BackupManager(
         val sessions = database.retakeDao().getAllSessions()
         val items = database.retakeDao().getAllItems()
         val chatMessages = database.questionChatDao().getAll()
+        val wordEntries = database.wordDao().observeAll().first()
         val payload = BackupPayload(
             questions = questions,
             retakeSessions = sessions,
             retakeItems = items,
-            chatMessages = chatMessages
+            chatMessages = chatMessages,
+            wordEntries = wordEntries
         )
         var count = 0
         context.contentResolver.openOutputStream(uri)?.use { stream ->
@@ -64,7 +68,8 @@ class BackupManager(
                         runCatching {
                             gson.fromJson(it.sourceImagePathsJson, Array<String>::class.java).toList()
                         }.getOrDefault(emptyList())
-                } + items.map { it.answerImagePath } + chatMessages.map { it.imagePath }
+                } + items.map { it.answerImagePath } + chatMessages.map { it.imagePath } +
+                    wordEntries.map { it.sourceImagePath }
                 paths.filter { it.isNotBlank() }.distinct().forEach { relative ->
                     val file = images.resolve(relative)
                     if (!file.isFile) return@forEach
@@ -179,6 +184,29 @@ class BackupManager(
             )
         }
 
+        for (word in imported.payload.wordEntries) {
+            val restoredImage = restoreImage(word.sourceImagePath, imported.extractedDir)
+            val existing = database.wordDao().find(word.normalizedWord)
+            if (existing == null) {
+                database.wordDao().insert(
+                    word.copy(
+                        id = 0,
+                        sourceImagePath = restoredImage,
+                        createdAt = System.currentTimeMillis(),
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+            } else {
+                database.wordDao().update(
+                    existing.copy(
+                        occurrences = existing.occurrences + word.occurrences,
+                        sourceImagePath = existing.sourceImagePath.ifBlank { restoredImage },
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+            }
+        }
+
         val cacheRoot = context.cacheDir.canonicalFile
         if (imported.extractedDir.canonicalFile.toPath().startsWith(cacheRoot.toPath())) {
             imported.extractedDir.parentFile?.deleteRecursively()
@@ -229,6 +257,9 @@ class BackupManager(
                         if (!root.has("chatMessages")) {
                             root.add("chatMessages", com.google.gson.JsonArray())
                         }
+                        if (!root.has("wordEntries")) {
+                            root.add("wordEntries", com.google.gson.JsonArray())
+                        }
                         payload = gson.fromJson(root, BackupPayload::class.java)
                     }
                 } else if (entry.name.startsWith("images/")) {
@@ -246,7 +277,7 @@ class BackupManager(
             }
         }
         val parsedPayload = payload ?: error("备份中缺少 backup.json")
-        require(parsedPayload.schemaVersion in 1..2) { "不支持的备份版本" }
+        require(parsedPayload.schemaVersion in 1..3) { "不支持的备份版本" }
         return ReadBackup(
             payload = parsedPayload,
             imageCount = imageCount,

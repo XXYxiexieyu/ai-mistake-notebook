@@ -320,3 +320,21 @@ interface QuestionChatDao {
     )
     suspend fun getPendingOrFailedReplies(): List<QuestionChatMessageEntity>
 }
+
+@Dao
+interface WordDao {
+    @Query("SELECT * FROM word_entries ORDER BY createdAt DESC, id DESC")
+    fun observeAll(): Flow<List<WordEntryEntity>>
+
+    @Query("SELECT * FROM word_entries WHERE normalizedWord = :normalized LIMIT 1")
+    suspend fun find(normalized: String): WordEntryEntity?
+
+    @Insert
+    suspend fun insert(word: WordEntryEntity): Long
+
+    @Update
+    suspend fun update(word: WordEntryEntity)
+
+    @Query("DELETE FROM word_entries WHERE id = :id")
+    suspend fun deleteById(id: Long)
+}

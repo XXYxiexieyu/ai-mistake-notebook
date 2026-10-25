@@ -193,6 +193,26 @@ data class QuestionChatMessageEntity(
     val createdAt: Long = System.currentTimeMillis()
 )
 
+@Entity(
+    tableName = "word_entries",
+    indices = [Index("normalizedWord"), Index("createdAt")]
+)
+data class WordEntryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val word: String,
+    val normalizedWord: String,
+    val lemma: String = "",
+    val phonetic: String = "",
+    val partOfSpeech: String = "",
+    val meaningChinese: String = "",
+    val contextSentence: String = "",
+    val markType: String = "",
+    val sourceImagePath: String = "",
+    val occurrences: Int = 1,
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
+)
+
 data class KnowledgeBook(
     val subject: String,
     val publisher: String,

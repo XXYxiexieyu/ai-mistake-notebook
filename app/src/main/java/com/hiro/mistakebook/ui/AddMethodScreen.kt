@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AddPhotoAlternate
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -33,7 +34,8 @@ import com.hiro.mistakebook.ui.theme.Muted
 @Composable
 fun AddMethodScreen(
     onSingleImport: () -> Unit,
-    onBatchImport: () -> Unit
+    onBatchImport: () -> Unit,
+    onWordLookup: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().statusBarsPadding(),
@@ -66,6 +68,14 @@ fun AddMethodScreen(
                 title = "批量导入",
                 description = "批量选择多张图片、一键 AI 分题，或进入整页扫描处理多页作业和试卷。",
                 onClick = onBatchImport
+            )
+        }
+        item {
+            AddMethodCard(
+                icon = Icons.Outlined.Translate,
+                title = "英语阅读查词",
+                description = "拍摄阅读或完形篇目，识别圈画、划线单词，翻译后加入单词本。",
+                onClick = onWordLookup
             )
         }
     }

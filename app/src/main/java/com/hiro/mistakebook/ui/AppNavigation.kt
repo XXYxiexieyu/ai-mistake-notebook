@@ -11,8 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Assessment
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Translate
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -52,9 +52,9 @@ private data class BottomItem(
 
 private val bottomItems = listOf(
     BottomItem("home", "错题本", Icons.Outlined.Home),
-    BottomItem("stats", "总结", Icons.Outlined.Assessment),
+    BottomItem("words", "单词本", Icons.Outlined.Translate),
     BottomItem("add-method", "添加", Icons.Outlined.Add, isAdd = true),
-    BottomItem("retake", "重考", Icons.Outlined.Refresh),
+    BottomItem("stats", "总结", Icons.Outlined.Assessment),
     BottomItem("settings", "设置", Icons.Outlined.Settings)
 )
 
@@ -167,7 +167,8 @@ fun MistakeBookApp(viewModel: MainViewModel) {
             composable("add-method") {
                 AddMethodScreen(
                     onSingleImport = { navController.navigate("add") },
-                    onBatchImport = { navController.navigate("batch") }
+                    onBatchImport = { navController.navigate("batch") },
+                    onWordLookup = { navController.navigate("word-lookup") }
                 )
             }
             composable("stats") {
@@ -180,6 +181,20 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                     onOpenQuestion = { navController.navigate("question/$it") },
                     onReviewScan = { scanId ->
                         navController.navigate("scan-review/$scanId")
+                    }
+                )
+            }
+            composable("words") {
+                WordBookScreen(viewModel)
+            }
+            composable("word-lookup") {
+                WordLookupScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() },
+                    onFinished = {
+                        navController.navigate("words") {
+                            popUpTo("add-method") { inclusive = true }
+                        }
                     }
                 )
             }

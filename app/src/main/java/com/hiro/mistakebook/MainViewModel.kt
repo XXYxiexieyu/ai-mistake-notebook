@@ -30,6 +30,7 @@ import com.hiro.mistakebook.data.ImportResult
 import com.hiro.mistakebook.data.ImageStore
 import com.hiro.mistakebook.data.PageScanEntity
 import com.hiro.mistakebook.data.QuestionChatMessageEntity
+import com.hiro.mistakebook.data.WordEntryEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,6 +49,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val retakeSessions: StateFlow<List<RetakeSessionEntity>> = repository.observeRetakeSessions()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val words: StateFlow<List<WordEntryEntity>> = repository.observeWords()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _apiConfigured = MutableStateFlow(repository.settings.hasApiKey())
@@ -349,6 +353,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.images.delete(path)
         }
+    }
+
+    fun lookupEnglishWords(
+        pagePaths: List<String>,
+        onDone: (Int) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (!repository.settings.hasApiKey()) {
+            onError("请先在设置中配置 DeepSeek API 密钥")
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                val files = pagePaths.take(5).map(repository.images::resolve)
+                require(files.isNotEmpty()) { "请先添加英语阅读页面" }
+                require(files.all { it.isFile }) { "有页面图片不存在" }
+                val (words, _) = app.container.aiClient.extractMarkedEnglishWords(files)
+                if (words.isEmpty()) error("没有识别到圈画或划线单词")
+                repository.addMarkedWords(pagePaths, words)
+            }.onSuccess { count ->
+                withContext(Dispatchers.Main) { onDone(count) }
+            }.onFailure {
+                withContext(Dispatchers.Main) { onError(it.message ?: "英语查词失败") }
+            }
+        }
+    }
+
+    fun deleteWord(id: Long) {
+        viewModelScope.launch { repository.deleteWord(id) }
     }
 
     fun saveQuestion(

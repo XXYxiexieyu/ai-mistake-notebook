@@ -13,9 +13,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RetakeSessionEntity::class,
         RetakeItemEntity::class,
         PageScanEntity::class,
-        QuestionChatMessageEntity::class
+        QuestionChatMessageEntity::class,
+        WordEntryEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -23,6 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun retakeDao(): RetakeDao
     abstract fun pageScanDao(): PageScanDao
     abstract fun questionChatDao(): QuestionChatDao
+    abstract fun wordDao(): WordDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -119,6 +121,36 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS word_entries (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        word TEXT NOT NULL,
+                        normalizedWord TEXT NOT NULL,
+                        lemma TEXT NOT NULL,
+                        phonetic TEXT NOT NULL,
+                        partOfSpeech TEXT NOT NULL,
+                        meaningChinese TEXT NOT NULL,
+                        contextSentence TEXT NOT NULL,
+                        markType TEXT NOT NULL,
+                        sourceImagePath TEXT NOT NULL,
+                        occurrences INTEGER NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_word_entries_normalizedWord ON word_entries(normalizedWord)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_word_entries_createdAt ON word_entries(createdAt)"
+                )
+            }
+        }
+
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "mistake_book.db")
                 .addMigrations(
@@ -127,7 +159,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_3_4,
                     MIGRATION_4_5,
                     MIGRATION_5_6,
-                    MIGRATION_6_7
+                    MIGRATION_6_7,
+                    MIGRATION_7_8
                 )
                 .build()
     }

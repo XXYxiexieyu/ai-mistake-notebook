@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.room.withTransaction
 import com.google.gson.Gson
 import com.hiro.mistakebook.ai.AnalysisWorker
+import com.hiro.mistakebook.ai.MarkedWordPayload
 import kotlinx.coroutines.flow.Flow
 import java.text.Normalizer
 
@@ -36,6 +37,7 @@ class QuestionRepository(
     fun observeRetakeItems(sessionId: Long): Flow<List<RetakeItemEntity>> = database.retakeDao().observeItems(sessionId)
     fun observeChatMessages(questionId: Long): Flow<List<QuestionChatMessageEntity>> =
         database.questionChatDao().observeForQuestion(questionId)
+    fun observeWords(): Flow<List<WordEntryEntity>> = database.wordDao().observeAll()
 
     suspend fun getQuestion(id: Long): QuestionEntity? = database.questionDao().getById(id)
     suspend fun getRetakeSession(id: Long): RetakeSessionEntity? = database.retakeDao().getSession(id)
@@ -47,6 +49,54 @@ class QuestionRepository(
         database.questionChatDao().getCompletedForQuestion(questionId)
     suspend fun getPendingChatReplies(): List<QuestionChatMessageEntity> =
         database.questionChatDao().getPendingOrFailedReplies()
+
+    suspend fun addMarkedWords(
+        pagePaths: List<String>,
+        words: List<MarkedWordPayload>
+    ): Int = database.withTransaction {
+        var added = 0
+        words.forEach { item ->
+            val normalized = item.word.trim().lowercase().replace(Regex("^[^a-z]+|[^a-z'-]+$"), "")
+            if (normalized.isBlank()) return@forEach
+            val existing = database.wordDao().find(normalized)
+            if (existing != null) {
+                database.wordDao().update(
+                    existing.copy(
+                        word = item.word,
+                        lemma = item.lemma.ifBlank { existing.lemma },
+                        phonetic = item.phonetic.ifBlank { existing.phonetic },
+                        partOfSpeech = item.partOfSpeech.ifBlank { existing.partOfSpeech },
+                        meaningChinese = item.meaningChinese.ifBlank { existing.meaningChinese },
+                        contextSentence = item.contextSentence.ifBlank { existing.contextSentence },
+                        markType = item.markType.ifBlank { existing.markType },
+                        sourceImagePath = pagePaths.getOrNull(item.pageIndex) ?: existing.sourceImagePath,
+                        occurrences = existing.occurrences + 1,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+            } else {
+                database.wordDao().insert(
+                    WordEntryEntity(
+                        word = item.word,
+                        normalizedWord = normalized,
+                        lemma = item.lemma,
+                        phonetic = item.phonetic,
+                        partOfSpeech = item.partOfSpeech,
+                        meaningChinese = item.meaningChinese,
+                        contextSentence = item.contextSentence,
+                        markType = item.markType,
+                        sourceImagePath = pagePaths.getOrNull(item.pageIndex).orEmpty()
+                    )
+                )
+                added++
+            }
+        }
+        added
+    }
+
+    suspend fun deleteWord(id: Long) {
+        database.wordDao().deleteById(id)
+    }
 
     suspend fun addQuestion(draft: QuestionDraft, autoAnalyze: Boolean? = null): Long {
         val now = System.currentTimeMillis()

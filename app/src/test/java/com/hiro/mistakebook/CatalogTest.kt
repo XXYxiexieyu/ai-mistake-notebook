@@ -6,6 +6,7 @@ import com.hiro.mistakebook.data.FullPageScanPayload
 import com.hiro.mistakebook.data.KnowledgeMatcher
 import com.hiro.mistakebook.ai.InkColorAnalyzer
 import com.hiro.mistakebook.ai.AutoSplitPayload
+import com.hiro.mistakebook.ai.MarkedWordsPayload
 import com.hiro.mistakebook.data.AnalysisPayload
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.data.QuestionDraft
@@ -157,5 +158,31 @@ class CatalogTest {
         assertEquals("B", item.selectedAnswer)
         assertEquals("C", item.correctAnswer)
         assertTrue(item.wrongEvidence.contains("正确选项"))
+    }
+
+    @Test
+    fun markedEnglishWordLookupParses() {
+        val payload = Gson().fromJson(
+            """
+            {
+              "words": [{
+                "word": "resilience",
+                "lemma": "resilience",
+                "phonetic": "/rɪˈzɪliəns/",
+                "partOfSpeech": "n.",
+                "meaningChinese": "韧性；恢复力",
+                "contextSentence": "Resilience helps students recover from setbacks.",
+                "markType": "圈画",
+                "pageIndex": 0,
+                "confidence": 0.96
+              }]
+            }
+            """.trimIndent(),
+            MarkedWordsPayload::class.java
+        )
+        val word = payload.words.single()
+        assertEquals("resilience", word.word)
+        assertEquals("韧性；恢复力", word.meaningChinese)
+        assertEquals("圈画", word.markType)
     }
 }

@@ -1,16 +1,16 @@
 AI错题本 Android 预览版
 
-Version: 0.6.0-preview
+Version: 0.7.0-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.6.0-preview.apk
-Size: 62,231,186 bytes (59.35 MB)
-SHA-256: 1AEF594E89277E1639119D99454B127533FBFD6655990CA7855167ADDB4D1202
+APK: AI_Mistake_Notebook_0.7.0-preview.apk
+Size: 62,362,258 bytes (59.47 MB)
+SHA-256: 8EC4AE0EB3A93B386D93507F22548FFCF0B34D5AE010EC060D90FCBF2AD20618
 
 Verification:
 - assembleDebug: passed
-- testDebugUnitTest: 8 tests passed
+- testDebugUnitTest: 9 tests passed
 - lintDebug: 0 issues
 - APK v2 signature: verified
 - Knowledge catalog: 35 books, 259 units, 1156 sections
@@ -42,6 +42,9 @@ Verification:
 - Add-method chooser for single and batch import: implemented
 - Whole-page scanning nested under batch import: implemented
 - AI subject recognition selected by default: implemented
+- English reading marked-word lookup and local word book: implemented
+- Bottom navigation order: notebook, word book, add, summary, settings: implemented
+- Retake entry moved to the notebook page top-right: implemented
 
 Device verification:
 - Xiaomi 15: installed and main flows run normally.

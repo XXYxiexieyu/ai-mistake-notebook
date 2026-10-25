@@ -43,6 +43,22 @@ data class AutoSplitPayload(
     val questions: List<AutoSplitQuestionPayload> = emptyList()
 )
 
+data class MarkedWordPayload(
+    val word: String = "",
+    val lemma: String = "",
+    val phonetic: String = "",
+    val partOfSpeech: String = "",
+    val meaningChinese: String = "",
+    val contextSentence: String = "",
+    val markType: String = "",
+    val pageIndex: Int = 0,
+    val confidence: Double? = null
+)
+
+data class MarkedWordsPayload(
+    val words: List<MarkedWordPayload> = emptyList()
+)
+
 class DeepSeekClient(
     private val apiKeyProvider: () -> String,
     private val modelProvider: () -> String
@@ -288,6 +304,50 @@ class DeepSeekClient(
         val json = extractJson(raw)
         val payload = gson.fromJson(json, FullPageScanPayload::class.java)
         return payload to json
+    }
+
+    fun extractMarkedEnglishWords(
+        pageFiles: List<File>
+    ): Pair<List<MarkedWordPayload>, String> {
+        require(pageFiles.isNotEmpty()) { "缺少英语阅读页面" }
+        require(pageFiles.size <= 5) { "英语查词单次最多 5 页" }
+        val prompt = """
+            你是高中英语阅读查词助手。图片按英语阅读或完形填空的页面顺序提供。
+            只提取用户在图片中通过手写圈画或手写划线标记的英语单词。
+
+            规则：
+            - 只处理手写圈、椭圆圈、手写下划线等明显用户标记；
+            - 印刷体链接、固定加粗、印刷强调线不是用户标记，不要提取；
+            - 组合词和短语可以按一个词条返回；
+            - 给出适合中国高三学生的简明中文释义、词性和常见词形；
+            - contextSentence 必须是单词所在的英文原句；
+            - pageIndex 从 0 开始，对应图片顺序；
+            - 同一标记单词只返回一次；
+            - 最多返回 50 个单词。
+
+            只返回合法 JSON，不要 Markdown：
+            {
+              "words": [{
+                "word": "原文单词",
+                "lemma": "原形",
+                "phonetic": "音标，可留空",
+                "partOfSpeech": "词性",
+                "meaningChinese": "结合句意的中文释义",
+                "contextSentence": "所在英文原句",
+                "markType": "圈画|划线",
+                "pageIndex": 0,
+                "confidence": 0.0
+              }]
+            }
+        """.trimIndent()
+        val content = arrayListOf(textPart(prompt))
+        pageFiles.forEach { content += imagePart(it) }
+        val raw = request(content)
+        val json = extractJson(raw)
+        val payload = gson.fromJson(json, MarkedWordsPayload::class.java)
+        return payload.words
+            .filter { it.word.isNotBlank() && (it.confidence ?: 0.6) >= 0.3 }
+            .take(50) to json
     }
 
     fun answerQuestion(
