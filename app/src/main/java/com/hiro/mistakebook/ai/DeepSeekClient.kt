@@ -108,6 +108,7 @@ class DeepSeekClient(
             if (knownSubject == "数学") {
                 appendLine("若题型为解答题，mathTopic 必须从：${Subjects.mathTopics().joinToString("、")} 中选择。")
             }
+            appendLine(MATH_FORMAT_RULE)
             appendLine("若用户已填写书目/单元，请优先使用；无法确认时留空，不要编造教材位置。")
             appendLine("知识树：${question.book} / ${question.unit} / ${question.chapter}")
             appendLine("用户已填写知识点：${question.knowledgePointsJson}")
@@ -150,6 +151,7 @@ class DeepSeekClient(
             ${if (answerImage != null) "第二张图片是学生本次重考的手写作答。" else ""}
             判定规则：核心结论和关键过程都正确才为 CORRECT；部分关键步骤正确为 PARTIAL；主要思路错误为 WRONG。
             不因书写风格扣分，但必须指出缺失的条件、计算或论证。只返回合法 JSON：
+            $MATH_FORMAT_RULE
             {"grade":"CORRECT|PARTIAL|WRONG","feedback":"具体判分说明","confidence":0.0}
         """.trimIndent()
         val content = arrayListOf(textPart(prompt), imagePart(questionImage))
@@ -267,6 +269,7 @@ class DeepSeekClient(
             }}
             数学解答题必须额外从：${Subjects.mathTopics().joinToString("、")} 中选择 mathTopic。
             书目、单元无法确认时留空。
+            $MATH_FORMAT_RULE
 
             只返回合法 JSON，不要 Markdown，不要 JSON 之外的文字：
             {
@@ -381,6 +384,7 @@ class DeepSeekClient(
             - 优先解释用户追问的具体步骤、知识点或错因；
             - 如题目信息不足要明确指出，不要编造；
             - 可给必要公式和步骤，但保持回答直接；
+            - $MATH_FORMAT_RULE
             - 用户附加了图片时，结合图片中的追问内容；
             - 使用中文回答。
 
@@ -458,5 +462,7 @@ class DeepSeekClient(
 
     companion object {
         private val JSON = "application/json; charset=utf-8".toMediaType()
+        private const val MATH_FORMAT_RULE =
+            "数学内容优先使用标准 Unicode 符号，例如 x²、x³、√(x)、∠ABC、∥、⊥、≤、∈；如需 LaTeX，只使用 x^{2}、\\sqrt{x}、\\frac{a}{b}、\\angle ABC、\\vec{AB} 等简单写法，不要输出公式代码块。"
     }
 }

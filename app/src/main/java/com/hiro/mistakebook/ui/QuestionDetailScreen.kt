@@ -110,18 +110,18 @@ fun QuestionDetailScreen(
         ) {
             item {
                 DetailCard("题目") {
-                    Text(item.questionText.ifBlank { "尚未识别题目文字，请编辑补充。" })
+                    MathText(item.questionText.ifBlank { "尚未识别题目文字，请编辑补充。" })
                 }
             }
             item {
                 DetailCard("答案与解析") {
-                    Text(
+                    MathText(
                         item.answerText.ifBlank { "尚未生成答案。" },
                         fontWeight = FontWeight.SemiBold
                     )
                     if (item.explanation.isNotBlank()) {
                         Spacer(Modifier.height(8.dp))
-                        Text(item.explanation)
+                        MathText(item.explanation)
                     }
                 }
             }
@@ -174,7 +174,7 @@ fun QuestionDetailScreen(
                         if (item.evidenceType.isNotBlank()) {
                             Text("依据类型：${item.evidenceType}", color = Amber)
                         }
-                        Text(item.wrongEvidence.ifBlank { "未记录具体依据" })
+                        MathText(item.wrongEvidence.ifBlank { "未记录具体依据" })
                     }
                 }
             }
@@ -187,7 +187,7 @@ fun QuestionDetailScreen(
                 item {
                     DetailCard("原作答与错因") {
                         if (item.originalAnswerText.isNotBlank()) {
-                            Text("原始作答：${item.originalAnswerText}")
+                            MathText("原始作答：${item.originalAnswerText}")
                         }
                         if (item.originalAnswerImagePath.isNotBlank()) {
                             ImagePanel(
@@ -198,7 +198,7 @@ fun QuestionDetailScreen(
                         if (item.errorSubpart.isNotBlank()) {
                             Text("错误位置：${item.errorSubpart}", color = Amber)
                         }
-                        Text(
+                        MathText(
                             errorCauseLabel(item),
                             color = if (item.errorCauseState == ErrorCauseState.UNSUPPLEMENTED.name) {
                                 Muted

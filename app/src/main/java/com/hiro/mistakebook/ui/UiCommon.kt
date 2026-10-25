@@ -234,7 +234,7 @@ fun QuestionCard(
                     StatusPill(question.status)
                 }
                 Spacer(Modifier.height(5.dp))
-                Text(
+                MathText(
                     question.questionText.ifBlank {
                         listOf(question.book, question.unit).filter { it.isNotBlank() }
                             .joinToString(" / ")

@@ -116,6 +116,7 @@ fun QuestionEditorScreen(
     var pendingDraft by remember { mutableStateOf<QuestionDraft?>(null) }
     var saving by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf(QuestionStatus.UNREVIEWED) }
+    var mathInputTarget by remember { mutableStateOf<MathInputTarget?>(null) }
 
     LaunchedEffect(questionId) {
         if (questionId != null) {
@@ -346,6 +347,17 @@ fun QuestionEditorScreen(
         )
     }
 
+    fun insertMathSymbol(value: String) {
+        when (mathInputTarget) {
+            MathInputTarget.QUESTION -> questionText += value
+            MathInputTarget.ANSWER -> answerText += value
+            MathInputTarget.EXPLANATION -> explanation += value
+            MathInputTarget.ORIGINAL_ANSWER -> originalAnswerText += value
+            MathInputTarget.ERROR_CAUSE -> errorCause += value
+            null -> Unit
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -492,26 +504,46 @@ fun QuestionEditorScreen(
 
             item {
                 EditorSection("题目与解答") {
+                    Text(
+                        "数学公式可粘贴 LaTeX 或使用右侧 ∑ 符号库；显示时会自动转换为 √、²、³、∠、∥ 等标准符号。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     OutlinedTextField(
                         value = questionText,
                         onValueChange = { questionText = it },
                         label = { Text("题目文字（可由 AI 自动填写）") },
                         modifier = Modifier.fillMaxWidth(),
-                        minLines = 3
+                        minLines = 3,
+                        trailingIcon = {
+                            MathSymbolTrailingButton {
+                                mathInputTarget = MathInputTarget.QUESTION
+                            }
+                        }
                     )
                     OutlinedTextField(
                         value = answerText,
                         onValueChange = { answerText = it },
                         label = { Text("答案") },
                         modifier = Modifier.fillMaxWidth(),
-                        minLines = 2
+                        minLines = 2,
+                        trailingIcon = {
+                            MathSymbolTrailingButton {
+                                mathInputTarget = MathInputTarget.ANSWER
+                            }
+                        }
                     )
                     OutlinedTextField(
                         value = explanation,
                         onValueChange = { explanation = it },
                         label = { Text("解题过程与解析") },
                         modifier = Modifier.fillMaxWidth(),
-                        minLines = 4
+                        minLines = 4,
+                        trailingIcon = {
+                            MathSymbolTrailingButton {
+                                mathInputTarget = MathInputTarget.EXPLANATION
+                            }
+                        }
                     )
                 }
             }
@@ -523,7 +555,12 @@ fun QuestionEditorScreen(
                         onValueChange = { originalAnswerText = it },
                         label = { Text("原错误答案或关键步骤") },
                         modifier = Modifier.fillMaxWidth(),
-                        minLines = 2
+                        minLines = 2,
+                        trailingIcon = {
+                            MathSymbolTrailingButton {
+                                mathInputTarget = MathInputTarget.ORIGINAL_ANSWER
+                            }
+                        }
                     )
                     OutlinedTextField(
                         value = errorSubpart,
@@ -590,7 +627,12 @@ fun QuestionEditorScreen(
                             onValueChange = { errorCause = it },
                             label = { Text("错因（AI 识别后自动填入）") },
                             modifier = Modifier.fillMaxWidth(),
-                            minLines = 2
+                            minLines = 2,
+                            trailingIcon = {
+                                MathSymbolTrailingButton {
+                                    mathInputTarget = MathInputTarget.ERROR_CAUSE
+                                }
+                            }
                         )
                     }
                 }
@@ -699,6 +741,32 @@ fun QuestionEditorScreen(
                 }
             }
         }
+    }
+
+    mathInputTarget?.let {
+        MathSymbolPickerDialog(
+            onDismiss = { mathInputTarget = null },
+            onInsert = { symbol -> insertMathSymbol(symbol) }
+        )
+    }
+}
+
+private enum class MathInputTarget {
+    QUESTION,
+    ANSWER,
+    EXPLANATION,
+    ORIGINAL_ANSWER,
+    ERROR_CAUSE
+}
+
+@Composable
+private fun MathSymbolTrailingButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Text(
+            "∑",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 

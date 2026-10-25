@@ -387,7 +387,7 @@ fun BatchImportScreen(
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                     if (crop.selectedAnswer.isNotBlank() || crop.correctAnswer.isNotBlank()) {
-                                        Text(
+                                        MathText(
                                             "作答 ${crop.selectedAnswer.ifBlank { "未识别" }} / 正确答案 ${crop.correctAnswer.ifBlank { "未识别" }}",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = if (
@@ -402,7 +402,7 @@ fun BatchImportScreen(
                                         )
                                     }
                                     if (crop.wrongEvidence.isNotBlank()) {
-                                        Text(
+                                        MathText(
                                             crop.wrongEvidence,
                                             style = MaterialTheme.typography.labelSmall,
                                             color = Muted

@@ -11,6 +11,9 @@ import com.hiro.mistakebook.data.AnalysisPayload
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.Subjects
+import com.hiro.mistakebook.math.MathSymbolDatabase
+import com.hiro.mistakebook.math.MathTextNormalizer
+import com.hiro.mistakebook.math.createNormalizer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,6 +24,9 @@ class CatalogTest {
     private val catalog: KnowledgeTreeData by lazy {
         val file = File("src/main/assets/knowledge_tree.json")
         Gson().fromJson(file.readText(Charsets.UTF_8), KnowledgeTreeData::class.java)
+    }
+    private val mathSymbols by lazy {
+        MathSymbolDatabase.parse(File("src/main/assets/math_symbols.json").readText(Charsets.UTF_8))
     }
 
     @Test
@@ -184,5 +190,41 @@ class CatalogTest {
         assertEquals("resilience", word.word)
         assertEquals("韧性；恢复力", word.meaningChinese)
         assertEquals("圈画", word.markType)
+    }
+
+    @Test
+    fun mathSymbolDatabaseCoversGaokaoCategories() {
+        assertTrue(mathSymbols.categories.size >= 8)
+        assertTrue(mathSymbols.entries.size >= 220)
+        val symbols = mathSymbols.entries.map { it.symbol }.toSet()
+        listOf("²", "³", "√", "∠", "△", "⊥", "∥", "∈", "∉", "⊆", "π", "∞", "∑", "∫", "Φ").forEach {
+            assertTrue("缺少数学符号：$it", it in symbols)
+        }
+        assertTrue(mathSymbols.latexSymbolMap.containsKey("\\angle"))
+        assertTrue(mathSymbols.latexSymbolMap.containsKey("\\mathbb{R}"))
+    }
+
+    @Test
+    fun latexAndPowerNotationBecomeReadableMathSymbols() {
+        val normalizer = mathSymbols.createNormalizer()
+        assertEquals("x²+y³", normalizer.normalize("x^2+y^3"))
+        assertEquals("x¹⁰", normalizer.normalize("x^10"))
+        assertEquals("x⁻¹", normalizer.normalize("x^-1"))
+        assertEquals("xⁿ⁺¹", normalizer.normalize("x^{n+1}"))
+        assertEquals("aₙ+aₙ₊₁", normalizer.normalize("a_n+a_{n+1}"))
+        assertEquals("∠ABC=90°", normalizer.normalize("\\angle ABC=90^\\circ"))
+        assertEquals("√(x²+y²)", normalizer.normalize("\\sqrt{x^2+y^2}"))
+        assertEquals("(a+b)⁄(2)", normalizer.normalize("\\frac{a+b}{2}"))
+        assertEquals("AB⃗", normalizer.normalize("\\vec{AB}"))
+        assertEquals("x∈ℝ", normalizer.normalize("x\\in\\mathbb{R}"))
+        assertEquals("{x, x≥0；-x, x<0}", normalizer.normalize("\\begin{cases}x,&x\\ge0\\\\-x,&x<0\\end{cases}"))
+        assertEquals("答案", normalizer.normalize("\\boxed{答案}"))
+    }
+
+    @Test
+    fun normalizerLeavesOrdinaryTextAndUnicodeIntact() {
+        val normalizer = MathTextNormalizer()
+        assertEquals("函数 y=x² 的定义域是 ℝ。", normalizer.normalize("函数 y=x² 的定义域是 ℝ。"))
+        assertEquals("答案为 B。", normalizer.normalize("答案为 B。"))
     }
 }

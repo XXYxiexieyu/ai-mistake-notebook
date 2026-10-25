@@ -137,21 +137,21 @@ private fun ScanReviewCard(
                 Text(question.evidenceType.ifBlank { "AI 判定错题" }, color = Amber)
             }
             question.questionText.takeIf { it.isNotBlank() }?.let {
-                Text(it, style = MaterialTheme.typography.bodyMedium, maxLines = 4)
+                MathText(it, style = MaterialTheme.typography.bodyMedium, maxLines = 4)
             }
             if (question.originalAnswerText.isNotBlank() || question.answerText.isNotBlank()) {
-                Text(
+                MathText(
                     "作答：${question.originalAnswerText.ifBlank { "未识别" }}",
                     style = MaterialTheme.typography.bodySmall
                 )
-                Text(
+                MathText(
                     "正确答案：${question.answerText.ifBlank { "未识别" }}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Red
                 )
             }
             if (question.wrongEvidence.isNotBlank()) {
-                Text(
+                MathText(
                     "判错依据：${question.wrongEvidence}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Muted

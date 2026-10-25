@@ -1,16 +1,16 @@
 AI错题本 Android 预览版
 
-Version: 0.7.0-preview
+Version: 0.7.1-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.7.0-preview.apk
-Size: 62,362,258 bytes (59.47 MB)
-SHA-256: 8EC4AE0EB3A93B386D93507F22548FFCF0B34D5AE010EC060D90FCBF2AD20618
+APK: AI_Mistake_Notebook_0.7.1-preview.apk
+Size: 62,508,713 bytes (59.61 MB)
+SHA-256: 3EB7991673704E8620F2FFB572A48FDE23BE881A08135FD54678C30272F0A09D
 
 Verification:
 - assembleDebug: passed
-- testDebugUnitTest: 9 tests passed
+- testDebugUnitTest: 12 tests passed
 - lintDebug: 0 issues
 - APK v2 signature: verified
 - Knowledge catalog: 35 books, 259 units, 1156 sections
@@ -45,10 +45,14 @@ Verification:
 - English reading marked-word lookup and local word book: implemented
 - Bottom navigation order: notebook, word book, add, summary, settings: implemented
 - Retake entry moved to the notebook page top-right: implemented
+- Offline math symbol database: 8 categories, 288 entries: implemented
+- Searchable math symbol picker in question, answer, explanation, original-answer and error-cause fields: implemented
+- LaTeX, superscript and subscript normalization across question, answer, chat, retake and review views: implemented
+- Math symbol asset bundled in the APK and available offline: verified
 
 Device verification:
-- Xiaomi 15: installed and main flows run normally.
-- Xiaomi 13: installed and main flows run normally.
+- Version 0.7.0: Xiaomi 15 and Xiaomi 13 installed and main flows run normally.
+- Version 0.7.1: build, unit tests and lint passed; physical-device regression pending.
 - Both devices use non-rooted production system builds.
 
 Not yet verified:

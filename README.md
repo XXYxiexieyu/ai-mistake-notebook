@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.7.0-preview`。已在小米 15、小米 13 上分别完成安装和主要流程测试，当前运行正常。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.7.1-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；本轮数学符号功能已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -57,6 +57,7 @@
 | 跨页识别 | 单次最多 10 页，可按页排序；跨页大题合并为一个错题并纵向拼接题目图 |
 | AI 学科识别 | 批量导入和整页扫描默认使用“AI 自动识别”学科，也可手动指定 |
 | AI 分析 | 题干、答案、解析、题型、知识点、错因、难度和置信度 |
+| 数学符号 | 8 类、288 个离线符号与公式条目，支持可搜索 `∑` 符号库和 LaTeX 自动转换 |
 | 原作答证据 | 错误答案、草稿照片、具体小问或错误步骤 |
 | 教材知识网 | 35 册教材、259 个单元、1156 个章节条目 |
 | 知识网映射 | 将 AI 知识点对应到书目、单元和章节，支持模糊匹配标记 |
@@ -106,14 +107,17 @@ flowchart TD
 
 ## 数据设计
 
-Room 数据库当前为 v3。核心实体：
+Room 数据库当前为 v8。核心实体：
 
 - `questions`：题目、答案、解析、错因、批改证据、知识网映射和复习状态。
 - `retake_sessions` / `retake_items`：重考试卷、答案、计时、AI 判定与人工结果。
 - `page_scans`：整页自动识别后台任务。
 - `question_chat_messages`：针对单道题的本地问答历史。
+- `word_entries`：英语阅读查词生成的本地单词条目和上下文。
 
 图片以内部文件保存，数据库只保存相对路径。数据库升级使用显式迁移，不通过 destructive migration 清空数据。
+
+数学符号库以 `math_symbols.json` 随 APK 内置。显示层会把 AI 返回的常见 LaTeX 和 `^`/`_` 写法转换为 Unicode，不改写旧数据；录入页可直接搜索并插入符号，断网状态下同样可用。
 
 ### 知识网来源
 
@@ -139,6 +143,7 @@ app/src/main/java/com/hiro/mistakebook/
 └─ MainViewModel.kt
 
 app/src/main/assets/knowledge_tree.json
+app/src/main/assets/math_symbols.json
 app/src/main/res/                   Android 资源
 app/src/test/                       单元测试
 docs/                               需求与架构文档
@@ -206,6 +211,7 @@ python tools/fetch_catalog.py
 | `0.5.0-preview` | 常驻处理进度球、错题添加历史和当前导入进度页，新增整页候选错题审查 |
 | `0.6.0-preview` | 加号移至底部导航正中，新增添加方式页；整页扫描并入批量导入；默认 AI 识别学科 |
 | `0.7.0-preview` | 新增英语阅读查词与单词本；底部导航按指定顺序排列；重考移至错题本右上角 |
+| `0.7.1-preview` | 新增 288 条离线数学符号库、LaTeX 自动转换和统一数学富文本显示 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -235,7 +241,7 @@ python tools/fetch_catalog.py
 ## 构建验证
 
 - `assembleDebug`：通过。
-- `testDebugUnitTest`：9 项通过，包括蓝笔颜色检测、AI 默认值、错题审查和英语单词解析。
+- `testDebugUnitTest`：12 项通过，包括蓝笔颜色检测、AI 默认值、错题审查、英语单词解析和数学符号转换。
 - `lintDebug`：0 个问题。
 - GitHub Actions：通过。
 - APK v2 签名：通过。

@@ -146,7 +146,7 @@ fun QuestionChatScreen(
                 ) {
                     ImagePanel(item.imagePath, Modifier.size(72.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
+                        MathText(
                             item.questionText.ifBlank { "${item.book} / ${item.unit}" },
                             maxLines = 2,
                             style = MaterialTheme.typography.bodyMedium
@@ -291,7 +291,7 @@ private fun ChatBubble(
                         )
                         OutlinedButton(onClick = onRetry) { Text("重试") }
                     }
-                    else -> Text(message.content)
+                    else -> MathText(message.content)
                 }
             }
         }

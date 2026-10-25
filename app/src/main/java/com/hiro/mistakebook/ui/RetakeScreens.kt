@@ -334,7 +334,7 @@ private fun SelectQuestionRow(
                     color = Green,
                     style = MaterialTheme.typography.labelMedium
                 )
-                Text(
+                MathText(
                     question.questionText.ifBlank { "${question.book} / ${question.unit}" },
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -468,7 +468,7 @@ fun RetakeRunScreen(
                 ImagePanel(question.imagePath, Modifier.fillMaxWidth().height(280.dp))
             }
             item {
-                Text(
+                MathText(
                     question.questionText.ifBlank { "以题目图片为准" },
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -523,7 +523,7 @@ fun RetakeRunScreen(
                     ) {
                         Column(Modifier.padding(14.dp)) {
                             Text("AI 判分：${runCatching { RetakeGrade.valueOf(item.aiGrade).label }.getOrDefault(item.aiGrade)}")
-                            Text(item.aiFeedback, style = MaterialTheme.typography.bodySmall)
+                            MathText(item.aiFeedback, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }

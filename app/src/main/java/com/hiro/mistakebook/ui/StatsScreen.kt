@@ -324,7 +324,7 @@ private fun KnowledgePointList(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            MathText(
                 "${index + 1}. ${item.name}",
                 modifier = Modifier.weight(1f),
                 maxLines = if (compact) 1 else 2,
