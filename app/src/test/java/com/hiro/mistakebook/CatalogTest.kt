@@ -45,6 +45,7 @@ class CatalogTest {
 
     @Test
     fun subjectTypesAreOfflineConstants() {
+        assertEquals("AI 自动识别", Subjects.AUTO)
         assertFalse(Subjects.types("数学").isEmpty())
         assertEquals(listOf("选择题", "填空题", "解答题"), Subjects.questionTypes("数学"))
         assertTrue(Subjects.mathTopics().contains("导数与函数"))
@@ -62,6 +63,7 @@ class CatalogTest {
                   {"pageIndex": 1, "box": [80, 40, 920, 420]}
                 ],
                 "isWrong": true,
+                "subject": "数学",
                 "evidenceType": "红笔订正",
                 "wrongEvidence": "答案右侧有红笔叉号，并在下方补写正确步骤",
                 "questionText": "测试题",
@@ -137,6 +139,7 @@ class CatalogTest {
               "questions": [{
                 "box": [80, 200, 920, 620],
                 "isWrong": true,
+                "subject": "数学",
                 "evidenceType": "选项错误",
                 "wrongEvidence": "作答 B，但正确选项为 C",
                 "selectedAnswer": "B",
@@ -150,6 +153,7 @@ class CatalogTest {
         )
         val item = payload.questions.single()
         assertTrue(item.isWrong)
+        assertEquals("数学", item.subject)
         assertEquals("B", item.selectedAnswer)
         assertEquals("C", item.correctAnswer)
         assertTrue(item.wrongEvidence.contains("正确选项"))

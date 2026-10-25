@@ -1,12 +1,12 @@
 AI错题本 Android 预览版
 
-Version: 0.5.0-preview
+Version: 0.6.0-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.5.0-preview.apk
-Size: 62,198,418 bytes (59.32 MB)
-SHA-256: 5D3B482A2D34632820874239F7E33D89F33CF69086F50807A054C9B8FE1AFAEF
+APK: AI_Mistake_Notebook_0.6.0-preview.apk
+Size: 62,231,186 bytes (59.35 MB)
+SHA-256: 1AEF594E89277E1639119D99454B127533FBFD6655990CA7855167ADDB4D1202
 
 Verification:
 - assembleDebug: passed
@@ -38,6 +38,10 @@ Verification:
 - Processing history and current import progress page: implemented
 - Mandatory review of AI-detected wrong-question candidates: implemented
 - Question detail reordered with clickable knowledge-point directories: implemented
+- Add button centered in the bottom navigation bar: implemented
+- Add-method chooser for single and batch import: implemented
+- Whole-page scanning nested under batch import: implemented
+- AI subject recognition selected by default: implemented
 
 Device verification:
 - Xiaomi 15: installed and main flows run normally.

@@ -31,6 +31,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -60,6 +61,7 @@ import com.hiro.mistakebook.MainViewModel
 import com.hiro.mistakebook.data.AutoSplitCropCandidate
 import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.ErrorCauseState
+import com.hiro.mistakebook.data.Subjects
 import com.hiro.mistakebook.ui.theme.Muted
 import com.hiro.mistakebook.ui.theme.Red
 import kotlinx.coroutines.launch
@@ -71,18 +73,21 @@ private data class BatchSource(
     val aiSplitDone: Boolean = false
 )
 
+private const val AI_SUBJECT = Subjects.AUTO
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BatchImportScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit,
+    onOpenPageScan: () -> Unit,
     onFinished: () -> Unit
 ) {
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val sources = remember { mutableStateListOf<BatchSource>() }
-    var subject by remember { mutableStateOf("数学") }
+    var subject by remember { mutableStateOf(AI_SUBJECT) }
     var captureTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
     var autoAnalyze by remember { mutableStateOf(true) }
     var cropSourceIndex by remember { mutableStateOf<Int?>(null) }
@@ -141,7 +146,17 @@ fun BatchImportScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text("导入设置", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        SubjectChips(selected = subject, includeAll = false, onSelected = { subject = it })
+                        RecognitionSubjectChips(
+                            selected = subject,
+                            onSelected = { subject = it }
+                        )
+                        OutlinedButton(
+                            onClick = onOpenPageScan,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Outlined.AutoAwesome, null)
+                            Text(" 整页扫描 / 跨页大题识别")
+                        }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -460,7 +475,11 @@ fun BatchImportScreen(
                         val drafts = sources.flatMap { source ->
                             source.crops.map { crop ->
                                 QuestionDraft(
-                                    subject = subject,
+                                    subject = when {
+                                        subject != AI_SUBJECT -> subject
+                                        crop.subject in Subjects.all -> crop.subject
+                                        else -> "未识别"
+                                    },
                                     errorCauseState = ErrorCauseState.AI_ACCEPTED,
                                     questionImage = crop.imagePath,
                                     sourceImage = source.sourcePath,
@@ -513,6 +532,7 @@ fun BatchImportScreen(
                                     imagePath = crop,
                                     sourcePath = source.sourcePath,
                                     isWrong = true,
+                                    subject = if (subject == AI_SUBJECT) "" else subject,
                                     evidenceType = "手动框选",
                                     wrongEvidence = "用户手动指定为错题",
                                     selectedAnswer = "",
@@ -528,3 +548,4 @@ fun BatchImportScreen(
         }
     }
 }
+

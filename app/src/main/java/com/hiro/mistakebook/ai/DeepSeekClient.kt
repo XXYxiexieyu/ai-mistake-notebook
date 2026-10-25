@@ -30,6 +30,7 @@ data class NormalizedBox(
 data class AutoSplitQuestionPayload(
     val box: List<Float> = emptyList(),
     val isWrong: Boolean = false,
+    val subject: String = "",
     val evidenceType: String = "",
     val wrongEvidence: String = "",
     val selectedAnswer: String = "",
@@ -78,11 +79,17 @@ class DeepSeekClient(
             }
         """.trimIndent()
 
+        val knownSubject = question.subject.takeIf { it in Subjects.all }
         val prompt = buildString {
             appendLine("你是高三北京高考错题分析助手。请识别图片中的完整题目并独立求解。")
-            appendLine("科目提示：${question.subject}。")
-            appendLine("该科目允许的题型：${Subjects.questionTypes(question.subject).joinToString("、")}。")
-            if (question.subject == "数学") {
+            appendLine("科目提示：${knownSubject ?: "自动识别"}。")
+            if (knownSubject == null) {
+                appendLine("请先识别科目，并在 subject 中只填写：${Subjects.all.joinToString("、")}。")
+                appendLine("题型根据识别后的科目选择，不要混用其他科目的题型。")
+            } else {
+                appendLine("该科目允许的题型：${Subjects.questionTypes(knownSubject).joinToString("、")}。")
+            }
+            if (knownSubject == "数学") {
                 appendLine("若题型为解答题，mathTopic 必须从：${Subjects.mathTopics().joinToString("、")} 中选择。")
             }
             appendLine("若用户已填写书目/单元，请优先使用；无法确认时留空，不要编造教材位置。")
@@ -147,7 +154,8 @@ class DeepSeekClient(
         subjectHint: String
     ): Pair<List<AutoSplitQuestionPayload>, String> {
         val prompt = """
-            你是高三北京高考错题审查助手。科目：$subjectHint。
+            你是高三北京高考错题审查助手。科目提示：${subjectHint.ifBlank { "自动识别" }}。
+            如果科目提示为“自动识别”或“AI 自动识别”，必须判断每题科目并填入 subject。
             识别图片中确实做错的独立题目，并返回足够精确的裁剪区域。
 
             判为错题至少需要以下一种证据：
@@ -169,6 +177,7 @@ class DeepSeekClient(
               "questions": [{
                 "box": [左, 上, 右, 下],
                 "isWrong": true,
+                "subject": "语文|数学|英语|物理|化学|生物",
                 "evidenceType": "选项错误|答案解析错误|蓝色笔订正|红笔订正|扣分标记|其他颜色批注",
                 "wrongEvidence": "具体判错依据",
                 "selectedAnswer": "选择题实际选项；非选择题留空",
@@ -207,6 +216,7 @@ class DeepSeekClient(
     ): Pair<FullPageScanPayload, String> {
         require(originalPages.isNotEmpty()) { "缺少页面图片" }
         require(originalPages.size <= 10) { "单次最多上传 10 页" }
+        val knownSubject = subjectHint.takeIf { it in Subjects.all }
         val typeList = Subjects.questionTypes(subjectHint).joinToString("、")
         val prompt = """
             你是高三北京高考跨页错题识别助手。本次共有 ${originalPages.size} 页，图片顺序与页面顺序一致。
@@ -233,8 +243,12 @@ class DeepSeekClient(
             - 最多返回 10 道错题，坐标使用 0 到 1000 的归一化值，原点在左上角；
             - wrongEvidence 必须描述实际看到的批改位置和颜色，不能编造。
 
-            科目提示：$subjectHint。
-            题型必须从：$typeList 中选择。
+            科目提示：${knownSubject ?: "自动识别"}。
+            ${if (knownSubject == null) {
+                "请判断每题科目并填入 subject；题型必须符合对应科目。"
+            } else {
+                "题型必须从：$typeList 中选择。"
+            }}
             数学解答题必须额外从：${Subjects.mathTopics().joinToString("、")} 中选择 mathTopic。
             书目、单元无法确认时留空。
 

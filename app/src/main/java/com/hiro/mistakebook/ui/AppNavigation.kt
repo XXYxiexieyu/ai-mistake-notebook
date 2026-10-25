@@ -22,6 +22,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -44,12 +46,14 @@ import com.hiro.mistakebook.MainViewModel
 private data class BottomItem(
     val route: String,
     val label: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val isAdd: Boolean = false
 )
 
 private val bottomItems = listOf(
     BottomItem("home", "错题本", Icons.Outlined.Home),
     BottomItem("stats", "总结", Icons.Outlined.Assessment),
+    BottomItem("add-method", "添加", Icons.Outlined.Add, isAdd = true),
     BottomItem("retake", "重考", Icons.Outlined.Refresh),
     BottomItem("settings", "设置", Icons.Outlined.Settings)
 )
@@ -82,13 +86,18 @@ fun MistakeBookApp(viewModel: MainViewModel) {
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        floatingActionButtonPosition = androidx.compose.material3.FabPosition.Center,
         bottomBar = {
             if (showBottom) {
                 NavigationBar {
                     bottomItems.forEach { item ->
-                        val selected = backStack?.destination?.hierarchy?.any {
-                            it.route == item.route
-                        } == true
+                        val selected = if (item.isAdd) {
+                            route in setOf("add-method", "add", "batch", "page-scan")
+                        } else {
+                            backStack?.destination?.hierarchy?.any {
+                                it.route == item.route
+                            } == true
+                        }
                         NavigationBarItem(
                             selected = selected,
                             onClick = {
@@ -100,27 +109,45 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                                     restoreState = true
                                 }
                             },
-                            icon = { Icon(item.icon, contentDescription = item.label) },
-                            label = { Text(item.label) }
+                            icon = {
+                                if (item.isAdd) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                                        shadowElevation = 5.dp,
+                                        modifier = Modifier.size(56.dp)
+                                    ) {
+                                        androidx.compose.foundation.layout.Box(
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                item.icon,
+                                                contentDescription = item.label,
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Icon(item.icon, contentDescription = item.label)
+                                }
+                            },
+                            label = if (item.isAdd) null else {
+                                { Text(item.label) }
+                            }
                         )
                     }
                 }
             }
         },
         floatingActionButton = {
-            if (route == "home") {
-                Column(horizontalAlignment = Alignment.End) {
+            if (showBottom) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     ProcessingBubble(
                         completed = completedCount,
                         remaining = remainingCount,
                         onClick = { navController.navigate("processing") }
                     )
-                    Spacer(Modifier.height(10.dp))
-                    FloatingActionButton(
-                        onClick = { navController.navigate("add") }
-                    ) {
-                        Icon(Icons.Outlined.Add, contentDescription = "添加错题")
-                    }
                 }
             }
         }
@@ -134,10 +161,13 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                 HomeScreen(
                     viewModel = viewModel,
                     onOpenQuestion = { navController.navigate("question/$it") },
-                    onAdd = { navController.navigate("add") },
-                    onBatch = { navController.navigate("batch") },
-                    onScan = { navController.navigate("page-scan") },
                     onOpenRetake = { navController.navigate("retake") }
+                )
+            }
+            composable("add-method") {
+                AddMethodScreen(
+                    onSingleImport = { navController.navigate("add") },
+                    onBatchImport = { navController.navigate("batch") }
                 )
             }
             composable("stats") {
@@ -201,6 +231,7 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                 BatchImportScreen(
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
+                    onOpenPageScan = { navController.navigate("page-scan") },
                     onFinished = {
                         navController.navigate("home") {
                             popUpTo("home") { inclusive = true }
@@ -316,6 +347,7 @@ private fun ProcessingBubble(
 ) {
     FloatingActionButton(
         onClick = onClick,
+        shape = CircleShape,
         containerColor = MaterialTheme.colorScheme.secondaryContainer,
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
     ) {

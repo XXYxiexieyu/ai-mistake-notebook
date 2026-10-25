@@ -61,9 +61,6 @@ private enum class GroupMode(val label: String) {
 fun HomeScreen(
     viewModel: MainViewModel,
     onOpenQuestion: (Long) -> Unit,
-    onAdd: () -> Unit,
-    onBatch: () -> Unit,
-    onScan: () -> Unit,
     onOpenRetake: () -> Unit
 ) {
     val questions by viewModel.questions.collectAsStateWithLifecycle()
@@ -154,28 +151,16 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "高三错题本",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "本地分类随时可用，AI 分析联网后自动继续",
-                        color = Muted,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    OutlinedButton(onClick = onScan) { Text("整页扫描") }
-                    OutlinedButton(onClick = onBatch) { Text("批量导入") }
-                }
-            }
+            Text(
+                "高三错题本",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                "本地分类随时可用，AI 分析联网后自动继续",
+                color = Muted,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         if (!apiConfigured) {
@@ -345,7 +330,7 @@ fun HomeScreen(
 
         if (filtered.isEmpty()) {
             item {
-                EmptyNotebook(onAdd)
+                EmptyNotebook()
             }
         } else {
             groups.forEach { (groupName, groupItems) ->
@@ -500,7 +485,7 @@ private fun OverviewNumber(label: String, value: Int, modifier: Modifier = Modif
 }
 
 @Composable
-private fun EmptyNotebook(onAdd: () -> Unit) {
+private fun EmptyNotebook() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -516,8 +501,12 @@ private fun EmptyNotebook(onAdd: () -> Unit) {
                 color = Muted,
                 style = MaterialTheme.typography.bodySmall
             )
-            Spacer(Modifier.height(12.dp))
-            Button(onClick = onAdd) { Text("添加第一道错题") }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "点击底部中央的加号开始添加。",
+                style = MaterialTheme.typography.bodySmall,
+                color = Green
+            )
         }
     }
 }

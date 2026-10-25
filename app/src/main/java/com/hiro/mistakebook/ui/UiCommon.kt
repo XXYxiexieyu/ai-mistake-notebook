@@ -46,6 +46,7 @@ import com.hiro.mistakebook.data.ImageStore
 import com.hiro.mistakebook.data.KnowledgeNodeRef
 import com.hiro.mistakebook.data.QuestionEntity
 import com.hiro.mistakebook.data.QuestionStatus
+import com.hiro.mistakebook.data.Subjects
 import com.hiro.mistakebook.ui.theme.Amber
 import com.hiro.mistakebook.ui.theme.Green
 import com.hiro.mistakebook.ui.theme.Muted
@@ -166,6 +167,27 @@ fun SubjectChips(
     ) {
         items(subjects.size) { index ->
             val subject = subjects[index]
+            FilterChip(
+                selected = selected == subject,
+                onClick = { onSelected(subject) },
+                label = { Text(subject) }
+            )
+        }
+    }
+}
+
+@Composable
+fun RecognitionSubjectChips(
+    selected: String,
+    onSelected: (String) -> Unit
+) {
+    val options = listOf(Subjects.AUTO) + Subjects.all
+    androidx.compose.foundation.lazy.LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 2.dp)
+    ) {
+        items(options.size) { index ->
+            val subject = options[index]
             FilterChip(
                 selected = selected == subject,
                 onClick = { onSelected(subject) },

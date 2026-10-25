@@ -5,6 +5,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 object Subjects {
+    const val AUTO = "AI 自动识别"
     val all = listOf("语文", "数学", "英语", "物理", "化学", "生物")
 
     val typesBySubject = mapOf(
@@ -300,6 +301,7 @@ data class AutoSplitCropCandidate(
     val isWrong: Boolean,
     val evidenceType: String,
     val wrongEvidence: String,
+    val subject: String,
     val selectedAnswer: String,
     val correctAnswer: String,
     val questionText: String,

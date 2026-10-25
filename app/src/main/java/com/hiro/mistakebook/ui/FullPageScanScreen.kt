@@ -32,6 +32,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -70,6 +71,7 @@ import com.hiro.mistakebook.data.AnalysisState
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.data.ImageStore
 import com.hiro.mistakebook.data.PageScanEntity
+import com.hiro.mistakebook.data.Subjects
 import com.hiro.mistakebook.ui.theme.Green
 import com.hiro.mistakebook.ui.theme.Muted
 import com.hiro.mistakebook.ui.theme.Red
@@ -95,7 +97,7 @@ fun FullPageScanScreen(
             restore = { it.toMutableStateList() }
         )
     ) { mutableStateListOf() }
-    var subject by rememberSaveable { mutableStateOf("数学") }
+    var subject by rememberSaveable { mutableStateOf(Subjects.AUTO) }
     var captureTime by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
     var scanId by rememberSaveable { mutableStateOf<Long?>(null) }
     var importing by remember { mutableStateOf(false) }
@@ -311,9 +313,8 @@ fun FullPageScanScreen(
                         verticalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
                         Text("识别设置", fontWeight = FontWeight.SemiBold)
-                        SubjectChips(
+                        RecognitionSubjectChips(
                             selected = subject,
-                            includeAll = false,
                             onSelected = {
                                 subject = it
                                 scanId = null

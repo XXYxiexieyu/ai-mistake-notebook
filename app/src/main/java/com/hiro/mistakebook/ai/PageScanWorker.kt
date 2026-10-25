@@ -13,6 +13,7 @@ import com.hiro.mistakebook.data.AnalysisState
 import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.ScannedQuestionPayload
 import com.hiro.mistakebook.data.ScannedQuestionSegment
+import com.hiro.mistakebook.data.Subjects
 import java.io.File
 import java.io.IOException
 import kotlin.math.max
@@ -154,15 +155,20 @@ class PageScanWorker(
                     "page_wrong"
                 ) ?: return@forEachIndexed
                 repository.addScannedQuestion(
-                    draft = QuestionDraft(
-                        subject = scan.subject,
-                        questionImage = imagePath,
-                        sourceImage = pagePaths.first(),
-                        sourceImages = pagePaths,
-                        captureTime = scan.captureTime,
-                        wrongEvidence = item.payload.wrongEvidence,
-                        evidenceType = item.payload.evidenceType
-                    ),
+                    draft = run {
+                        val subject = item.payload.subject.takeIf { it in Subjects.all }
+                            ?: scan.subject.takeIf { it in Subjects.all }
+                            ?: "未识别"
+                        QuestionDraft(
+                            subject = subject,
+                            questionImage = imagePath,
+                            sourceImage = pagePaths.first(),
+                            sourceImages = pagePaths,
+                            captureTime = scan.captureTime,
+                            wrongEvidence = item.payload.wrongEvidence,
+                            evidenceType = item.payload.evidenceType
+                        )
+                    },
                     payload = item.payload,
                     rawJson = rawJson,
                     model = repository.settings.model,

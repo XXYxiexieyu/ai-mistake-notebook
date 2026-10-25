@@ -148,6 +148,9 @@ class QuestionRepository(
             ErrorCauseState.AI_ACCEPTED.name
         }
         val finalQuestionText = current.questionText.ifBlank { payload.questionText }
+        val resolvedSubject = current.subject.takeIf { it in Subjects.all }
+            ?: payload.subject.takeIf { it in Subjects.all }
+            ?: current.subject
         val finalBook = current.book.ifBlank { payload.book }
         val finalUnit = current.unit.ifBlank { payload.unit }
         val finalChapter = current.chapter.ifBlank { payload.chapter }
@@ -157,7 +160,7 @@ class QuestionRepository(
                 duplicateKey = normalizeQuestionText(finalQuestionText),
                 answerText = payload.answerText,
                 explanation = payload.explanation,
-                subject = current.subject.ifBlank { payload.subject },
+                subject = resolvedSubject,
                 book = finalBook,
                 unit = finalUnit,
                 chapter = finalChapter,
@@ -168,7 +171,7 @@ class QuestionRepository(
                 },
                 knowledgeMappingJson = gson.toJson(
                     buildKnowledgeMapping(
-                        current.subject,
+                        resolvedSubject,
                         finalBook,
                         finalUnit,
                         finalChapter,

@@ -218,6 +218,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 isWrong = candidate.isWrong,
                 evidenceType = candidate.evidenceType,
                 wrongEvidence = candidate.wrongEvidence,
+                subject = candidate.subject,
                 selectedAnswer = candidate.selectedAnswer,
                 correctAnswer = candidate.correctAnswer,
                 questionText = candidate.questionText,
