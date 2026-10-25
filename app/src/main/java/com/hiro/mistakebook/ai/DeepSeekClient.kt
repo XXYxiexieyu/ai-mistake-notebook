@@ -109,6 +109,7 @@ class DeepSeekClient(
                 appendLine("若题型为解答题，mathTopic 必须从：${Subjects.mathTopics().joinToString("、")} 中选择。")
             }
             appendLine(MATH_FORMAT_RULE)
+            if (knownSubject == "化学") appendLine(CHEMISTRY_FORMAT_RULE)
             appendLine("若用户已填写书目/单元，请优先使用；无法确认时留空，不要编造教材位置。")
             appendLine("知识树：${question.book} / ${question.unit} / ${question.chapter}")
             appendLine("用户已填写知识点：${question.knowledgePointsJson}")
@@ -152,6 +153,7 @@ class DeepSeekClient(
             判定规则：核心结论和关键过程都正确才为 CORRECT；部分关键步骤正确为 PARTIAL；主要思路错误为 WRONG。
             不因书写风格扣分，但必须指出缺失的条件、计算或论证。只返回合法 JSON：
             $MATH_FORMAT_RULE
+            ${if (question.subject == "化学") CHEMISTRY_FORMAT_RULE else ""}
             {"grade":"CORRECT|PARTIAL|WRONG","feedback":"具体判分说明","confidence":0.0}
         """.trimIndent()
         val content = arrayListOf(textPart(prompt), imagePart(questionImage))
@@ -270,6 +272,7 @@ class DeepSeekClient(
             数学解答题必须额外从：${Subjects.mathTopics().joinToString("、")} 中选择 mathTopic。
             书目、单元无法确认时留空。
             $MATH_FORMAT_RULE
+            $CHEMISTRY_FORMAT_RULE
 
             只返回合法 JSON，不要 Markdown，不要 JSON 之外的文字：
             {
@@ -385,6 +388,7 @@ class DeepSeekClient(
             - 如题目信息不足要明确指出，不要编造；
             - 可给必要公式和步骤，但保持回答直接；
             - $MATH_FORMAT_RULE
+            ${if (question.subject == "化学") "- $CHEMISTRY_FORMAT_RULE" else ""}
             - 用户附加了图片时，结合图片中的追问内容；
             - 使用中文回答。
 
@@ -464,5 +468,7 @@ class DeepSeekClient(
         private val JSON = "application/json; charset=utf-8".toMediaType()
         private const val MATH_FORMAT_RULE =
             "数学内容优先使用标准 Unicode 符号，例如 x²、x³、√(x)、∠ABC、∥、⊥、≤、∈；如需 LaTeX，只使用 x^{2}、\\sqrt{x}、\\frac{a}{b}、\\angle ABC、\\vec{AB} 等简单写法，不要输出公式代码块。"
+        private const val CHEMISTRY_FORMAT_RULE =
+            "化学式和离子使用标准上下标与电荷，例如 H₂O、SO₄²⁻、Fe³⁺；化学方程式用 →，可逆反应用 ⇌，气体用 ↑，沉淀用 ↓，反应条件写明；离子方程式必须同时满足原子守恒和电荷守恒。"
     }
 }

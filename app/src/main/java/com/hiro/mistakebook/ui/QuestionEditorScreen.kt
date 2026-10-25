@@ -55,6 +55,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -84,6 +85,7 @@ fun QuestionEditorScreen(
     onSaved: (Long) -> Unit
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val isEdit = questionId != null
@@ -347,7 +349,7 @@ fun QuestionEditorScreen(
         )
     }
 
-    fun insertMathSymbol(value: String) {
+    fun insertScienceSymbol(value: String) {
         when (mathInputTarget) {
             MathInputTarget.QUESTION -> questionText += value
             MathInputTarget.ANSWER -> answerText += value
@@ -356,6 +358,11 @@ fun QuestionEditorScreen(
             MathInputTarget.ERROR_CAUSE -> errorCause += value
             null -> Unit
         }
+    }
+
+    fun openScienceSymbols(target: MathInputTarget) {
+        focusManager.clearFocus()
+        mathInputTarget = target
     }
 
     Scaffold(
@@ -505,7 +512,11 @@ fun QuestionEditorScreen(
             item {
                 EditorSection("题目与解答") {
                     Text(
-                        "数学公式可粘贴 LaTeX 或使用右侧 ∑ 符号库；显示时会自动转换为 √、²、³、∠、∥ 等标准符号。",
+                        if (subject == "化学") {
+                            "化学式、离子和方程式可使用右侧 ⚗ 符号库；显示时自动转换上下标、电荷、→、⇌、↑、↓ 等符号。"
+                        } else {
+                            "数学公式可粘贴 LaTeX 或使用右侧 ∑ 符号库；显示时会自动转换为 √、²、³、∠、∥ 等标准符号。"
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -516,8 +527,8 @@ fun QuestionEditorScreen(
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
                         trailingIcon = {
-                            MathSymbolTrailingButton {
-                                mathInputTarget = MathInputTarget.QUESTION
+                            ScienceSymbolTrailingButton(if (subject == "化学") "⚗" else "∑") {
+                                openScienceSymbols(MathInputTarget.QUESTION)
                             }
                         }
                     )
@@ -528,8 +539,8 @@ fun QuestionEditorScreen(
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
                         trailingIcon = {
-                            MathSymbolTrailingButton {
-                                mathInputTarget = MathInputTarget.ANSWER
+                            ScienceSymbolTrailingButton(if (subject == "化学") "⚗" else "∑") {
+                                openScienceSymbols(MathInputTarget.ANSWER)
                             }
                         }
                     )
@@ -540,8 +551,8 @@ fun QuestionEditorScreen(
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 4,
                         trailingIcon = {
-                            MathSymbolTrailingButton {
-                                mathInputTarget = MathInputTarget.EXPLANATION
+                            ScienceSymbolTrailingButton(if (subject == "化学") "⚗" else "∑") {
+                                openScienceSymbols(MathInputTarget.EXPLANATION)
                             }
                         }
                     )
@@ -557,8 +568,8 @@ fun QuestionEditorScreen(
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
                         trailingIcon = {
-                            MathSymbolTrailingButton {
-                                mathInputTarget = MathInputTarget.ORIGINAL_ANSWER
+                            ScienceSymbolTrailingButton(if (subject == "化学") "⚗" else "∑") {
+                                openScienceSymbols(MathInputTarget.ORIGINAL_ANSWER)
                             }
                         }
                     )
@@ -629,8 +640,8 @@ fun QuestionEditorScreen(
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 2,
                             trailingIcon = {
-                                MathSymbolTrailingButton {
-                                    mathInputTarget = MathInputTarget.ERROR_CAUSE
+                                ScienceSymbolTrailingButton(if (subject == "化学") "⚗" else "∑") {
+                                    openScienceSymbols(MathInputTarget.ERROR_CAUSE)
                                 }
                             }
                         )
@@ -744,9 +755,14 @@ fun QuestionEditorScreen(
     }
 
     mathInputTarget?.let {
-        MathSymbolPickerDialog(
+        ScienceSymbolPickerDialog(
+            initialKind = if (subject == "化学") {
+                ScienceSymbolKind.CHEMISTRY
+            } else {
+                ScienceSymbolKind.MATH
+            },
             onDismiss = { mathInputTarget = null },
-            onInsert = { symbol -> insertMathSymbol(symbol) }
+            onInsert = { symbol -> insertScienceSymbol(symbol) }
         )
     }
 }
@@ -760,10 +776,10 @@ private enum class MathInputTarget {
 }
 
 @Composable
-private fun MathSymbolTrailingButton(onClick: () -> Unit) {
+private fun ScienceSymbolTrailingButton(label: String, onClick: () -> Unit) {
     IconButton(onClick = onClick) {
         Text(
-            "∑",
+            label,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )

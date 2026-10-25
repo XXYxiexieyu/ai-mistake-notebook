@@ -43,6 +43,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.hiro.mistakebook.chemistry.ChemistrySymbolDatabase
+import com.hiro.mistakebook.chemistry.createChemistryNormalizer
 import com.hiro.mistakebook.math.MathSymbolDatabase
 import com.hiro.mistakebook.math.MathSymbolEntry
 import com.hiro.mistakebook.math.createNormalizer
@@ -59,8 +61,14 @@ fun MathText(
     overflow: TextOverflow = TextOverflow.Clip
 ) {
     val context = LocalContext.current
-    val displayText = remember(context, text) {
-        MathSymbolDatabase.load(context).createNormalizer().normalize(text)
+    val chemistryNormalizer = remember(context) {
+        ChemistrySymbolDatabase.load(context).createChemistryNormalizer()
+    }
+    val mathNormalizer = remember(context) {
+        MathSymbolDatabase.load(context).createNormalizer()
+    }
+    val displayText = remember(text, chemistryNormalizer, mathNormalizer) {
+        mathNormalizer.normalize(chemistryNormalizer.normalize(text))
     }
     Text(
         text = displayText,
@@ -79,10 +87,43 @@ fun MathSymbolPickerDialog(
     onDismiss: () -> Unit,
     onInsert: (String) -> Unit
 ) {
+    ScienceSymbolPickerDialog(
+        initialKind = ScienceSymbolKind.MATH,
+        onDismiss = onDismiss,
+        onInsert = onInsert
+    )
+}
+
+@Composable
+fun ChemistrySymbolPickerDialog(
+    onDismiss: () -> Unit,
+    onInsert: (String) -> Unit
+) {
+    ScienceSymbolPickerDialog(
+        initialKind = ScienceSymbolKind.CHEMISTRY,
+        onDismiss = onDismiss,
+        onInsert = onInsert
+    )
+}
+
+enum class ScienceSymbolKind(val label: String) {
+    MATH("数学 ∑"),
+    CHEMISTRY("化学 ⚗")
+}
+
+@Composable
+fun ScienceSymbolPickerDialog(
+    initialKind: ScienceSymbolKind,
+    onDismiss: () -> Unit,
+    onInsert: (String) -> Unit
+) {
     val context = LocalContext.current
-    val database = remember(context) { MathSymbolDatabase.load(context) }
+    val mathDatabase = remember(context) { MathSymbolDatabase.load(context) }
+    val chemistryDatabase = remember(context) { ChemistrySymbolDatabase.load(context) }
+    var kind by remember(initialKind) { mutableStateOf(initialKind) }
     var query by remember { mutableStateOf("") }
     var categoryId by remember { mutableStateOf<String?>(null) }
+    val database = if (kind == ScienceSymbolKind.CHEMISTRY) chemistryDatabase else mathDatabase
     val visibleSymbols = remember(database, query, categoryId) {
         database.search(query, categoryId)
     }
@@ -108,12 +149,16 @@ fun MathSymbolPickerDialog(
                     ) {
                         Column(Modifier.weight(1f)) {
                             Text(
-                                "数学符号库",
+                                if (kind == ScienceSymbolKind.CHEMISTRY) "化学方程式符号库" else "数学符号库",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                "离线收录幂、根式、角、集合、向量、概率统计等高中常用符号",
+                                if (kind == ScienceSymbolKind.CHEMISTRY) {
+                                    "离线收录反应箭头、条件、离子、常见物质和方程式模板"
+                                } else {
+                                    "离线收录幂、根式、角、集合、向量、概率统计等高中常用符号"
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -122,13 +167,35 @@ fun MathSymbolPickerDialog(
                             Icon(Icons.Outlined.Close, "关闭符号库")
                         }
                     }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ScienceSymbolKind.entries.forEach { option ->
+                            FilterChip(
+                                selected = kind == option,
+                                onClick = {
+                                    if (kind != option) {
+                                        kind = option
+                                        categoryId = null
+                                    }
+                                },
+                                label = { Text(option.label) }
+                            )
+                        }
+                    }
                     OutlinedTextField(
                         value = query,
                         onValueChange = { query = it },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         label = { Text("搜索名称或公式") },
-                        placeholder = { Text("例如：平方、\\angle、根号、概率") },
+                        placeholder = {
+                            Text(
+                                if (kind == ScienceSymbolKind.CHEMISTRY) {
+                                    "例如：可逆、沉淀、SO₄²⁻、离子方程式"
+                                } else {
+                                    "例如：平方、\\angle、根号、概率"
+                                }
+                            )
+                        },
                         leadingIcon = { Icon(Icons.Outlined.Search, null) }
                     )
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

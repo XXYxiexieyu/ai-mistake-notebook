@@ -7,6 +7,8 @@ import com.hiro.mistakebook.data.KnowledgeMatcher
 import com.hiro.mistakebook.ai.InkColorAnalyzer
 import com.hiro.mistakebook.ai.AutoSplitPayload
 import com.hiro.mistakebook.ai.MarkedWordsPayload
+import com.hiro.mistakebook.chemistry.ChemistrySymbolDatabase
+import com.hiro.mistakebook.chemistry.createChemistryNormalizer
 import com.hiro.mistakebook.data.AnalysisPayload
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.data.QuestionDraft
@@ -27,6 +29,9 @@ class CatalogTest {
     }
     private val mathSymbols by lazy {
         MathSymbolDatabase.parse(File("src/main/assets/math_symbols.json").readText(Charsets.UTF_8))
+    }
+    private val chemistrySymbols by lazy {
+        ChemistrySymbolDatabase.parse(File("src/main/assets/chemistry_symbols.json").readText(Charsets.UTF_8))
     }
 
     @Test
@@ -226,5 +231,45 @@ class CatalogTest {
         val normalizer = MathTextNormalizer()
         assertEquals("函数 y=x² 的定义域是 ℝ。", normalizer.normalize("函数 y=x² 的定义域是 ℝ。"))
         assertEquals("答案为 B。", normalizer.normalize("答案为 B。"))
+    }
+
+    @Test
+    fun chemistrySymbolDatabaseCoversEquationsAndIons() {
+        assertTrue(chemistrySymbols.categories.size >= 8)
+        assertTrue(chemistrySymbols.entries.size >= 180)
+        val symbols = chemistrySymbols.entries.map { it.symbol }.toSet()
+        listOf("→", "⇌", "↑", "↓", "H⁺", "OH⁻", "SO₄²⁻", "Fe³⁺", "BaSO₄", "MnO₄⁻").forEach {
+            assertTrue("缺少化学符号：$it", it in symbols)
+        }
+        assertTrue(chemistrySymbols.entries.any { it.name.contains("离子方程式") })
+    }
+
+    @Test
+    fun chemistryEquationsAndIonicEquationsBecomeReadable() {
+        assertEquals(
+            "Ba²⁺ + SO₄²⁻ → BaSO₄↓",
+            normalizeScience("Ba2+ + SO42- -> BaSO4↓")
+        )
+        assertEquals(
+            "Fe³⁺ + 3OH⁻ → Fe(OH)₃↓",
+            normalizeScience("Fe^{3+} + 3OH^- -> Fe(OH)_3↓")
+        )
+        assertEquals(
+            "N₂ + 3H₂ ⇌ 2NH₃",
+            normalizeScience("N2 + 3H2 <=> 2NH3")
+        )
+        assertEquals(
+            "CO₂ + H₂O → H₂CO₃",
+            normalizeScience("\\ce{CO2 + H2O -> H2CO3}")
+        )
+        assertEquals("→(催化剂)", normalizeScience("\\xrightarrow{催化剂}"))
+        assertEquals("3Fe³⁺ + 4H₂O", normalizeScience("3Fe3+ + 4H2O"))
+        assertEquals("the-end", normalizeScience("the-end"))
+    }
+
+    private fun normalizeScience(input: String): String {
+        val chemistry = chemistrySymbols.createChemistryNormalizer()
+        val math = mathSymbols.createNormalizer()
+        return math.normalize(chemistry.normalize(input))
     }
 }

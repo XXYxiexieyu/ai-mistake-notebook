@@ -1,16 +1,16 @@
 AI错题本 Android 预览版
 
-Version: 0.7.1-preview
+Version: 0.7.2-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.7.1-preview.apk
-Size: 62,508,713 bytes (59.61 MB)
-SHA-256: 3EB7991673704E8620F2FFB572A48FDE23BE881A08135FD54678C30272F0A09D
+APK: AI_Mistake_Notebook_0.7.2-preview.apk
+Size: 64,084,483 bytes (61.12 MB)
+SHA-256: 701C0725DB11BFF2A0DFB564B82DBC1519660C2050B0299162E402C7714FE2EB
 
 Verification:
 - assembleDebug: passed
-- testDebugUnitTest: 12 tests passed
+- testDebugUnitTest: 14 tests passed
 - lintDebug: 0 issues
 - APK v2 signature: verified
 - Knowledge catalog: 35 books, 259 units, 1156 sections
@@ -49,10 +49,16 @@ Verification:
 - Searchable math symbol picker in question, answer, explanation, original-answer and error-cause fields: implemented
 - LaTeX, superscript and subscript normalization across question, answer, chat, retake and review views: implemented
 - Math symbol asset bundled in the APK and available offline: verified
+- Chemistry equation and ion symbol database: 8 categories, 230 entries: implemented
+- Chemistry formula, charge, arrow and reversible-reaction normalization: implemented
+- Chemistry symbol picker integrated into question editor and contextual AI chat: implemented
+- Math/chemistry symbol picker switching in the contextual AI chat: implemented
+- Chemistry AI prompts for balancing, charge conservation, conditions and state symbols: implemented
+- Chemistry symbol asset bundled in the APK and available offline: verified
 
 Device verification:
 - Version 0.7.0: Xiaomi 15 and Xiaomi 13 installed and main flows run normally.
-- Version 0.7.1: build, unit tests and lint passed; physical-device regression pending.
+- Version 0.7.1 and 0.7.2: build, unit tests and lint passed; physical-device regression pending.
 - Both devices use non-rooted production system builds.
 
 Not yet verified:

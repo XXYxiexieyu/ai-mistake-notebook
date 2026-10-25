@@ -47,6 +47,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,9 +75,11 @@ fun QuestionChatScreen(
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current
     var text by remember { mutableStateOf("") }
     var attachedImage by remember { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
+    var symbolPickerKind by remember { mutableStateOf<ScienceSymbolKind?>(null) }
 
     val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
@@ -152,7 +155,11 @@ fun QuestionChatScreen(
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            "题目照片会自动加入每次提问",
+                            if (item.subject == "化学") {
+                                "题目照片自动加入；下方 ⚗ 可插入化学式与方程式"
+                            } else {
+                                "题目照片会自动加入每次提问"
+                            },
                             style = MaterialTheme.typography.labelSmall,
                             color = Muted
                         )
@@ -178,12 +185,22 @@ fun QuestionChatScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text("可以这样问", fontWeight = FontWeight.SemiBold)
-                                listOf(
-                                    "这道题最关键的知识点是什么？",
-                                    "请按我的错因讲解关键步骤",
-                                    "为什么这里不能直接套公式？",
-                                    "换一个条件后解题方法会怎样变化？"
-                                ).forEach { suggestion ->
+                                val suggestions = if (question?.subject == "化学") {
+                                    listOf(
+                                        "请写出并配平本题的化学方程式",
+                                        "请写出总反应和对应离子方程式",
+                                        "请说明氧化剂、还原剂和电子转移",
+                                        "请检查反应条件及沉淀、气体符号"
+                                    )
+                                } else {
+                                    listOf(
+                                        "这道题最关键的知识点是什么？",
+                                        "请按我的错因讲解关键步骤",
+                                        "为什么这里不能直接套公式？",
+                                        "换一个条件后解题方法会怎样变化？"
+                                    )
+                                }
+                                suggestions.forEach { suggestion ->
                                     OutlinedButton(
                                         onClick = { text = suggestion },
                                         modifier = Modifier.fillMaxWidth()
@@ -219,6 +236,22 @@ fun QuestionChatScreen(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                IconButton(
+                    onClick = {
+                        focusManager.clearFocus()
+                        symbolPickerKind = if (question?.subject == "化学") {
+                            ScienceSymbolKind.CHEMISTRY
+                        } else {
+                            ScienceSymbolKind.MATH
+                        }
+                    }
+                ) {
+                    Text(
+                        if (question?.subject == "化学") "⚗" else "∑",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 IconButton(onClick = { imagePicker.launch("image/*") }) {
                     Icon(Icons.Outlined.AttachFile, "附加图片")
                 }
@@ -226,7 +259,11 @@ fun QuestionChatScreen(
                     value = text,
                     onValueChange = { text = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("针对这道题提问…") },
+                    placeholder = {
+                        Text(
+                            if (question?.subject == "化学") "提出化学问题，或使用 ⚗ 插入方程式…" else "针对这道题提问…"
+                        )
+                    },
                     maxLines = 4
                 )
                 IconButton(
@@ -241,6 +278,14 @@ fun QuestionChatScreen(
                 }
             }
         }
+    }
+
+    symbolPickerKind?.let { initialKind ->
+        ScienceSymbolPickerDialog(
+            initialKind = initialKind,
+            onDismiss = { symbolPickerKind = null },
+            onInsert = { symbol -> text += symbol }
+        )
     }
 }
 
