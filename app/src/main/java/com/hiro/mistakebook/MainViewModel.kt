@@ -56,6 +56,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val words: StateFlow<List<WordEntryEntity>> = repository.observeWords()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    val deletedWords: StateFlow<List<WordEntryEntity>> = repository.observeDeletedWords()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     val wordLookupTasks: StateFlow<List<WordLookupTaskEntity>> =
         repository.observeWordLookupTasks()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -485,6 +488,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteWord(id: Long) {
         viewModelScope.launch { repository.deleteWord(id) }
+    }
+
+    fun restoreWord(id: Long) {
+        viewModelScope.launch { repository.restoreWord(id) }
+    }
+
+    fun permanentlyDeleteWord(id: Long) {
+        viewModelScope.launch { repository.permanentlyDeleteWord(id) }
+    }
+
+    fun clearWordRecycleBin() {
+        viewModelScope.launch { repository.clearWordRecycleBin() }
     }
 
     fun saveQuestion(

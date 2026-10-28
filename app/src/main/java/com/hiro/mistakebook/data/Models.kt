@@ -195,7 +195,7 @@ data class QuestionChatMessageEntity(
 
 @Entity(
     tableName = "word_entries",
-    indices = [Index("normalizedWord"), Index("createdAt")]
+    indices = [Index("normalizedWord"), Index("createdAt"), Index("deletedAt")]
 )
 data class WordEntryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -205,12 +205,17 @@ data class WordEntryEntity(
     val phonetic: String = "",
     val partOfSpeech: String = "",
     val meaningChinese: String = "",
+    val otherMeanings: String = "",
+    val collocations: String = "",
+    val wordForms: String = "",
+    val exampleSentence: String = "",
     val contextSentence: String = "",
     val markType: String = "",
     val sourceImagePath: String = "",
     val occurrences: Int = 1,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    val deletedAt: Long? = null
 )
 
 enum class WordLookupStatus(val label: String) {

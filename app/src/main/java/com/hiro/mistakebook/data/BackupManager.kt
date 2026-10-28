@@ -5,7 +5,6 @@ import android.net.Uri
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
@@ -49,7 +48,7 @@ class BackupManager(
         val sessions = database.retakeDao().getAllSessions()
         val items = database.retakeDao().getAllItems()
         val chatMessages = database.questionChatDao().getAll()
-        val wordEntries = database.wordDao().observeAll().first()
+        val wordEntries = database.wordDao().getAllIncludingDeleted()
         val wordLookupTasks = database.wordLookupTaskDao().getAll()
         val payload = BackupPayload(
             questions = questions,
@@ -190,7 +189,8 @@ class BackupManager(
 
         for (word in imported.payload.wordEntries) {
             val restoredImage = restoreImage(word.sourceImagePath, imported.extractedDir)
-            val existing = database.wordDao().find(word.normalizedWord)
+            val existing = database.wordDao().findActive(word.normalizedWord)
+                ?: database.wordDao().findAny(word.normalizedWord)
             if (existing == null) {
                 database.wordDao().insert(
                     word.copy(
@@ -205,6 +205,10 @@ class BackupManager(
                     existing.copy(
                         occurrences = existing.occurrences + word.occurrences,
                         sourceImagePath = existing.sourceImagePath.ifBlank { restoredImage },
+                        otherMeanings = existing.otherMeanings.ifBlank { word.otherMeanings },
+                        collocations = existing.collocations.ifBlank { word.collocations },
+                        wordForms = existing.wordForms.ifBlank { word.wordForms },
+                        exampleSentence = existing.exampleSentence.ifBlank { word.exampleSentence },
                         updatedAt = System.currentTimeMillis()
                     )
                 )

@@ -204,7 +204,27 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                 )
             }
             composable("words") {
-                WordBookScreen(viewModel)
+                WordBookScreen(
+                    viewModel = viewModel,
+                    onOpenWord = { wordId -> navController.navigate("word/$wordId") },
+                    onOpenRecycleBin = { navController.navigate("word-recycle") }
+                )
+            }
+            composable(
+                "word/{wordId}",
+                arguments = listOf(navArgument("wordId") { type = NavType.LongType })
+            ) { entry ->
+                WordDetailScreen(
+                    viewModel = viewModel,
+                    wordId = entry.arguments?.getLong("wordId") ?: 0L,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable("word-recycle") {
+                WordRecycleBinScreen(
+                    viewModel = viewModel,
+                    onBack = { navController.popBackStack() }
+                )
             }
             composable(
                 "word-lookup?taskId={taskId}",

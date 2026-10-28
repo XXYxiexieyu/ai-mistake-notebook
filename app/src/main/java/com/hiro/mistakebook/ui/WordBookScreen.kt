@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.DeleteSweep
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
@@ -54,7 +55,11 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun WordBookScreen(viewModel: MainViewModel) {
+fun WordBookScreen(
+    viewModel: MainViewModel,
+    onOpenWord: (Long) -> Unit,
+    onOpenRecycleBin: () -> Unit
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val words by viewModel.words.collectAsStateWithLifecycle()
@@ -97,31 +102,38 @@ fun WordBookScreen(viewModel: MainViewModel) {
         verticalArrangement = Arrangement.spacedBy(9.dp)
     ) {
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("单词本", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text(
-                        "共 ${words.size} 个单词，来自英语阅读和完形标记",
-                        color = Muted,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                OutlinedButton(
-                    onClick = {
-                        if (words.isEmpty()) {
-                            Toast.makeText(context, "单词本为空，暂无可导出内容", Toast.LENGTH_SHORT).show()
-                        } else {
-                            val stamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.CHINA).format(Date())
-                            exportLauncher.launch("AI错题本_单词_$stamp.csv")
-                        }
-                    }
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("单词本", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    "共 ${words.size} 个单词，来自英语阅读和完形标记",
+                    color = Muted,
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Outlined.FileDownload, null)
-                    Text(" 导出")
+                    OutlinedButton(
+                        onClick = onOpenRecycleBin,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Outlined.DeleteSweep, null)
+                        Text(" 回收站")
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            if (words.isEmpty()) {
+                                Toast.makeText(context, "单词本为空，暂无可导出内容", Toast.LENGTH_SHORT).show()
+                            } else {
+                                val stamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.CHINA).format(Date())
+                                exportLauncher.launch("AI错题本_单词_$stamp.csv")
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Outlined.FileDownload, null)
+                        Text(" 导出 CSV")
+                    }
                 }
             }
         }
@@ -162,16 +174,25 @@ fun WordBookScreen(viewModel: MainViewModel) {
             }
         } else {
             items(filtered, key = { it.id }) { word ->
-                WordCard(word, onDelete = { viewModel.deleteWord(word.id) })
+                WordCard(
+                    word = word,
+                    onClick = { onOpenWord(word.id) },
+                    onDelete = { viewModel.deleteWord(word.id) }
+                )
             }
         }
     }
 }
 
 @Composable
-private fun WordCard(word: WordEntryEntity, onDelete: () -> Unit) {
+private fun WordCard(
+    word: WordEntryEntity,
+    onClick: () -> Unit,
+    onDelete: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {

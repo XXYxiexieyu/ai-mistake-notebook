@@ -49,6 +49,10 @@ data class MarkedWordPayload(
     val phonetic: String = "",
     val partOfSpeech: String = "",
     val meaningChinese: String = "",
+    val otherMeanings: List<String> = emptyList(),
+    val collocations: List<String> = emptyList(),
+    val wordForms: List<String> = emptyList(),
+    val exampleSentence: String = "",
     val contextSentence: String = "",
     val markType: String = "",
     val pageIndex: Int = 0,
@@ -326,7 +330,11 @@ class DeepSeekClient(
             - 只处理手写圈、椭圆圈、手写下划线等明显用户标记；
             - 印刷体链接、固定加粗、印刷强调线不是用户标记，不要提取；
             - 组合词和短语可以按一个词条返回；
-            - 给出适合中国高三学生的简明中文释义、词性和常见词形；
+            - meaningChinese 必须是该单词在当前英文原句中的准确中文释义；
+            - otherMeanings 只列出与文中义不同的常见高中释义，使用简短中文；
+            - collocations 给出 2 到 4 个固定搭配，格式为英文搭配 — 中文；
+            - wordForms 给出常见词性转换或词形变化，例如名词、形容词、过去式；没有则留空；
+            - exampleSentence 造一个适合中国高三学生的英文例句，并附中文翻译；
             - contextSentence 必须是单词所在的英文原句；
             - pageIndex 从 0 开始，对应图片顺序；
             - box 是手写标记单词在原图中的外接框 [左, 上, 右, 下]，使用 0 到 1000 的归一化坐标；
@@ -341,7 +349,11 @@ class DeepSeekClient(
                 "lemma": "原形",
                 "phonetic": "音标，可留空",
                 "partOfSpeech": "词性",
-                "meaningChinese": "结合句意的中文释义",
+                "meaningChinese": "该词在当前句中的中文释义",
+                "otherMeanings": ["其他常见中文释义"],
+                "collocations": ["固定搭配 — 中文"],
+                "wordForms": ["词性转换或词形变化"],
+                "exampleSentence": "新造的英文例句。中文翻译。",
                 "contextSentence": "所在英文原句",
                 "markType": "圈画|划线",
                 "pageIndex": 0,

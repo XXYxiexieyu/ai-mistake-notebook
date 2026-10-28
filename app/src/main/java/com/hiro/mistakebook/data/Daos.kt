@@ -323,11 +323,27 @@ interface QuestionChatDao {
 
 @Dao
 interface WordDao {
-    @Query("SELECT * FROM word_entries ORDER BY createdAt DESC, id DESC")
-    fun observeAll(): Flow<List<WordEntryEntity>>
+    @Query("SELECT * FROM word_entries WHERE deletedAt IS NULL ORDER BY createdAt DESC, id DESC")
+    fun observeActive(): Flow<List<WordEntryEntity>>
+
+    @Query(
+        "SELECT * FROM word_entries WHERE deletedAt IS NOT NULL ORDER BY deletedAt DESC, id DESC"
+    )
+    fun observeDeleted(): Flow<List<WordEntryEntity>>
+
+    @Query("SELECT * FROM word_entries WHERE id = :id LIMIT 1")
+    fun observeById(id: Long): Flow<WordEntryEntity?>
+
+    @Query(
+        "SELECT * FROM word_entries WHERE normalizedWord = :normalized AND deletedAt IS NULL LIMIT 1"
+    )
+    suspend fun findActive(normalized: String): WordEntryEntity?
 
     @Query("SELECT * FROM word_entries WHERE normalizedWord = :normalized LIMIT 1")
-    suspend fun find(normalized: String): WordEntryEntity?
+    suspend fun findAny(normalized: String): WordEntryEntity?
+
+    @Query("SELECT * FROM word_entries ORDER BY createdAt DESC, id DESC")
+    suspend fun getAllIncludingDeleted(): List<WordEntryEntity>
 
     @Insert
     suspend fun insert(word: WordEntryEntity): Long
@@ -335,8 +351,21 @@ interface WordDao {
     @Update
     suspend fun update(word: WordEntryEntity)
 
-    @Query("DELETE FROM word_entries WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    @Query(
+        "UPDATE word_entries SET deletedAt = :deletedAt, updatedAt = :deletedAt WHERE id = :id"
+    )
+    suspend fun moveToRecycleBin(id: Long, deletedAt: Long)
+
+    @Query(
+        "UPDATE word_entries SET deletedAt = NULL, updatedAt = :updatedAt WHERE id = :id"
+    )
+    suspend fun restore(id: Long, updatedAt: Long)
+
+    @Query("DELETE FROM word_entries WHERE id = :id AND deletedAt IS NOT NULL")
+    suspend fun deletePermanently(id: Long)
+
+    @Query("DELETE FROM word_entries WHERE deletedAt IS NOT NULL")
+    suspend fun clearRecycleBin()
 }
 
 @Dao

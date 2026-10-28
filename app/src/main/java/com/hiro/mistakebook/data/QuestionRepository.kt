@@ -37,7 +37,9 @@ class QuestionRepository(
     fun observeRetakeItems(sessionId: Long): Flow<List<RetakeItemEntity>> = database.retakeDao().observeItems(sessionId)
     fun observeChatMessages(questionId: Long): Flow<List<QuestionChatMessageEntity>> =
         database.questionChatDao().observeForQuestion(questionId)
-    fun observeWords(): Flow<List<WordEntryEntity>> = database.wordDao().observeAll()
+    fun observeWords(): Flow<List<WordEntryEntity>> = database.wordDao().observeActive()
+    fun observeDeletedWords(): Flow<List<WordEntryEntity>> = database.wordDao().observeDeleted()
+    fun observeWord(id: Long): Flow<WordEntryEntity?> = database.wordDao().observeById(id)
     fun observeWordLookupTasks(): Flow<List<WordLookupTaskEntity>> =
         database.wordLookupTaskDao().observeAll()
     fun observeWordLookupTask(id: Long): Flow<WordLookupTaskEntity?> =
@@ -69,7 +71,8 @@ class QuestionRepository(
         words.forEach { item ->
             val normalized = item.word.trim().lowercase().replace(Regex("^[^a-z]+|[^a-z'-]+$"), "")
             if (normalized.isBlank()) return@forEach
-            val existing = database.wordDao().find(normalized)
+            val existing = database.wordDao().findActive(normalized)
+                ?: database.wordDao().findAny(normalized)
             if (existing != null) {
                 database.wordDao().update(
                     existing.copy(
@@ -78,11 +81,20 @@ class QuestionRepository(
                         phonetic = item.phonetic.ifBlank { existing.phonetic },
                         partOfSpeech = item.partOfSpeech.ifBlank { existing.partOfSpeech },
                         meaningChinese = item.meaningChinese.ifBlank { existing.meaningChinese },
+                        otherMeanings = item.otherMeanings.joinToString("\n")
+                            .ifBlank { existing.otherMeanings },
+                        collocations = item.collocations.joinToString("\n")
+                            .ifBlank { existing.collocations },
+                        wordForms = item.wordForms.joinToString("\n")
+                            .ifBlank { existing.wordForms },
+                        exampleSentence = item.exampleSentence
+                            .ifBlank { existing.exampleSentence },
                         contextSentence = item.contextSentence.ifBlank { existing.contextSentence },
                         markType = item.markType.ifBlank { existing.markType },
                         sourceImagePath = pagePaths.getOrNull(item.pageIndex) ?: existing.sourceImagePath,
                         occurrences = existing.occurrences + 1,
-                        updatedAt = System.currentTimeMillis()
+                        updatedAt = System.currentTimeMillis(),
+                        deletedAt = null
                     )
                 )
             } else {
@@ -94,6 +106,10 @@ class QuestionRepository(
                         phonetic = item.phonetic,
                         partOfSpeech = item.partOfSpeech,
                         meaningChinese = item.meaningChinese,
+                        otherMeanings = item.otherMeanings.joinToString("\n"),
+                        collocations = item.collocations.joinToString("\n"),
+                        wordForms = item.wordForms.joinToString("\n"),
+                        exampleSentence = item.exampleSentence,
                         contextSentence = item.contextSentence,
                         markType = item.markType,
                         sourceImagePath = pagePaths.getOrNull(item.pageIndex).orEmpty()
@@ -106,7 +122,19 @@ class QuestionRepository(
     }
 
     suspend fun deleteWord(id: Long) {
-        database.wordDao().deleteById(id)
+        database.wordDao().moveToRecycleBin(id, System.currentTimeMillis())
+    }
+
+    suspend fun restoreWord(id: Long) {
+        database.wordDao().restore(id, System.currentTimeMillis())
+    }
+
+    suspend fun permanentlyDeleteWord(id: Long) {
+        database.wordDao().deletePermanently(id)
+    }
+
+    suspend fun clearWordRecycleBin() {
+        database.wordDao().clearRecycleBin()
     }
 
     suspend fun ensureActiveWordLookupTask(): WordLookupTaskEntity =

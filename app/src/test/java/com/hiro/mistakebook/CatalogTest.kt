@@ -185,6 +185,10 @@ class CatalogTest {
                 "phonetic": "/rɪˈzɪliəns/",
                 "partOfSpeech": "n.",
                 "meaningChinese": "韧性；恢复力",
+                "otherMeanings": ["弹性", "适应力"],
+                "collocations": ["resilience training — 韧性训练"],
+                "wordForms": ["resilient adj. 有韧性的"],
+                "exampleSentence": "Her resilience helped her recover. 她的韧性帮助她恢复。",
                 "contextSentence": "Resilience helps students recover from setbacks.",
                 "markType": "圈画",
                 "pageIndex": 0,
@@ -198,6 +202,10 @@ class CatalogTest {
         val word = payload.words.single()
         assertEquals("resilience", word.word)
         assertEquals("韧性；恢复力", word.meaningChinese)
+        assertEquals(listOf("弹性", "适应力"), word.otherMeanings)
+        assertEquals(listOf("resilience training — 韧性训练"), word.collocations)
+        assertEquals(listOf("resilient adj. 有韧性的"), word.wordForms)
+        assertTrue(word.exampleSentence.contains("她的韧性"))
         assertEquals("圈画", word.markType)
         assertEquals(listOf(120f, 240f, 360f, 310f), word.box)
     }
@@ -228,12 +236,17 @@ class CatalogTest {
                     word = "resilience",
                     normalizedWord = "resilience",
                     meaningChinese = "韧性, 恢复力",
+                    otherMeanings = "弹性\n适应力",
+                    collocations = "resilience training — 韧性训练",
+                    wordForms = "resilient adj. 有韧性的",
+                    exampleSentence = "Her resilience helped her recover. 她的韧性帮助她恢复。",
                     contextSentence = "He said \"never give up\".",
                     occurrences = 3
                 )
             )
         )
         assertTrue(csv.contains("\"韧性, 恢复力\""))
+        assertTrue(csv.contains("\"resilience training — 韧性训练\""))
         assertTrue(csv.contains("\"He said \"\"never give up\"\".\""))
         assertTrue(csv.contains("\"3\""))
     }
