@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.7.2-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；后续数学与化学符号功能已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.7.3-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；后续版本已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -50,8 +50,8 @@
 | 知识点目录 | 点击错题中的知识点，直接进入该知识点独立错题目录 |
 | 处理进度球 | 首页加号上方常驻显示已完成与剩余数量，点击进入添加历史和处理进度 |
 | 原作答提取 | 自动识别图片中的学生原作答、草稿和错误步骤并填入原作答字段 |
-| 英语阅读查词 | 识别手写圈画和划线单词，翻译并加入本地单词本 |
-| 单词本 | 搜索、查看上下文和删除阅读中标记的英语单词 |
+| 英语阅读查词 | 持久化上传记录与处理进度，在图片上标出识别词并逐词复核后加入单词本 |
+| 单词本 | 紧凑列表、搜索、查看上下文、删除和一键导出 CSV |
 | 整页扫描 | 根据对错号、蓝笔/红笔订正、扣分和其他颜色批注识别错题，并生成彩笔增强图辅助判断 |
 | 扫描进度 | 显示当前页的保存、彩笔增强、AI 分析和裁题入库阶段，可转到后台继续 |
 | 跨页识别 | 单次最多 10 页，可按页排序；跨页大题合并为一个错题并纵向拼接题目图 |
@@ -108,13 +108,14 @@ flowchart TD
 
 ## 数据设计
 
-Room 数据库当前为 v8。核心实体：
+Room 数据库当前为 v9。核心实体：
 
 - `questions`：题目、答案、解析、错因、批改证据、知识网映射和复习状态。
 - `retake_sessions` / `retake_items`：重考试卷、答案、计时、AI 判定与人工结果。
 - `page_scans`：整页自动识别后台任务。
 - `question_chat_messages`：针对单道题的本地问答历史。
 - `word_entries`：英语阅读查词生成的本地单词条目和上下文。
+- `word_lookup_tasks`：查词上传图片、AI 识别状态、单词坐标和人工复核结果。
 
 图片以内部文件保存，数据库只保存相对路径。数据库升级使用显式迁移，不通过 destructive migration 清空数据。
 
@@ -215,6 +216,7 @@ python tools/fetch_catalog.py
 | `0.7.0-preview` | 新增英语阅读查词与单词本；底部导航按指定顺序排列；重考移至错题本右上角 |
 | `0.7.1-preview` | 新增 288 条离线数学符号库、LaTeX 自动转换和统一数学富文本显示 |
 | `0.7.2-preview` | 新增 230 条化学与离子方程式符号库，并在问 AI 模块接入数学/化学符号切换 |
+| `0.7.3-preview` | 查词进度持久化和图片标记复核，紧凑单词本、一键 CSV 导出及数据库 v9 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -244,7 +246,7 @@ python tools/fetch_catalog.py
 ## 构建验证
 
 - `assembleDebug`：通过。
-- `testDebugUnitTest`：14 项通过，包括蓝笔颜色检测、AI 默认值、错题审查、英语单词解析、数学符号与化学方程式转换。
+- `testDebugUnitTest`：15 项通过，包括蓝笔颜色检测、AI 默认值、错题审查、英语单词解析与坐标、CSV 导出、数学符号与化学方程式转换。
 - `lintDebug`：0 个问题。
 - GitHub Actions：通过。
 - APK v2 签名：通过。

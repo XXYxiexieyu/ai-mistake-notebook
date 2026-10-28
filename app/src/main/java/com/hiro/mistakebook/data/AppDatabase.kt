@@ -14,9 +14,10 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         RetakeItemEntity::class,
         PageScanEntity::class,
         QuestionChatMessageEntity::class,
-        WordEntryEntity::class
+        WordEntryEntity::class,
+        WordLookupTaskEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,6 +26,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun pageScanDao(): PageScanDao
     abstract fun questionChatDao(): QuestionChatDao
     abstract fun wordDao(): WordDao
+    abstract fun wordLookupTaskDao(): WordLookupTaskDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -151,6 +153,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS word_lookup_tasks (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        status TEXT NOT NULL,
+                        pagePathsJson TEXT NOT NULL,
+                        recognizedWordsJson TEXT NOT NULL,
+                        excludedIndicesJson TEXT NOT NULL,
+                        progress INTEGER NOT NULL,
+                        recognizedCount INTEGER NOT NULL,
+                        wordCount INTEGER NOT NULL,
+                        error TEXT NOT NULL,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_word_lookup_tasks_status ON word_lookup_tasks(status)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_word_lookup_tasks_createdAt ON word_lookup_tasks(createdAt)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_word_lookup_tasks_updatedAt ON word_lookup_tasks(updatedAt)"
+                )
+            }
+        }
+
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "mistake_book.db")
                 .addMigrations(
@@ -160,7 +193,8 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_4_5,
                     MIGRATION_5_6,
                     MIGRATION_6_7,
-                    MIGRATION_7_8
+                    MIGRATION_7_8,
+                    MIGRATION_8_9
                 )
                 .build()
     }

@@ -37,6 +37,9 @@ import com.hiro.mistakebook.BatchSplitProgress
 import com.hiro.mistakebook.MainViewModel
 import com.hiro.mistakebook.data.PageScanEntity
 import com.hiro.mistakebook.data.QuestionEntity
+import com.hiro.mistakebook.data.WordLookupCodec
+import com.hiro.mistakebook.data.WordLookupStatus
+import com.hiro.mistakebook.data.WordLookupTaskEntity
 import com.hiro.mistakebook.ui.theme.Green
 import com.hiro.mistakebook.ui.theme.Muted
 import com.hiro.mistakebook.ui.theme.Red
@@ -47,13 +50,25 @@ fun ProcessingHistoryScreen(
     viewModel: MainViewModel,
     onBack: () -> Unit,
     onOpenQuestion: (Long) -> Unit,
-    onReviewScan: (Long) -> Unit
+    onReviewScan: (Long) -> Unit,
+    onOpenWordLookup: (Long) -> Unit
 ) {
     val questions by viewModel.questions.collectAsStateWithLifecycle()
     val pageScan by viewModel.activePageScan.collectAsStateWithLifecycle()
     val batchProgress by viewModel.batchSplitProgress.collectAsStateWithLifecycle()
     val pendingReviewCount by viewModel.pendingReviewCount.collectAsStateWithLifecycle()
     val latestPendingReviewScanId by viewModel.latestPendingReviewScanId.collectAsStateWithLifecycle()
+    val wordLookupTasks by viewModel.wordLookupTasks.collectAsStateWithLifecycle()
+    val visibleWordLookupTasks = wordLookupTasks.filter {
+        WordLookupCodec.pagePaths(it.pagePathsJson).isNotEmpty()
+    }
+    val activeWordLookupCount = visibleWordLookupTasks.count {
+        runCatching { WordLookupStatus.valueOf(it.status) }
+            .getOrDefault(WordLookupStatus.FAILED).isActive
+    }
+    val completedWordLookupCount = visibleWordLookupTasks.count {
+        it.status == WordLookupStatus.COMPLETED.name
+    }
     val pendingAnalysis = questions.count {
         it.analysisState == "PENDING" || it.analysisState == "PROCESSING"
     }
@@ -62,8 +77,10 @@ fun ProcessingHistoryScreen(
     }
     val batchRemaining = batchProgress?.let { (it.total - it.current).coerceAtLeast(0) } ?: 0
     val scanRemaining = if (pageScan != null) 1 else 0
-    val completed = completedQuestions + (batchProgress?.generated ?: 0)
-    val remaining = pendingAnalysis + pendingReviewCount + batchRemaining + scanRemaining
+    val completed = completedQuestions + (batchProgress?.generated ?: 0) +
+        completedWordLookupCount
+    val remaining = pendingAnalysis + pendingReviewCount + batchRemaining + scanRemaining +
+        activeWordLookupCount
     val history = remember(questions) {
         questions
             .sortedByDescending { it.createdAt }
@@ -103,7 +120,9 @@ fun ProcessingHistoryScreen(
                     fontWeight = FontWeight.SemiBold
                 )
             }
-            if (pageScan == null && batchProgress == null && pendingAnalysis == 0 && pendingReviewCount == 0) {
+            if (pageScan == null && batchProgress == null && pendingAnalysis == 0 &&
+                pendingReviewCount == 0 && activeWordLookupCount == 0
+            ) {
                 item {
                     StatusCard("当前没有正在处理的任务", null)
                 }
@@ -156,6 +175,23 @@ fun ProcessingHistoryScreen(
             }
             item {
                 Text(
+                    "英语阅读查词任务",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            if (visibleWordLookupTasks.isEmpty()) {
+                item { Text("尚未上传英语查词图片。", color = Muted) }
+            } else {
+                items(visibleWordLookupTasks.take(12), key = { "word-lookup-${it.id}" }) { task ->
+                    WordLookupProgressCard(
+                        task = task,
+                        onOpen = { onOpenWordLookup(task.id) }
+                    )
+                }
+            }
+            item {
+                Text(
                     "错题添加历史",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
@@ -181,6 +217,62 @@ fun ProcessingHistoryScreen(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WordLookupProgressCard(
+    task: WordLookupTaskEntity,
+    onOpen: () -> Unit
+) {
+    val status = runCatching { WordLookupStatus.valueOf(task.status) }
+        .getOrDefault(WordLookupStatus.FAILED)
+    val pageCount = WordLookupCodec.pagePaths(task.pagePathsJson).size
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(status.label, fontWeight = FontWeight.SemiBold)
+                Text(
+                    formatDate(task.createdAt, includeTime = true),
+                    color = Muted,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+            Text(
+                "$pageCount 页 · 识别 ${task.recognizedCount} 个 · 已加入 ${task.wordCount} 个",
+                color = Muted,
+                style = MaterialTheme.typography.bodySmall
+            )
+            if (status.isActive) {
+                LinearProgressIndicator(
+                    progress = { task.progress.coerceIn(0, 100) / 100f },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            task.error.takeIf { it.isNotBlank() }?.let {
+                Text(it, color = Red, style = MaterialTheme.typography.labelSmall)
+            }
+            Button(onClick = onOpen) {
+                Text(
+                    when (status) {
+                        WordLookupStatus.REVIEW -> "复核标记单词"
+                        WordLookupStatus.COMPLETED -> "查看上传记录"
+                        WordLookupStatus.FAILED -> "继续处理"
+                        else -> "查看查词进度"
+                    }
+                )
             }
         }
     }

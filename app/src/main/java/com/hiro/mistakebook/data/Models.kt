@@ -213,6 +213,36 @@ data class WordEntryEntity(
     val updatedAt: Long = System.currentTimeMillis()
 )
 
+enum class WordLookupStatus(val label: String) {
+    IMPORTING("正在上传"),
+    READY("等待识别"),
+    ANALYZING("AI 正在识别"),
+    REVIEW("待人工复核"),
+    COMPLETED("已完成"),
+    FAILED("识别失败");
+
+    val isActive: Boolean
+        get() = this != COMPLETED
+}
+
+@Entity(
+    tableName = "word_lookup_tasks",
+    indices = [Index("status"), Index("createdAt"), Index("updatedAt")]
+)
+data class WordLookupTaskEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val status: String = WordLookupStatus.IMPORTING.name,
+    val pagePathsJson: String = "[]",
+    val recognizedWordsJson: String = "[]",
+    val excludedIndicesJson: String = "[]",
+    val progress: Int = 0,
+    val recognizedCount: Int = 0,
+    val wordCount: Int = 0,
+    val error: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
+)
+
 data class KnowledgeBook(
     val subject: String,
     val publisher: String,

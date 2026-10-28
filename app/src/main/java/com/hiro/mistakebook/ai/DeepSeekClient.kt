@@ -52,6 +52,7 @@ data class MarkedWordPayload(
     val contextSentence: String = "",
     val markType: String = "",
     val pageIndex: Int = 0,
+    val box: List<Float> = emptyList(),
     val confidence: Double? = null
 )
 
@@ -328,6 +329,8 @@ class DeepSeekClient(
             - 给出适合中国高三学生的简明中文释义、词性和常见词形；
             - contextSentence 必须是单词所在的英文原句；
             - pageIndex 从 0 开始，对应图片顺序；
+            - box 是手写标记单词在原图中的外接框 [左, 上, 右, 下]，使用 0 到 1000 的归一化坐标；
+            - 看不到精确位置时可以返回空数组，不能编造；
             - 同一标记单词只返回一次；
             - 最多返回 50 个单词。
 
@@ -342,6 +345,7 @@ class DeepSeekClient(
                 "contextSentence": "所在英文原句",
                 "markType": "圈画|划线",
                 "pageIndex": 0,
+                "box": [左, 上, 右, 下],
                 "confidence": 0.0
               }]
             }

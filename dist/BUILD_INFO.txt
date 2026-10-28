@@ -1,16 +1,16 @@
 AI错题本 Android 预览版
 
-Version: 0.7.2-preview
+Version: 0.7.3-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.7.2-preview.apk
-Size: 64,084,483 bytes (61.12 MB)
-SHA-256: 701C0725DB11BFF2A0DFB564B82DBC1519660C2050B0299162E402C7714FE2EB
+APK: AI_Mistake_Notebook_0.7.3-preview.apk
+Size: 62,672,721 bytes (59.77 MB)
+SHA-256: 9C4304DB082AB0859C306B1133892718A6531B71D1C176D5B9FB2E603367B61E
 
 Verification:
 - assembleDebug: passed
-- testDebugUnitTest: 14 tests passed
+- testDebugUnitTest: 15 tests passed
 - lintDebug: 0 issues
 - APK v2 signature: verified
 - Knowledge catalog: 35 books, 259 units, 1156 sections
@@ -55,10 +55,17 @@ Verification:
 - Math/chemistry symbol picker switching in the contextual AI chat: implemented
 - Chemistry AI prompts for balancing, charge conservation, conditions and state symbols: implemented
 - Chemistry symbol asset bundled in the APK and available offline: verified
+- English lookup tasks persisted across screen exits: implemented
+- Lookup progress integrated into the processing history page and progress bubble: implemented
+- Uploaded lookup images retained with AI word-coordinate overlays and manual review: implemented
+- Word book cards compacted with source images hidden: implemented
+- One-click UTF-8 CSV word export: implemented
+- Room database upgraded to v9 with word_lookup_tasks: verified by schema generation
+- ZIP backup schema upgraded to v4 with lookup tasks and page images: implemented
 
 Device verification:
 - Version 0.7.0: Xiaomi 15 and Xiaomi 13 installed and main flows run normally.
-- Version 0.7.1 and 0.7.2: build, unit tests and lint passed; physical-device regression pending.
+- Versions 0.7.1 through 0.7.3: build, unit tests and lint passed; physical-device regression pending.
 - Both devices use non-rooted production system builds.
 
 Not yet verified:

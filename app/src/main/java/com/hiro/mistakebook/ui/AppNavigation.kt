@@ -41,7 +41,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import com.hiro.mistakebook.MainViewModel
+import com.hiro.mistakebook.data.WordLookupCodec
+import com.hiro.mistakebook.data.WordLookupStatus
 
 private data class BottomItem(
     val route: String,
@@ -71,6 +74,7 @@ fun MistakeBookApp(viewModel: MainViewModel) {
     val batchSplitProgress by viewModel.batchSplitProgress.collectAsStateWithLifecycle()
     val pendingReviewCount by viewModel.pendingReviewCount.collectAsStateWithLifecycle()
     val latestPendingReviewScanId by viewModel.latestPendingReviewScanId.collectAsStateWithLifecycle()
+    val wordLookupTasks by viewModel.wordLookupTasks.collectAsStateWithLifecycle()
     val pendingAnalysis = questions.count {
         it.analysisState == "PENDING" || it.analysisState == "PROCESSING"
     }
@@ -81,8 +85,20 @@ fun MistakeBookApp(viewModel: MainViewModel) {
         (it.total - it.current).coerceAtLeast(0)
     } ?: 0
     val scanRemaining = if (activePageScan != null) 1 else 0
-    val completedCount = completedQuestions + (batchSplitProgress?.generated ?: 0)
-    val remainingCount = pendingAnalysis + pendingReviewCount + batchRemaining + scanRemaining
+    val visibleWordLookupTasks = wordLookupTasks.filter {
+        WordLookupCodec.pagePaths(it.pagePathsJson).isNotEmpty()
+    }
+    val activeWordLookupCount = visibleWordLookupTasks.count {
+        runCatching { WordLookupStatus.valueOf(it.status) }
+            .getOrDefault(WordLookupStatus.FAILED).isActive
+    }
+    val completedWordLookupCount = visibleWordLookupTasks.count {
+        it.status == WordLookupStatus.COMPLETED.name
+    }
+    val completedCount = completedQuestions + (batchSplitProgress?.generated ?: 0) +
+        completedWordLookupCount
+    val remainingCount = pendingAnalysis + pendingReviewCount + batchRemaining +
+        scanRemaining + activeWordLookupCount
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -181,15 +197,25 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                     onOpenQuestion = { navController.navigate("question/$it") },
                     onReviewScan = { scanId ->
                         navController.navigate("scan-review/$scanId")
+                    },
+                    onOpenWordLookup = { id ->
+                        navController.navigate("word-lookup?taskId=$id")
                     }
                 )
             }
             composable("words") {
                 WordBookScreen(viewModel)
             }
-            composable("word-lookup") {
+            composable(
+                "word-lookup?taskId={taskId}",
+                arguments = listOf(navArgument("taskId") {
+                    type = NavType.LongType
+                    defaultValue = 0L
+                })
+            ) { entry ->
                 WordLookupScreen(
                     viewModel = viewModel,
+                    taskId = entry.arguments?.getLong("taskId")?.takeIf { it > 0 },
                     onBack = { navController.popBackStack() },
                     onFinished = {
                         navController.navigate("words") {

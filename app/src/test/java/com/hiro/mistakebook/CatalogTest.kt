@@ -13,6 +13,9 @@ import com.hiro.mistakebook.data.AnalysisPayload
 import com.hiro.mistakebook.data.ErrorCauseState
 import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.Subjects
+import com.hiro.mistakebook.data.WordCsvExporter
+import com.hiro.mistakebook.data.WordEntryEntity
+import com.hiro.mistakebook.data.WordLookupCodec
 import com.hiro.mistakebook.math.MathSymbolDatabase
 import com.hiro.mistakebook.math.MathTextNormalizer
 import com.hiro.mistakebook.math.createNormalizer
@@ -185,6 +188,7 @@ class CatalogTest {
                 "contextSentence": "Resilience helps students recover from setbacks.",
                 "markType": "圈画",
                 "pageIndex": 0,
+                "box": [120, 240, 360, 310],
                 "confidence": 0.96
               }]
             }
@@ -195,6 +199,43 @@ class CatalogTest {
         assertEquals("resilience", word.word)
         assertEquals("韧性；恢复力", word.meaningChinese)
         assertEquals("圈画", word.markType)
+        assertEquals(listOf(120f, 240f, 360f, 310f), word.box)
+    }
+
+    @Test
+    fun wordLookupCodecAndCsvExportPreserveReviewData() {
+        val payload = Gson().fromJson(
+            """
+            {
+              "words": [{
+                "word": "resilience",
+                "contextSentence": "A sentence, with \"quotes\".",
+                "pageIndex": 1,
+                "box": [10, 20, 300, 80]
+              }]
+            }
+            """.trimIndent(),
+            MarkedWordsPayload::class.java
+        )
+        val encoded = WordLookupCodec.encodeRecognizedWords(payload.words)
+        val decoded = WordLookupCodec.recognizedWords(encoded)
+        assertEquals(1, decoded.size)
+        assertEquals(listOf(10f, 20f, 300f, 80f), decoded.first().box)
+
+        val csv = WordCsvExporter.toCsv(
+            listOf(
+                WordEntryEntity(
+                    word = "resilience",
+                    normalizedWord = "resilience",
+                    meaningChinese = "韧性, 恢复力",
+                    contextSentence = "He said \"never give up\".",
+                    occurrences = 3
+                )
+            )
+        )
+        assertTrue(csv.contains("\"韧性, 恢复力\""))
+        assertTrue(csv.contains("\"He said \"\"never give up\"\".\""))
+        assertTrue(csv.contains("\"3\""))
     }
 
     @Test

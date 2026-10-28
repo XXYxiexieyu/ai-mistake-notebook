@@ -338,3 +338,34 @@ interface WordDao {
     @Query("DELETE FROM word_entries WHERE id = :id")
     suspend fun deleteById(id: Long)
 }
+
+@Dao
+interface WordLookupTaskDao {
+    @Query("SELECT * FROM word_lookup_tasks ORDER BY createdAt DESC, id DESC")
+    fun observeAll(): Flow<List<WordLookupTaskEntity>>
+
+    @Query("SELECT * FROM word_lookup_tasks WHERE id = :id LIMIT 1")
+    fun observeById(id: Long): Flow<WordLookupTaskEntity?>
+
+    @Query("SELECT * FROM word_lookup_tasks WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): WordLookupTaskEntity?
+
+    @Query(
+        """
+        SELECT * FROM word_lookup_tasks
+        WHERE status IN ('IMPORTING', 'READY', 'ANALYZING', 'REVIEW', 'FAILED')
+        ORDER BY createdAt DESC, id DESC
+        LIMIT 1
+        """
+    )
+    suspend fun getLatestActive(): WordLookupTaskEntity?
+
+    @Query("SELECT * FROM word_lookup_tasks ORDER BY createdAt DESC, id DESC")
+    suspend fun getAll(): List<WordLookupTaskEntity>
+
+    @Insert
+    suspend fun insert(task: WordLookupTaskEntity): Long
+
+    @Update
+    suspend fun update(task: WordLookupTaskEntity)
+}

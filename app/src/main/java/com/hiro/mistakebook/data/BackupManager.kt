@@ -14,13 +14,14 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 data class BackupPayload(
-    val schemaVersion: Int = 3,
+    val schemaVersion: Int = 4,
     val exportedAt: Long = System.currentTimeMillis(),
     val questions: List<QuestionEntity> = emptyList(),
     val retakeSessions: List<RetakeSessionEntity> = emptyList(),
     val retakeItems: List<RetakeItemEntity> = emptyList(),
     val chatMessages: List<QuestionChatMessageEntity> = emptyList(),
-    val wordEntries: List<WordEntryEntity> = emptyList()
+    val wordEntries: List<WordEntryEntity> = emptyList(),
+    val wordLookupTasks: List<WordLookupTaskEntity> = emptyList()
 )
 
 data class ImportPreview(
@@ -49,12 +50,14 @@ class BackupManager(
         val items = database.retakeDao().getAllItems()
         val chatMessages = database.questionChatDao().getAll()
         val wordEntries = database.wordDao().observeAll().first()
+        val wordLookupTasks = database.wordLookupTaskDao().getAll()
         val payload = BackupPayload(
             questions = questions,
             retakeSessions = sessions,
             retakeItems = items,
             chatMessages = chatMessages,
-            wordEntries = wordEntries
+            wordEntries = wordEntries,
+            wordLookupTasks = wordLookupTasks
         )
         var count = 0
         context.contentResolver.openOutputStream(uri)?.use { stream ->
@@ -69,7 +72,8 @@ class BackupManager(
                             gson.fromJson(it.sourceImagePathsJson, Array<String>::class.java).toList()
                         }.getOrDefault(emptyList())
                 } + items.map { it.answerImagePath } + chatMessages.map { it.imagePath } +
-                    wordEntries.map { it.sourceImagePath }
+                    wordEntries.map { it.sourceImagePath } +
+                    wordLookupTasks.flatMap { WordLookupCodec.pagePaths(it.pagePathsJson) }
                 paths.filter { it.isNotBlank() }.distinct().forEach { relative ->
                     val file = images.resolve(relative)
                     if (!file.isFile) return@forEach
@@ -207,6 +211,26 @@ class BackupManager(
             }
         }
 
+        for (task in imported.payload.wordLookupTasks) {
+            val restoredPages = WordLookupCodec.pagePaths(task.pagePathsJson)
+                .mapNotNull { restoreImage(it, imported.extractedDir).takeIf(String::isNotBlank) }
+            val restoredStatus = when (task.status) {
+                WordLookupStatus.COMPLETED.name -> WordLookupStatus.COMPLETED.name
+                WordLookupStatus.REVIEW.name -> WordLookupStatus.REVIEW.name
+                WordLookupStatus.FAILED.name -> WordLookupStatus.FAILED.name
+                else -> WordLookupStatus.READY.name
+            }
+            database.wordLookupTaskDao().insert(
+                task.copy(
+                    id = 0,
+                    status = restoredStatus,
+                    pagePathsJson = WordLookupCodec.encodePagePaths(restoredPages),
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+        }
+
         val cacheRoot = context.cacheDir.canonicalFile
         if (imported.extractedDir.canonicalFile.toPath().startsWith(cacheRoot.toPath())) {
             imported.extractedDir.parentFile?.deleteRecursively()
@@ -260,6 +284,9 @@ class BackupManager(
                         if (!root.has("wordEntries")) {
                             root.add("wordEntries", com.google.gson.JsonArray())
                         }
+                        if (!root.has("wordLookupTasks")) {
+                            root.add("wordLookupTasks", com.google.gson.JsonArray())
+                        }
                         payload = gson.fromJson(root, BackupPayload::class.java)
                     }
                 } else if (entry.name.startsWith("images/")) {
@@ -277,7 +304,7 @@ class BackupManager(
             }
         }
         val parsedPayload = payload ?: error("备份中缺少 backup.json")
-        require(parsedPayload.schemaVersion in 1..3) { "不支持的备份版本" }
+        require(parsedPayload.schemaVersion in 1..4) { "不支持的备份版本" }
         return ReadBackup(
             payload = parsedPayload,
             imageCount = imageCount,

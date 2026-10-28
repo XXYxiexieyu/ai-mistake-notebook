@@ -31,6 +31,8 @@ import com.hiro.mistakebook.data.ImageStore
 import com.hiro.mistakebook.data.PageScanEntity
 import com.hiro.mistakebook.data.QuestionChatMessageEntity
 import com.hiro.mistakebook.data.WordEntryEntity
+import com.hiro.mistakebook.data.WordLookupTaskEntity
+import com.hiro.mistakebook.data.WordLookupStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -53,6 +55,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val words: StateFlow<List<WordEntryEntity>> = repository.observeWords()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    val wordLookupTasks: StateFlow<List<WordLookupTaskEntity>> =
+        repository.observeWordLookupTasks()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _apiConfigured = MutableStateFlow(repository.settings.hasApiKey())
     val apiConfigured: StateFlow<Boolean> = _apiConfigured
@@ -355,8 +361,74 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun ensureWordLookupTask(
+        requestedId: Long?,
+        onReady: (Long) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching {
+                if (requestedId != null && requestedId > 0) {
+                    repository.getWordLookupTask(requestedId)
+                        ?.id
+                        ?: error("查词任务不存在")
+                } else {
+                    repository.ensureActiveWordLookupTask().id
+                }
+            }.onSuccess { id ->
+                withContext(Dispatchers.Main) { onReady(id) }
+            }.onFailure {
+                withContext(Dispatchers.Main) { onError(it.message ?: "无法创建查词任务") }
+            }
+        }
+    }
+
+    fun importWordLookupImages(
+        taskId: Long,
+        uris: List<Uri>,
+        onImported: (String) -> Unit,
+        onDone: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (taskId <= 0 || uris.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.beginWordLookupImport(taskId)
+                val existing = repository.getWordLookupTask(taskId)
+                    ?.let { com.hiro.mistakebook.data.WordLookupCodec.pagePaths(it.pagePathsJson) }
+                    .orEmpty()
+                val available = (5 - existing.size).coerceAtLeast(0)
+                uris.take(available).forEach { uri ->
+                    val path = repository.copyImage(uri, "words")
+                    repository.addWordLookupPage(taskId, path)
+                    withContext(Dispatchers.Main) { onImported(path) }
+                }
+                repository.finishWordLookupImport(taskId)
+                withContext(Dispatchers.Main) { onDone() }
+            } catch (error: Exception) {
+                repository.finishWordLookupImport(taskId)
+                withContext(Dispatchers.Main) {
+                    onError(error.message ?: "查词图片导入失败")
+                }
+            }
+        }
+    }
+
+    fun removeWordLookupPage(taskId: Long, path: String) {
+        if (taskId <= 0 || path.isBlank()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            val task = repository.removeWordLookupPage(taskId, path)
+            if (task != null &&
+                task.status != WordLookupStatus.REVIEW.name &&
+                task.status != WordLookupStatus.COMPLETED.name
+            ) {
+                repository.images.delete(path)
+            }
+        }
+    }
+
     fun lookupEnglishWords(
-        pagePaths: List<String>,
+        taskId: Long,
         onDone: (Int) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -366,17 +438,48 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                val task = repository.markWordLookupAnalyzing(taskId)
+                    ?: error("查词任务不存在")
+                val pagePaths = com.hiro.mistakebook.data.WordLookupCodec
+                    .pagePaths(task.pagePathsJson)
                 val files = pagePaths.take(5).map(repository.images::resolve)
                 require(files.isNotEmpty()) { "请先添加英语阅读页面" }
                 require(files.all { it.isFile }) { "有页面图片不存在" }
                 val (words, _) = app.container.aiClient.extractMarkedEnglishWords(files)
                 if (words.isEmpty()) error("没有识别到圈画或划线单词")
-                repository.addMarkedWords(pagePaths, words)
+                repository.saveWordLookupReview(taskId, words)
+                words.size
             }.onSuccess { count ->
                 withContext(Dispatchers.Main) { onDone(count) }
             }.onFailure {
+                repository.failWordLookup(
+                    taskId,
+                    it.message ?: "英语查词失败"
+                )
                 withContext(Dispatchers.Main) { onError(it.message ?: "英语查词失败") }
             }
+        }
+    }
+
+    fun setWordLookupWordExcluded(taskId: Long, index: Int, excluded: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.setWordLookupWordExcluded(taskId, index, excluded)
+        }
+    }
+
+    fun completeWordLookupReview(
+        taskId: Long,
+        onDone: (Int) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            runCatching { repository.completeWordLookupReview(taskId) }
+                .onSuccess { count ->
+                    withContext(Dispatchers.Main) { onDone(count) }
+                }
+                .onFailure {
+                    withContext(Dispatchers.Main) { onError(it.message ?: "无法加入单词本") }
+                }
         }
     }
 

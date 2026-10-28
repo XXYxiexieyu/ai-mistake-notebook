@@ -38,6 +38,10 @@ class QuestionRepository(
     fun observeChatMessages(questionId: Long): Flow<List<QuestionChatMessageEntity>> =
         database.questionChatDao().observeForQuestion(questionId)
     fun observeWords(): Flow<List<WordEntryEntity>> = database.wordDao().observeAll()
+    fun observeWordLookupTasks(): Flow<List<WordLookupTaskEntity>> =
+        database.wordLookupTaskDao().observeAll()
+    fun observeWordLookupTask(id: Long): Flow<WordLookupTaskEntity?> =
+        database.wordLookupTaskDao().observeById(id)
 
     suspend fun getQuestion(id: Long): QuestionEntity? = database.questionDao().getById(id)
     suspend fun getRetakeSession(id: Long): RetakeSessionEntity? = database.retakeDao().getSession(id)
@@ -54,6 +58,13 @@ class QuestionRepository(
         pagePaths: List<String>,
         words: List<MarkedWordPayload>
     ): Int = database.withTransaction {
+        insertMarkedWords(pagePaths, words)
+    }
+
+    private suspend fun insertMarkedWords(
+        pagePaths: List<String>,
+        words: List<MarkedWordPayload>
+    ): Int {
         var added = 0
         words.forEach { item ->
             val normalized = item.word.trim().lowercase().replace(Regex("^[^a-z]+|[^a-z'-]+$"), "")
@@ -91,11 +102,201 @@ class QuestionRepository(
                 added++
             }
         }
-        added
+        return added
     }
 
     suspend fun deleteWord(id: Long) {
         database.wordDao().deleteById(id)
+    }
+
+    suspend fun ensureActiveWordLookupTask(): WordLookupTaskEntity =
+        database.withTransaction {
+            val existing = database.wordLookupTaskDao().getLatestActive()
+            val now = System.currentTimeMillis()
+            val interrupted = existing != null &&
+                existing.status in setOf(
+                    WordLookupStatus.ANALYZING.name,
+                    WordLookupStatus.IMPORTING.name
+                ) &&
+                now - existing.updatedAt > 3 * 60 * 1000L
+            when {
+                existing == null -> {
+                    val task = WordLookupTaskEntity(
+                        status = WordLookupStatus.READY.name,
+                        createdAt = now,
+                        updatedAt = now
+                    )
+                    task.copy(id = database.wordLookupTaskDao().insert(task))
+                }
+                interrupted -> {
+                    existing!!.copy(
+                        status = WordLookupStatus.READY.name,
+                        error = if (existing.status == WordLookupStatus.ANALYZING.name) {
+                            "上次识别已中断，请重新识别。"
+                        } else {
+                            "上次图片上传已中断，可以继续添加或重新识别。"
+                        },
+                        updatedAt = System.currentTimeMillis()
+                    ).also { database.wordLookupTaskDao().update(it) }
+                }
+                else -> existing
+            }
+        }
+
+    suspend fun getWordLookupTask(id: Long): WordLookupTaskEntity? =
+        database.wordLookupTaskDao().getById(id)
+
+    suspend fun beginWordLookupImport(id: Long) {
+        val task = database.wordLookupTaskDao().getById(id) ?: return
+        if (task.status == WordLookupStatus.COMPLETED.name ||
+            task.status == WordLookupStatus.REVIEW.name ||
+            task.status == WordLookupStatus.ANALYZING.name
+        ) {
+            return
+        }
+        database.wordLookupTaskDao().update(
+            task.copy(
+                status = WordLookupStatus.IMPORTING.name,
+                error = "",
+                progress = maxOf(task.progress, 10),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun addWordLookupPage(id: Long, path: String): WordLookupTaskEntity =
+        database.withTransaction {
+            val task = database.wordLookupTaskDao().getById(id)
+                ?: error("查词任务不存在")
+            require(task.status !in setOf(
+                WordLookupStatus.REVIEW.name,
+                WordLookupStatus.COMPLETED.name,
+                WordLookupStatus.ANALYZING.name
+            )) { "当前任务不能继续添加图片" }
+            val pages = (WordLookupCodec.pagePaths(task.pagePathsJson) + path).distinct().take(5)
+            task.copy(
+                status = WordLookupStatus.IMPORTING.name,
+                pagePathsJson = WordLookupCodec.encodePagePaths(pages),
+                progress = (10 + pages.size * 12).coerceAtMost(70),
+                error = "",
+                updatedAt = System.currentTimeMillis()
+            ).also { database.wordLookupTaskDao().update(it) }
+        }
+
+    suspend fun finishWordLookupImport(id: Long) {
+        val task = database.wordLookupTaskDao().getById(id) ?: return
+        if (task.status == WordLookupStatus.IMPORTING.name) {
+            val pages = WordLookupCodec.pagePaths(task.pagePathsJson)
+            database.wordLookupTaskDao().update(
+                task.copy(
+                    status = WordLookupStatus.READY.name,
+                    progress = if (pages.isEmpty()) 0 else 70,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
+        }
+    }
+
+    suspend fun removeWordLookupPage(id: Long, path: String): WordLookupTaskEntity? =
+        database.withTransaction {
+            val task = database.wordLookupTaskDao().getById(id) ?: return@withTransaction null
+            if (task.status in setOf(
+                    WordLookupStatus.REVIEW.name,
+                    WordLookupStatus.COMPLETED.name,
+                    WordLookupStatus.ANALYZING.name
+                )
+            ) {
+                return@withTransaction task
+            }
+            val pages = WordLookupCodec.pagePaths(task.pagePathsJson).filterNot { it == path }
+            task.copy(
+                status = WordLookupStatus.READY.name,
+                pagePathsJson = WordLookupCodec.encodePagePaths(pages),
+                progress = if (pages.isEmpty()) 0 else (10 + pages.size * 12).coerceAtMost(70),
+                updatedAt = System.currentTimeMillis()
+            ).also { database.wordLookupTaskDao().update(it) }
+        }
+
+    suspend fun markWordLookupAnalyzing(id: Long): WordLookupTaskEntity? {
+        val task = database.wordLookupTaskDao().getById(id) ?: return null
+        return task.copy(
+            status = WordLookupStatus.ANALYZING.name,
+            progress = 85,
+            error = "",
+            updatedAt = System.currentTimeMillis()
+        ).also { database.wordLookupTaskDao().update(it) }
+    }
+
+    suspend fun failWordLookup(id: Long, message: String) {
+        val task = database.wordLookupTaskDao().getById(id) ?: return
+        database.wordLookupTaskDao().update(
+            task.copy(
+                status = WordLookupStatus.FAILED.name,
+                error = message,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun saveWordLookupReview(id: Long, words: List<MarkedWordPayload>) {
+        val task = database.wordLookupTaskDao().getById(id) ?: return
+        val pageCount = WordLookupCodec.pagePaths(task.pagePathsJson).size
+        val normalizedWords = if (pageCount == 0) {
+            emptyList()
+        } else {
+            words.map { word ->
+                word.copy(pageIndex = word.pageIndex.coerceIn(0, pageCount - 1))
+            }
+        }
+        database.wordLookupTaskDao().update(
+            task.copy(
+                status = WordLookupStatus.REVIEW.name,
+                recognizedWordsJson = WordLookupCodec.encodeRecognizedWords(normalizedWords),
+                excludedIndicesJson = WordLookupCodec.encodeExcludedIndices(emptySet()),
+                recognizedCount = normalizedWords.size,
+                progress = 100,
+                error = "",
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun setWordLookupWordExcluded(id: Long, index: Int, excluded: Boolean) {
+        val task = database.wordLookupTaskDao().getById(id) ?: return
+        if (task.status != WordLookupStatus.REVIEW.name) return
+        val indices = WordLookupCodec.excludedIndices(task.excludedIndicesJson).toMutableSet()
+        if (excluded) indices += index else indices -= index
+        database.wordLookupTaskDao().update(
+            task.copy(
+                excludedIndicesJson = WordLookupCodec.encodeExcludedIndices(indices),
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+    }
+
+    suspend fun completeWordLookupReview(id: Long): Int = database.withTransaction {
+        val task = database.wordLookupTaskDao().getById(id)
+            ?: error("查词任务不存在")
+        if (task.status == WordLookupStatus.COMPLETED.name) {
+            return@withTransaction task.wordCount
+        }
+        require(task.status == WordLookupStatus.REVIEW.name) { "查词结果尚未完成复核" }
+        val pages = WordLookupCodec.pagePaths(task.pagePathsJson)
+        val excluded = WordLookupCodec.excludedIndices(task.excludedIndicesJson)
+        val selected = WordLookupCodec.recognizedWords(task.recognizedWordsJson)
+            .filterIndexed { index, _ -> index !in excluded }
+        require(selected.isNotEmpty()) { "请至少保留一个单词" }
+        insertMarkedWords(pages, selected)
+        database.wordLookupTaskDao().update(
+            task.copy(
+                status = WordLookupStatus.COMPLETED.name,
+                wordCount = selected.size,
+                progress = 100,
+                error = "",
+                updatedAt = System.currentTimeMillis()
+            )
+        )
+        selected.size
     }
 
     suspend fun addQuestion(draft: QuestionDraft, autoAnalyze: Boolean? = null): Long {
