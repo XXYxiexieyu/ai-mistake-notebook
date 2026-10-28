@@ -36,7 +36,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -75,7 +74,6 @@ import com.hiro.mistakebook.ui.theme.Amber
 import com.hiro.mistakebook.ui.theme.Green
 import com.hiro.mistakebook.ui.theme.Muted
 import com.hiro.mistakebook.ui.theme.Red
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -91,7 +89,6 @@ fun WordLookupScreen(
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var resolvedTaskId by remember(taskId) { mutableLongStateOf(taskId ?: 0L) }
-    var completing by remember { mutableStateOf(false) }
     val tasks by viewModel.wordLookupTasks.collectAsStateWithLifecycle()
     val task = tasks.firstOrNull { it.id == resolvedTaskId }
     val pagePaths = remember(task?.pagePathsJson) {
@@ -100,9 +97,6 @@ fun WordLookupScreen(
     val recognizedWords = remember(task?.recognizedWordsJson) {
         WordLookupCodec.recognizedWords(task?.recognizedWordsJson.orEmpty())
     }
-    val excludedIndices = remember(task?.excludedIndicesJson) {
-        WordLookupCodec.excludedIndices(task?.excludedIndicesJson.orEmpty())
-    }
     val indexedWords = remember(recognizedWords) {
         recognizedWords.mapIndexed { index, word -> IndexedMarkedWord(index, word) }
     }
@@ -110,9 +104,7 @@ fun WordLookupScreen(
         runCatching { WordLookupStatus.valueOf(task?.status.orEmpty()) }
             .getOrDefault(WordLookupStatus.READY)
     }
-    val includedCount = recognizedWords.indices.count { it !in excludedIndices }
     val canAddImages = status in setOf(WordLookupStatus.READY, WordLookupStatus.FAILED)
-    val canReview = status == WordLookupStatus.REVIEW
 
     LaunchedEffect(taskId) {
         viewModel.ensureWordLookupTask(
@@ -190,8 +182,7 @@ fun WordLookupScreen(
                     task = task,
                     status = status,
                     pageCount = pagePaths.size,
-                    recognizedCount = recognizedWords.size,
-                    includedCount = includedCount
+                    recognizedCount = recognizedWords.size
                 )
             }
             item {
@@ -204,7 +195,7 @@ fun WordLookupScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Text(
-                            "只识别手写圈画、划线单词；识别结果会直接在原图上标号，确认前可逐词排除。",
+                            "AI 识别结果会直接加入本地单词库，并在原图上标出位置。需要修正时，请到单词详情页手动编辑。",
                             color = Muted,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -265,16 +256,7 @@ fun WordLookupScreen(
                         pageIndex = pageIndex,
                         path = path,
                         words = indexedWords.filter { it.word.pageIndex == pageIndex },
-                        excludedIndices = excludedIndices,
-                        reviewable = canReview,
                         removable = canAddImages,
-                        onToggleWord = { index, accepted ->
-                            viewModel.setWordLookupWordExcluded(
-                                taskId = resolvedTaskId,
-                                index = index,
-                                excluded = !accepted
-                            )
-                        },
                         onDelete = { viewModel.removeWordLookupPage(resolvedTaskId, path) }
                     )
                 }
@@ -295,42 +277,7 @@ fun WordLookupScreen(
             }
             item {
                 when (status) {
-                    WordLookupStatus.REVIEW -> {
-                        Button(
-                            onClick = {
-                                if (includedCount == 0) {
-                                    scope.launch { snackbar.showSnackbar("请至少保留一个单词") }
-                                    return@Button
-                                }
-                                completing = true
-                                viewModel.completeWordLookupReview(
-                                    taskId = resolvedTaskId,
-                                    onDone = { count ->
-                                        completing = false
-                                        scope.launch {
-                                            snackbar.showSnackbar("已加入或更新 $count 个单词")
-                                            delay(450)
-                                            onFinished()
-                                        }
-                                    },
-                                    onError = {
-                                        completing = false
-                                        scope.launch { snackbar.showSnackbar(it) }
-                                    }
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = !completing && includedCount > 0
-                        ) {
-                            if (completing) {
-                                CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                                Text(" 正在加入单词本…")
-                            } else {
-                                Text("确认并加入单词本（保留 $includedCount / ${recognizedWords.size}）")
-                            }
-                        }
-                    }
-                    WordLookupStatus.COMPLETED -> {
+                    WordLookupStatus.COMPLETED, WordLookupStatus.REVIEW -> {
                         Button(onClick = onFinished, modifier = Modifier.fillMaxWidth()) {
                             Text("查看单词本（已加入 ${task?.wordCount ?: 0} 个）")
                         }
@@ -359,7 +306,7 @@ fun WordLookupScreen(
                                     onDone = { count ->
                                         scope.launch {
                                             snackbar.showSnackbar(
-                                                "识别到 $count 个标记单词，请在图片记录中复核"
+                                                "AI 已识别并加入本地单词库 $count 个单词"
                                             )
                                         }
                                     },
@@ -403,8 +350,7 @@ private fun LookupTaskSummary(
     task: WordLookupTaskEntity?,
     status: WordLookupStatus,
     pageCount: Int,
-    recognizedCount: Int,
-    includedCount: Int
+    recognizedCount: Int
 ) {
     Card(
         shape = RoundedCornerShape(18.dp),
@@ -422,8 +368,7 @@ private fun LookupTaskSummary(
                 Text(status.label, color = statusColor(status), fontWeight = FontWeight.SemiBold)
             }
             Text(
-                "已上传 $pageCount 页 · 识别 $recognizedCount 个单词" +
-                    if (status == WordLookupStatus.REVIEW) " · 当前保留 $includedCount 个" else "",
+                "已上传 $pageCount 页 · AI 识别并写入 $recognizedCount 个单词",
                 color = Muted,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -444,10 +389,7 @@ private fun WordLookupImageCard(
     pageIndex: Int,
     path: String,
     words: List<IndexedMarkedWord>,
-    excludedIndices: Set<Int>,
-    reviewable: Boolean,
     removable: Boolean,
-    onToggleWord: (index: Int, accepted: Boolean) -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -503,7 +445,7 @@ private fun WordLookupImageCard(
                     val rightRatio = box[2].coerceIn(0f, 1000f) / 1000f
                     val bottomRatio = box[3].coerceIn(0f, 1000f) / 1000f
                     if (rightRatio <= leftRatio || bottomRatio <= topRatio) return@forEach
-                    val color = if (match.index in excludedIndices) Muted else Amber
+                    val color = Amber
                     val left = maxWidth * leftRatio
                     val top = maxHeight * topRatio
                     val markWidth = (maxWidth * (rightRatio - leftRatio)).coerceAtLeast(18.dp)
@@ -533,20 +475,16 @@ private fun WordLookupImageCard(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     words.forEach { match ->
-                        FilterChip(
-                            selected = match.index !in excludedIndices,
-                            onClick = {
-                                if (reviewable) {
-                                    onToggleWord(match.index, match.index in excludedIndices)
-                                }
-                            },
-                            enabled = reviewable,
-                            label = {
-                                Text(
-                                    "${match.index + 1}. ${match.word.word}" +
-                                        if (match.word.markType.isNotBlank()) " · ${match.word.markType}" else ""
+                        Text(
+                            "${match.index + 1}. ${match.word.word}" +
+                                if (match.word.markType.isNotBlank()) " · ${match.word.markType}" else "",
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant,
+                                    RoundedCornerShape(12.dp)
                                 )
-                            }
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall
                         )
                     }
                 }

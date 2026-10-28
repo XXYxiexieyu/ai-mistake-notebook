@@ -229,6 +229,8 @@ class CatalogTest {
         val decoded = WordLookupCodec.recognizedWords(encoded)
         assertEquals(1, decoded.size)
         assertEquals(listOf(10f, 20f, 300f, 80f), decoded.first().box)
+        val boxJson = WordLookupCodec.encodeBox(decoded.first().box)
+        assertEquals(listOf(10f, 20f, 300f, 80f), WordLookupCodec.box(boxJson))
 
         val csv = WordCsvExporter.toCsv(
             listOf(

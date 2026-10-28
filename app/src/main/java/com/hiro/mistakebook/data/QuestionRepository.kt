@@ -74,6 +74,8 @@ class QuestionRepository(
             val existing = database.wordDao().findActive(normalized)
                 ?: database.wordDao().findAny(normalized)
             if (existing != null) {
+                val incomingSource = pagePaths.getOrNull(item.pageIndex).orEmpty()
+                val keepFirstSource = existing.sourceImagePath.isNotBlank()
                 database.wordDao().update(
                     existing.copy(
                         word = item.word,
@@ -91,13 +93,24 @@ class QuestionRepository(
                             .ifBlank { existing.exampleSentence },
                         contextSentence = item.contextSentence.ifBlank { existing.contextSentence },
                         markType = item.markType.ifBlank { existing.markType },
-                        sourceImagePath = pagePaths.getOrNull(item.pageIndex) ?: existing.sourceImagePath,
+                        sourceImagePath = existing.sourceImagePath.ifBlank { incomingSource },
+                        sourcePageIndex = if (keepFirstSource) {
+                            existing.sourcePageIndex
+                        } else {
+                            item.pageIndex
+                        },
+                        sourceBoxJson = if (keepFirstSource || item.box.size < 4) {
+                            existing.sourceBoxJson
+                        } else {
+                            WordLookupCodec.encodeBox(item.box)
+                        },
                         occurrences = existing.occurrences + 1,
                         updatedAt = System.currentTimeMillis(),
                         deletedAt = null
                     )
                 )
             } else {
+                val sourcePath = pagePaths.getOrNull(item.pageIndex).orEmpty()
                 database.wordDao().insert(
                     WordEntryEntity(
                         word = item.word,
@@ -112,7 +125,9 @@ class QuestionRepository(
                         exampleSentence = item.exampleSentence,
                         contextSentence = item.contextSentence,
                         markType = item.markType,
-                        sourceImagePath = pagePaths.getOrNull(item.pageIndex).orEmpty()
+                        sourceImagePath = sourcePath,
+                        sourcePageIndex = item.pageIndex,
+                        sourceBoxJson = WordLookupCodec.encodeBox(item.box)
                     )
                 )
                 added++
@@ -127,6 +142,19 @@ class QuestionRepository(
 
     suspend fun restoreWord(id: Long) {
         database.wordDao().restore(id, System.currentTimeMillis())
+    }
+
+    suspend fun updateWord(word: WordEntryEntity) {
+        val normalized = word.word.trim().lowercase()
+            .replace(Regex("^[^a-z]+|[^a-z'-]+$"), "")
+        require(normalized.isNotBlank()) { "单词不能为空" }
+        database.wordDao().update(
+            word.copy(
+                word = word.word.trim(),
+                normalizedWord = normalized,
+                updatedAt = System.currentTimeMillis()
+            )
+        )
     }
 
     suspend fun permanentlyDeleteWord(id: Long) {
@@ -266,8 +294,12 @@ class QuestionRepository(
         )
     }
 
-    suspend fun saveWordLookupReview(id: Long, words: List<MarkedWordPayload>) {
-        val task = database.wordLookupTaskDao().getById(id) ?: return
+    suspend fun completeWordLookupWithAi(
+        id: Long,
+        words: List<MarkedWordPayload>
+    ): Int = database.withTransaction {
+        val task = database.wordLookupTaskDao().getById(id)
+            ?: error("查词任务不存在")
         val pageCount = WordLookupCodec.pagePaths(task.pagePathsJson).size
         val normalizedWords = if (pageCount == 0) {
             emptyList()
@@ -276,55 +308,44 @@ class QuestionRepository(
                 word.copy(pageIndex = word.pageIndex.coerceIn(0, pageCount - 1))
             }
         }
-        database.wordLookupTaskDao().update(
-            task.copy(
-                status = WordLookupStatus.REVIEW.name,
-                recognizedWordsJson = WordLookupCodec.encodeRecognizedWords(normalizedWords),
-                excludedIndicesJson = WordLookupCodec.encodeExcludedIndices(emptySet()),
-                recognizedCount = normalizedWords.size,
-                progress = 100,
-                error = "",
-                updatedAt = System.currentTimeMillis()
-            )
-        )
-    }
-
-    suspend fun setWordLookupWordExcluded(id: Long, index: Int, excluded: Boolean) {
-        val task = database.wordLookupTaskDao().getById(id) ?: return
-        if (task.status != WordLookupStatus.REVIEW.name) return
-        val indices = WordLookupCodec.excludedIndices(task.excludedIndicesJson).toMutableSet()
-        if (excluded) indices += index else indices -= index
-        database.wordLookupTaskDao().update(
-            task.copy(
-                excludedIndicesJson = WordLookupCodec.encodeExcludedIndices(indices),
-                updatedAt = System.currentTimeMillis()
-            )
-        )
-    }
-
-    suspend fun completeWordLookupReview(id: Long): Int = database.withTransaction {
-        val task = database.wordLookupTaskDao().getById(id)
-            ?: error("查词任务不存在")
-        if (task.status == WordLookupStatus.COMPLETED.name) {
-            return@withTransaction task.wordCount
-        }
-        require(task.status == WordLookupStatus.REVIEW.name) { "查词结果尚未完成复核" }
         val pages = WordLookupCodec.pagePaths(task.pagePathsJson)
-        val excluded = WordLookupCodec.excludedIndices(task.excludedIndicesJson)
-        val selected = WordLookupCodec.recognizedWords(task.recognizedWordsJson)
-            .filterIndexed { index, _ -> index !in excluded }
-        require(selected.isNotEmpty()) { "请至少保留一个单词" }
-        insertMarkedWords(pages, selected)
+        insertMarkedWords(pages, normalizedWords)
         database.wordLookupTaskDao().update(
             task.copy(
                 status = WordLookupStatus.COMPLETED.name,
-                wordCount = selected.size,
+                recognizedWordsJson = WordLookupCodec.encodeRecognizedWords(normalizedWords),
+                excludedIndicesJson = WordLookupCodec.encodeExcludedIndices(emptySet()),
+                recognizedCount = normalizedWords.size,
+                wordCount = normalizedWords.size,
                 progress = 100,
                 error = "",
                 updatedAt = System.currentTimeMillis()
             )
         )
-        selected.size
+        normalizedWords.size
+    }
+
+    suspend fun autoCompleteLegacyWordLookupReviews() {
+        val legacyTasks = database.wordLookupTaskDao().getAll()
+            .filter { it.status == WordLookupStatus.REVIEW.name }
+        legacyTasks.forEach { task ->
+            database.withTransaction {
+                val pages = WordLookupCodec.pagePaths(task.pagePathsJson)
+                val excluded = WordLookupCodec.excludedIndices(task.excludedIndicesJson)
+                val selected = WordLookupCodec.recognizedWords(task.recognizedWordsJson)
+                    .filterIndexed { index, _ -> index !in excluded }
+                if (selected.isNotEmpty()) insertMarkedWords(pages, selected)
+                database.wordLookupTaskDao().update(
+                    task.copy(
+                        status = WordLookupStatus.COMPLETED.name,
+                        wordCount = selected.size,
+                        progress = 100,
+                        error = "",
+                        updatedAt = System.currentTimeMillis()
+                    )
+                )
+            }
+        }
     }
 
     suspend fun addQuestion(draft: QuestionDraft, autoAnalyze: Boolean? = null): Long {

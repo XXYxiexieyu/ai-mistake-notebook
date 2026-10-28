@@ -1,12 +1,12 @@
 AI错题本 Android 预览版
 
-Version: 0.7.4-preview
+Version: 0.7.5-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.7.4-preview.apk
-Size: 62,803,793 bytes (59.89 MB)
-SHA-256: 7E258D93F7455CE3143ED85E049F5D6653708BF1384B93785D335F387225D9B4
+APK: AI_Mistake_Notebook_0.7.5-preview.apk
+Size: 62,869,329 bytes (59.96 MB)
+SHA-256: 282B4D1C76035A940E887E940D8F186E018C673BC53BD2F3025113E137FB32DA
 
 Verification:
 - assembleDebug: passed
@@ -67,10 +67,16 @@ Verification:
 - AI vocabulary enrichment for other meanings, collocations, word forms and example sentence: implemented
 - Soft-delete word recycle bin with restore and permanent deletion: implemented
 - Room database upgraded to v10 with word detail fields and deletedAt: verified by schema generation
+- AI word recognition writes directly to the local word database without an upload review step
+- Legacy pending-review lookup tasks are completed automatically after upgrade
+- Manual correction moved to the word detail editor
+- First-recognition page and bounding box are stored locally
+- First-recognition position is highlighted in source-image preview and full-screen zoom
+- Room database upgraded to v11: verified by schema generation
 
 Device verification:
 - Version 0.7.0: Xiaomi 15 and Xiaomi 13 installed and main flows run normally.
-- Versions 0.7.1 through 0.7.4: build, unit tests and lint passed; physical-device regression pending.
+- Versions 0.7.1 through 0.7.5: build, unit tests and lint passed; physical-device regression pending.
 - Both devices use non-rooted production system builds.
 
 Not yet verified:

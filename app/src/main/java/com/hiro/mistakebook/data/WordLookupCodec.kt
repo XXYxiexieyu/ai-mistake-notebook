@@ -23,4 +23,10 @@ object WordLookupCodec {
     fun encodeRecognizedWords(words: List<MarkedWordPayload>): String = gson.toJson(words)
 
     fun encodeExcludedIndices(indices: Set<Int>): String = gson.toJson(indices.sorted())
+
+    fun box(json: String): List<Float> = runCatching {
+        gson.fromJson(json, Array<Float>::class.java).toList()
+    }.getOrDefault(emptyList())
+
+    fun encodeBox(box: List<Float>): String = gson.toJson(box)
 }

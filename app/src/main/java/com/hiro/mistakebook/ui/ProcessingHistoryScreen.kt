@@ -267,7 +267,7 @@ private fun WordLookupProgressCard(
             Button(onClick = onOpen) {
                 Text(
                     when (status) {
-                        WordLookupStatus.REVIEW -> "复核标记单词"
+                        WordLookupStatus.REVIEW -> "查看自动入库进度"
                         WordLookupStatus.COMPLETED -> "查看上传记录"
                         WordLookupStatus.FAILED -> "继续处理"
                         else -> "查看查词进度"

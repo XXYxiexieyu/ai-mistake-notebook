@@ -82,6 +82,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _batchSplitProgress = MutableStateFlow<BatchSplitProgress?>(null)
     val batchSplitProgress: StateFlow<BatchSplitProgress?> = _batchSplitProgress
 
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.autoCompleteLegacyWordLookupReviews()
+        }
+    }
+
     fun importImage(uri: Uri, prefix: String, onResult: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             runCatching { repository.copyImage(uri, prefix) }
@@ -450,8 +456,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 require(files.all { it.isFile }) { "有页面图片不存在" }
                 val (words, _) = app.container.aiClient.extractMarkedEnglishWords(files)
                 if (words.isEmpty()) error("没有识别到圈画或划线单词")
-                repository.saveWordLookupReview(taskId, words)
-                words.size
+                repository.completeWordLookupWithAi(taskId, words)
             }.onSuccess { count ->
                 withContext(Dispatchers.Main) { onDone(count) }
             }.onFailure {
@@ -464,24 +469,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun setWordLookupWordExcluded(taskId: Long, index: Int, excluded: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.setWordLookupWordExcluded(taskId, index, excluded)
-        }
-    }
-
-    fun completeWordLookupReview(
-        taskId: Long,
-        onDone: (Int) -> Unit,
+    fun updateWordDetails(
+        word: WordEntryEntity,
+        onDone: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            runCatching { repository.completeWordLookupReview(taskId) }
-                .onSuccess { count ->
-                    withContext(Dispatchers.Main) { onDone(count) }
+            runCatching { repository.updateWord(word) }
+                .onSuccess {
+                    withContext(Dispatchers.Main) { onDone() }
                 }
                 .onFailure {
-                    withContext(Dispatchers.Main) { onError(it.message ?: "无法加入单词本") }
+                    withContext(Dispatchers.Main) { onError(it.message ?: "单词保存失败") }
                 }
         }
     }
