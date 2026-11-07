@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.7.6-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；后续版本已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.7.7-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；后续版本已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -50,7 +50,7 @@
 | 知识点目录 | 点击错题中的知识点，直接进入该知识点独立错题目录 |
 | 处理进度球 | 首页加号上方常驻显示已完成与剩余数量，点击进入添加历史和处理进度 |
 | 原作答提取 | 自动识别图片中的学生原作答、草稿和错误步骤并填入原作答字段 |
-| 英语阅读查词 | AI 识别后直接写入本地词库，持久化上传记录、单词坐标和处理进度 |
+| 英语阅读查词 | 原图与彩笔增强图联合识别，保护完形题干/选项区域，全屏查看篇目和单词位置 |
 | 单词本 | 紧凑列表、完整详情、首次识别位置标记、本地编辑、来源图片放大、回收站恢复和一键导出 CSV |
 | 整页扫描 | 根据对错号、蓝笔/红笔订正、扣分和其他颜色批注识别错题，并生成彩笔增强图辅助判断 |
 | 扫描进度 | 显示当前页的保存、彩笔增强、AI 分析和裁题入库阶段，可转到后台继续 |
@@ -220,6 +220,7 @@ python tools/fetch_catalog.py
 | `0.7.4-preview` | 单词完整详情、来源图片缩放、AI 扩展释义与固定搭配、单词回收站及数据库 v10 |
 | `0.7.5-preview` | AI 查词直接入库、详情人工编辑、首次识别位置框和数据库 v11 |
 | `0.7.6-preview` | 科目知识点分布图、完整知识点展开和知识点错题目录联动 |
+| `0.7.7-preview` | 手写划线保护识别、完形题区过滤和篇目全屏缩放查看 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -249,7 +250,7 @@ python tools/fetch_catalog.py
 ## 构建验证
 
 - `assembleDebug`：通过。
-- `testDebugUnitTest`：15 项通过，包括蓝笔颜色检测、AI 默认值、错题审查、英语单词解析与坐标、CSV 导出、数学符号与化学方程式转换。
+- `testDebugUnitTest`：16 项通过，包括蓝笔颜色检测、手写词保护过滤、AI 默认值、错题审查、英语单词解析与坐标、CSV 导出、数学符号与化学方程式转换。
 - `lintDebug`：0 个问题。
 - GitHub Actions：通过。
 - APK v2 签名：通过。

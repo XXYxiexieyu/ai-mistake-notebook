@@ -1,16 +1,16 @@
 AI错题本 Android 预览版
 
-Version: 0.7.6-preview
+Version: 0.7.7-preview
 Package: com.hiro.mistakebook
 Min Android: 10 (API 29)
 Target Android: 15 (API 35)
-APK: AI_Mistake_Notebook_0.7.6-preview.apk
-Size: 62,885,713 bytes (59.97 MB)
-SHA-256: 205E5D8674797B5D1F194EE8F9C105097B60ED0AFC015E209746B17A25378FA9
+APK: AI_Mistake_Notebook_0.7.7-preview.apk
+Size: 62,902,093 bytes (59.99 MB)
+SHA-256: 264E169FD468E00A5F91B4DC240C2FE6E3D58A753E10D6EEA4D2B35E73D1ABD4
 
 Verification:
 - assembleDebug: passed
-- testDebugUnitTest: 15 tests passed
+- testDebugUnitTest: 16 tests passed
 - lintDebug: 0 issues
 - APK v2 signature: verified
 - Knowledge catalog: 35 books, 259 units, 1156 sections
@@ -77,10 +77,15 @@ Verification:
 - Expandable full knowledge-point lists per subject and textbook: implemented
 - Knowledge-point chart legend and list navigation to a scoped wrong-question directory: implemented
 - Subject-aware point aggregation prevents same-name cross-subject mixing: implemented
+- Original and colored-ink enhanced page images are paired for underlined-word recognition: implemented
+- Cloze stem, option, answer, instruction and header/footer regions are protected and filtered: implemented
+- Marked-word confidence and handwritten-evidence protection: implemented
+- Uploaded passage records support full-screen pinch-zoom viewing: implemented
+- Shared full-screen passage viewer for lookup records and word source images: implemented
 
 Device verification:
 - Version 0.7.0: Xiaomi 15 and Xiaomi 13 installed and main flows run normally.
-- Versions 0.7.1 through 0.7.6: build, unit tests and lint passed; physical-device regression pending.
+- Versions 0.7.1 through 0.7.7: build, unit tests and lint passed; physical-device regression pending.
 - Both devices use non-rooted production system builds.
 
 Not yet verified:

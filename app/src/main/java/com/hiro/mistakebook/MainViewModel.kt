@@ -17,6 +17,7 @@ import androidx.work.WorkManager
 import com.hiro.mistakebook.ai.PageScanWorker
 import com.hiro.mistakebook.ai.QuestionChatWorker
 import com.hiro.mistakebook.ai.RetakeGradeWorker
+import com.hiro.mistakebook.ai.InkImageEnhancer
 import com.hiro.mistakebook.data.QuestionDraft
 import com.hiro.mistakebook.data.QuestionEntity
 import com.hiro.mistakebook.data.QuestionRepository
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.Normalizer
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -454,9 +456,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val files = pagePaths.take(5).map(repository.images::resolve)
                 require(files.isNotEmpty()) { "请先添加英语阅读页面" }
                 require(files.all { it.isFile }) { "有页面图片不存在" }
-                val (words, _) = app.container.aiClient.extractMarkedEnglishWords(files)
-                if (words.isEmpty()) error("没有识别到圈画或划线单词")
-                repository.completeWordLookupWithAi(taskId, words)
+                val enhancedFiles = mutableListOf<File>()
+                try {
+                    files.forEachIndexed { index, file ->
+                        val enhanced = File.createTempFile(
+                            "word-ink-${index + 1}-",
+                            ".jpg",
+                            app.cacheDir
+                        )
+                        if (InkImageEnhancer.createEnhancedImage(file, enhanced)) {
+                            enhancedFiles += enhanced
+                        } else {
+                            enhanced.delete()
+                        }
+                    }
+                    if (enhancedFiles.size != files.size) {
+                        enhancedFiles.forEach { it.delete() }
+                        enhancedFiles.clear()
+                    }
+                    val (words, _) = app.container.aiClient.extractMarkedEnglishWords(
+                        pageFiles = files,
+                        enhancedInkPages = enhancedFiles
+                    )
+                    if (words.isEmpty()) error("没有识别到正文区域中有明确手写痕迹的单词")
+                    repository.completeWordLookupWithAi(taskId, words)
+                } finally {
+                    enhancedFiles.forEach { it.delete() }
+                }
             }.onSuccess { count ->
                 withContext(Dispatchers.Main) { onDone(count) }
             }.onFailure {

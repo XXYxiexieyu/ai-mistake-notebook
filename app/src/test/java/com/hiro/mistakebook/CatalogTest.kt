@@ -7,6 +7,8 @@ import com.hiro.mistakebook.data.KnowledgeMatcher
 import com.hiro.mistakebook.ai.InkColorAnalyzer
 import com.hiro.mistakebook.ai.AutoSplitPayload
 import com.hiro.mistakebook.ai.MarkedWordsPayload
+import com.hiro.mistakebook.ai.MarkedWordPayload
+import com.hiro.mistakebook.ai.filterProtectedMarkedWords
 import com.hiro.mistakebook.chemistry.ChemistrySymbolDatabase
 import com.hiro.mistakebook.chemistry.createChemistryNormalizer
 import com.hiro.mistakebook.data.AnalysisPayload
@@ -251,6 +253,45 @@ class CatalogTest {
         assertTrue(csv.contains("\"resilience training — 韧性训练\""))
         assertTrue(csv.contains("\"He said \"\"never give up\"\".\""))
         assertTrue(csv.contains("\"3\""))
+    }
+
+    @Test
+    fun markedWordsRespectClozeProtectionRegionsAndEvidence() {
+        val filtered = filterProtectedMarkedWords(
+            listOf(
+                MarkedWordPayload(
+                    word = "resilience",
+                    regionType = "PASSAGE",
+                    markEvidence = "蓝色手写线下划线",
+                    confidence = 0.91
+                ),
+                MarkedWordPayload(
+                    word = "optionWord",
+                    regionType = "OPTION",
+                    markEvidence = "蓝色下划线",
+                    confidence = 0.95
+                ),
+                MarkedWordPayload(
+                    word = "protectedWord",
+                    regionType = "PASSAGE",
+                    protectedRegion = true,
+                    markEvidence = "手写划线",
+                    confidence = 0.95
+                ),
+                MarkedWordPayload(
+                    word = "noEvidence",
+                    regionType = "PASSAGE",
+                    confidence = 0.95
+                ),
+                MarkedWordPayload(
+                    word = "lowConfidence",
+                    regionType = "PASSAGE",
+                    markEvidence = "模糊线条",
+                    confidence = 0.2
+                )
+            )
+        )
+        assertEquals(listOf("resilience"), filtered.map { it.word })
     }
 
     @Test

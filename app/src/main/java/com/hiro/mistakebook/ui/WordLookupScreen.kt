@@ -1,15 +1,12 @@
 package com.hiro.mistakebook.ui
 
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -20,7 +17,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,9 +52,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -246,7 +240,7 @@ fun WordLookupScreen(
             if (pagePaths.isNotEmpty()) {
                 item {
                     Text(
-                        "上传图片记录（${pagePaths.size}/5）",
+                        "上传图片记录（${pagePaths.size}/5）· 点击篇目全屏查看",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -337,14 +331,6 @@ private data class IndexedMarkedWord(
     val word: MarkedWordPayload
 )
 
-private data class ImageDimension(
-    val width: Int,
-    val height: Int
-) {
-    val aspectRatio: Float
-        get() = if (width <= 0 || height <= 0) 0.707f else width.toFloat() / height
-}
-
 @Composable
 private fun LookupTaskSummary(
     task: WordLookupTaskEntity?,
@@ -393,11 +379,15 @@ private fun WordLookupImageCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    val dimensions = remember(path) {
-        val file = ImageStore(context).resolve(path)
-        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(file.absolutePath, options)
-        ImageDimension(options.outWidth, options.outHeight)
+    var fullscreen by remember { mutableStateOf(false) }
+    val imageAspect = remember(path) { sourceImageAspectRatio(context, path) }
+    val marks = remember(words) {
+        words.map { match ->
+            PageWordMark(
+                box = match.word.box,
+                label = "${match.index + 1}. ${match.word.word}"
+            )
+        }
     }
     Card(
         shape = RoundedCornerShape(18.dp),
@@ -426,49 +416,14 @@ private fun WordLookupImageCard(
                     }
                 }
             }
-            BoxWithConstraints(
+            MarkedPageImage(
+                path = path,
+                marks = marks,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(dimensions.aspectRatio)
-                    .clip(RoundedCornerShape(14.dp))
-            ) {
-                ImagePanel(
-                    path,
-                    Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds
-                )
-                words.forEach { match ->
-                    val box = match.word.box
-                    if (box.size < 4) return@forEach
-                    val leftRatio = box[0].coerceIn(0f, 1000f) / 1000f
-                    val topRatio = box[1].coerceIn(0f, 1000f) / 1000f
-                    val rightRatio = box[2].coerceIn(0f, 1000f) / 1000f
-                    val bottomRatio = box[3].coerceIn(0f, 1000f) / 1000f
-                    if (rightRatio <= leftRatio || bottomRatio <= topRatio) return@forEach
-                    val color = Amber
-                    val left = maxWidth * leftRatio
-                    val top = maxHeight * topRatio
-                    val markWidth = (maxWidth * (rightRatio - leftRatio)).coerceAtLeast(18.dp)
-                    val markHeight = (maxHeight * (bottomRatio - topRatio)).coerceAtLeast(18.dp)
-                    Box(
-                        modifier = Modifier
-                            .offset(x = left, y = top)
-                            .size(markWidth, markHeight)
-                            .background(color.copy(alpha = 0.12f), RoundedCornerShape(3.dp))
-                            .border(2.dp, color, RoundedCornerShape(3.dp))
-                    )
-                    Text(
-                        "${match.index + 1}. ${match.word.word}",
-                        modifier = Modifier
-                            .offset(x = left, y = if (top > 24.dp) top - 22.dp else 0.dp)
-                            .background(color, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp),
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall,
-                        maxLines = 1
-                    )
-                }
-            }
+                    .aspectRatio(imageAspect)
+                    .clickable { fullscreen = true }
+            )
             if (words.isNotEmpty()) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -490,6 +445,13 @@ private fun WordLookupImageCard(
                 }
             }
         }
+    }
+    if (fullscreen) {
+        MarkedPageFullscreenDialog(
+            path = path,
+            marks = marks,
+            onDismiss = { fullscreen = false }
+        )
     }
 }
 

@@ -55,6 +55,9 @@ data class MarkedWordPayload(
     val exampleSentence: String = "",
     val contextSentence: String = "",
     val markType: String = "",
+    val regionType: String = "",
+    val protectedRegion: Boolean = false,
+    val markEvidence: String = "",
     val pageIndex: Int = 0,
     val box: List<Float> = emptyList(),
     val confidence: Double? = null
@@ -63,6 +66,15 @@ data class MarkedWordPayload(
 data class MarkedWordsPayload(
     val words: List<MarkedWordPayload> = emptyList()
 )
+
+fun filterProtectedMarkedWords(words: List<MarkedWordPayload>): List<MarkedWordPayload> {
+    return words
+        .filter { it.word.isNotBlank() }
+        .filter { !it.protectedRegion }
+        .filter { it.regionType.isBlank() || it.regionType.equals("PASSAGE", ignoreCase = true) }
+        .filter { it.markEvidence.isNotBlank() }
+        .filter { (it.confidence ?: 0.0) >= 0.45 }
+}
 
 class DeepSeekClient(
     private val apiKeyProvider: () -> String,
@@ -318,16 +330,29 @@ class DeepSeekClient(
     }
 
     fun extractMarkedEnglishWords(
-        pageFiles: List<File>
+        pageFiles: List<File>,
+        enhancedInkPages: List<File> = emptyList()
     ): Pair<List<MarkedWordPayload>, String> {
         require(pageFiles.isNotEmpty()) { "缺少英语阅读页面" }
         require(pageFiles.size <= 5) { "英语查词单次最多 5 页" }
+        require(enhancedInkPages.isEmpty() || enhancedInkPages.size == pageFiles.size) {
+            "彩笔增强页必须与原页面一一对应"
+        }
         val prompt = """
             你是高中英语阅读查词助手。图片按英语阅读或完形填空的页面顺序提供。
             只提取用户在图片中通过手写圈画或手写划线标记的英语单词。
+            前 ${pageFiles.size} 张是原始页面；随后 ${enhancedInkPages.size} 张是对应的彩色笔迹增强图。
+
+            页面保护规则：
+            - 先划分阅读正文、完形填空题干、选项区、作答区、答案区、页眉页脚和指令区；
+            - 只允许提取 PASSAGE（阅读正文/完形正文）区域中的单词；
+            - 完形填空中已经给出的文字、题号、题干、A-D 选项、示例答案、答案表、说明文字全部属于保护区域，不得作为查词结果；
+            - 即使保护区域中的词语被下划线覆盖，也不能提取；
+            - 印刷下划线、排版强调线、表格线、页眉页脚线和普通蓝笔作答不是用户查词标记。
 
             规则：
-            - 只处理手写圈、椭圆圈、手写下划线等明显用户标记；
+            - 只处理手写圈、椭圆圈、手写下划线等明显用户标记；特别核对下划线是否紧贴单词且由手写笔迹形成；
+            - 蓝色、红色、紫色、绿色手写笔画可在彩色增强图中辅助确认；浅灰是原纸张和印刷内容；
             - 印刷体链接、固定加粗、印刷强调线不是用户标记，不要提取；
             - 组合词和短语可以按一个词条返回；
             - meaningChinese 必须是该单词在当前英文原句中的准确中文释义；
@@ -339,6 +364,9 @@ class DeepSeekClient(
             - pageIndex 从 0 开始，对应图片顺序；
             - box 是手写标记单词在原图中的外接框 [左, 上, 右, 下]，使用 0 到 1000 的归一化坐标；
             - 看不到精确位置时可以返回空数组，不能编造；
+            - regionType 只能是 PASSAGE、STEM、OPTION、INSTRUCTION、ANSWER_KEY、HEADER_FOOTER、OTHER；
+            - protectedRegion 表示该词是否位于完形题目区、选项区、答案区、指令或页眉页脚；
+            - markEvidence 必须具体描述实际看到的手写痕迹和颜色，例如“蓝色手写线下划线”；没有明确证据不要返回该词；
             - 同一标记单词只返回一次；
             - 最多返回 50 个单词。
 
@@ -356,6 +384,9 @@ class DeepSeekClient(
                 "exampleSentence": "新造的英文例句。中文翻译。",
                 "contextSentence": "所在英文原句",
                 "markType": "圈画|划线",
+                "regionType": "PASSAGE",
+                "protectedRegion": false,
+                "markEvidence": "蓝色手写线下划线",
                 "pageIndex": 0,
                 "box": [左, 上, 右, 下],
                 "confidence": 0.0
@@ -364,12 +395,11 @@ class DeepSeekClient(
         """.trimIndent()
         val content = arrayListOf(textPart(prompt))
         pageFiles.forEach { content += imagePart(it) }
+        enhancedInkPages.forEach { content += imagePart(it) }
         val raw = request(content)
         val json = extractJson(raw)
         val payload = gson.fromJson(json, MarkedWordsPayload::class.java)
-        return payload.words
-            .filter { it.word.isNotBlank() && (it.confidence ?: 0.6) >= 0.3 }
-            .take(50) to json
+        return filterProtectedMarkedWords(payload.words).take(50) to json
     }
 
     fun answerQuestion(
