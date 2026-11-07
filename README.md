@@ -5,7 +5,7 @@
 [![Android CI](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml/badge.svg)](https://github.com/XXYxiexieyu/ai-mistake-notebook/actions/workflows/android.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> 当前版本：`0.7.5-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；后续版本已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
+> 当前版本：`0.7.6-preview`。`0.7.0-preview` 已在小米 15、小米 13 上完成主要流程测试；后续版本已完成构建、测试和静态检查，等待下一次双机实机回归。项目仍为个人预览版，尚未上架应用商店。
 
 ## 设计目标
 
@@ -67,7 +67,7 @@
 | 针对题目提问 | 连续 AI 问答，自动携带题目照片和分析上下文 |
 | 重考 | 按科目与拍摄日期组卷、隐藏答案、计时、AI 判分，可选调整评分 |
 | 统计 | 科目、状态、错因、知识点和易错知识点排行 |
-| 总结层级 | 全部总结、各科目总结、各书目总结三级视图 |
+| 总结层级 | 全部、科目、书目三级总结；各科目含知识点分布图、完整知识点列表和错题目录跳转 |
 | PDF | 仅导出错误知识点和错因总结，不包含具体题目 |
 | 换机 | 普通 ZIP 完整导出、合并导入、重复题累计 |
 | 数据提醒 | 一年前已重考通过错题的删除提醒，可在设置中关闭 |
@@ -219,6 +219,7 @@ python tools/fetch_catalog.py
 | `0.7.3-preview` | 查词进度持久化和图片标记复核，紧凑单词本、一键 CSV 导出及数据库 v9 |
 | `0.7.4-preview` | 单词完整详情、来源图片缩放、AI 扩展释义与固定搭配、单词回收站及数据库 v10 |
 | `0.7.5-preview` | AI 查词直接入库、详情人工编辑、首次识别位置框和数据库 v11 |
+| `0.7.6-preview` | 科目知识点分布图、完整知识点展开和知识点错题目录联动 |
 
 详细记录见 [CHANGELOG.md](CHANGELOG.md)。
 

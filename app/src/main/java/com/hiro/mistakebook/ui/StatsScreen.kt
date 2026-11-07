@@ -2,6 +2,7 @@ package com.hiro.mistakebook.ui
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,7 +77,10 @@ private data class SummarySnapshot(
 )
 
 @Composable
-fun StatsScreen(viewModel: MainViewModel) {
+fun StatsScreen(
+    viewModel: MainViewModel,
+    onOpenKnowledgePoint: (KnowledgePointTarget) -> Unit
+) {
     val questions by viewModel.questions.collectAsStateWithLifecycle()
     var tabName by rememberSaveable { mutableStateOf(SummaryTab.ALL.name) }
     val tab = runCatching { SummaryTab.valueOf(tabName) }.getOrDefault(SummaryTab.ALL)
@@ -129,7 +134,7 @@ fun StatsScreen(viewModel: MainViewModel) {
         }
 
         when (tab) {
-            SummaryTab.ALL -> allSummaryItems(overall)
+            SummaryTab.ALL -> allSummaryItems(overall, onOpenKnowledgePoint)
             SummaryTab.SUBJECT -> {
                 item {
                     SectionHint("按科目查看错题数量、复习状态、易错知识点和错误原因。")
@@ -139,7 +144,18 @@ fun StatsScreen(viewModel: MainViewModel) {
                         title = subject,
                         subtitle = "科目总结",
                         accent = chartColors[Subjects.all.indexOf(subject).mod(chartColors.size)],
-                        snapshot = snapshot
+                        snapshot = snapshot,
+                        onOpenKnowledgePoint = { point ->
+                            onOpenKnowledgePoint(
+                                KnowledgePointTarget(
+                                    subject = subject,
+                                    book = "",
+                                    unit = "",
+                                    chapter = "",
+                                    knowledgePoint = point.name
+                                )
+                            )
+                        }
                     )
                 }
             }
@@ -163,7 +179,18 @@ fun StatsScreen(viewModel: MainViewModel) {
                             accent = chartColors[
                                 Subjects.all.indexOf(item.first).takeIf { it >= 0 }?.mod(chartColors.size) ?: 0
                             ],
-                            snapshot = item.third
+                            snapshot = item.third,
+                            onOpenKnowledgePoint = { point ->
+                                onOpenKnowledgePoint(
+                                    KnowledgePointTarget(
+                                        subject = item.first,
+                                        book = item.second,
+                                        unit = "",
+                                        chapter = "",
+                                        knowledgePoint = point.name
+                                    )
+                                )
+                            }
                         )
                     }
                 }
@@ -173,7 +200,8 @@ fun StatsScreen(viewModel: MainViewModel) {
 }
 
 private fun androidx.compose.foundation.lazy.LazyListScope.allSummaryItems(
-    snapshot: SummarySnapshot
+    snapshot: SummarySnapshot,
+    onOpenKnowledgePoint: (KnowledgePointTarget) -> Unit
 ) {
     item {
         Row(
@@ -227,7 +255,21 @@ private fun androidx.compose.foundation.lazy.LazyListScope.allSummaryItems(
     }
     item {
         ChartCard("全部总结 · 易错知识点") {
-            KnowledgePointList(snapshot.knowledgePoints)
+            KnowledgePointList(
+                points = snapshot.knowledgePoints,
+                showSubject = true,
+                onPointClick = { point ->
+                    onOpenKnowledgePoint(
+                        KnowledgePointTarget(
+                            subject = point.subject,
+                            book = "",
+                            unit = "",
+                            chapter = "",
+                            knowledgePoint = point.name
+                        )
+                    )
+                }
+            )
         }
     }
     item {
@@ -242,8 +284,10 @@ private fun ScopeSummaryCard(
     title: String,
     subtitle: String,
     accent: Color,
-    snapshot: SummarySnapshot
+    snapshot: SummarySnapshot,
+    onOpenKnowledgePoint: (PointStat) -> Unit
 ) {
+    var showAllPoints by remember(snapshot.knowledgePoints) { mutableStateOf(false) }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -285,9 +329,38 @@ private fun ScopeSummaryCard(
                 return@Column
             }
             StatusBars(snapshot)
-            HorizontalDividerLine()
-            Text("易错知识点", style = MaterialTheme.typography.labelLarge, color = Muted)
-            KnowledgePointList(snapshot.knowledgePoints.take(3), compact = true)
+            if (snapshot.knowledgePoints.isNotEmpty()) {
+                HorizontalDividerLine()
+                Text("知识点错题分布", style = MaterialTheme.typography.labelLarge, color = Muted)
+                KnowledgePointDistribution(
+                    points = snapshot.knowledgePoints,
+                    accent = accent,
+                    onPointClick = onOpenKnowledgePoint
+                )
+                HorizontalDividerLine()
+                Text("全部知识点", style = MaterialTheme.typography.labelLarge, color = Muted)
+                val visiblePoints = if (showAllPoints) {
+                    snapshot.knowledgePoints
+                } else {
+                    snapshot.knowledgePoints.take(5)
+                }
+                KnowledgePointList(
+                    points = visiblePoints,
+                    compact = true,
+                    onPointClick = onOpenKnowledgePoint
+                )
+                if (snapshot.knowledgePoints.size > 5) {
+                    TextButton(onClick = { showAllPoints = !showAllPoints }) {
+                        Text(
+                            if (showAllPoints) {
+                                "收起知识点"
+                            } else {
+                                "查看全部 ${snapshot.knowledgePoints.size} 个知识点"
+                            }
+                        )
+                    }
+                }
+            }
             if (snapshot.causes.isNotEmpty() || snapshot.unsupplied > 0) {
                 HorizontalDividerLine()
                 Text("常见错误原因", style = MaterialTheme.typography.labelLarge, color = Muted)
@@ -312,33 +385,116 @@ private fun StatusBars(snapshot: SummarySnapshot) {
 @Composable
 private fun KnowledgePointList(
     points: List<PointStat>,
-    compact: Boolean = false
+    compact: Boolean = false,
+    showSubject: Boolean = false,
+    onPointClick: ((PointStat) -> Unit)? = null
 ) {
     if (points.isEmpty()) {
         Text("还没有可用于统计的知识点。", color = Muted)
         return
     }
     points.forEachIndexed { index, item ->
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (onPointClick != null) Modifier.clickable { onPointClick(item) } else Modifier)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.34f), RoundedCornerShape(10.dp))
+                .padding(horizontal = 9.dp, vertical = 7.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            MathText(
-                "${index + 1}. ${item.name}",
-                modifier = Modifier.weight(1f),
-                maxLines = if (compact) 1 else 2,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                "${item.count} 题",
-                color = if (index < 3) Red else Muted,
-                fontWeight = if (index < 3) FontWeight.SemiBold else FontWeight.Normal
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MathText(
+                    "${index + 1}. " +
+                        if (showSubject) "${item.subject} · ${item.name}" else item.name,
+                    modifier = Modifier.weight(1f),
+                    maxLines = if (compact) 2 else 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    "${item.count} 题",
+                    color = if (index < 3) Red else Muted,
+                    fontWeight = if (index < 3) FontWeight.SemiBold else FontWeight.Normal
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "重考失败 ${item.failures} 次 · 最近 ${formatDate(item.latest)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Muted
+                )
+                if (onPointClick != null) {
+                    Text("查看错题 →", style = MaterialTheme.typography.labelSmall, color = Green)
+                }
+            }
         }
-        if (!compact) {
+    }
+}
+
+@Composable
+private fun KnowledgePointDistribution(
+    points: List<PointStat>,
+    accent: Color,
+    onPointClick: (PointStat) -> Unit
+) {
+    if (points.isEmpty()) return
+    val visible = points.take(5)
+    val otherCount = points.drop(5).sumOf { it.count }
+    val values = visible.map { it.count } + if (otherCount > 0) listOf(otherCount) else emptyList()
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        DonutChart(values = values, modifier = Modifier.size(126.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
             Text(
-                "重考失败 ${item.failures} 次 · 最近 ${formatDate(item.latest)}",
+                "${points.size} 个知识点 · 命中 ${points.sumOf { it.count }} 次",
+                style = MaterialTheme.typography.labelSmall,
+                color = accent
+            )
+            visible.forEachIndexed { index, point ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onPointClick(point) }
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .size(9.dp)
+                            .background(chartColors[index % chartColors.size], RoundedCornerShape(3.dp))
+                    )
+                    MathText(
+                        point.name,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        point.count.toString(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Muted
+                    )
+                }
+            }
+            if (otherCount > 0) {
+                LegendRow(chartColors[visible.size % chartColors.size], "其他知识点  $otherCount")
+            }
+            Text(
+                "点击知识点查看对应错题",
                 style = MaterialTheme.typography.labelSmall,
                 color = Muted
             )
@@ -409,6 +565,7 @@ private fun buildSnapshot(all: List<QuestionEntity>): SummarySnapshot {
 }
 
 private data class PointStat(
+    val subject: String,
     val name: String,
     val count: Int,
     val failures: Int,
@@ -416,14 +573,15 @@ private data class PointStat(
 )
 
 private fun aggregateKnowledgePoints(questions: List<QuestionEntity>): List<PointStat> {
-    val stats = mutableMapOf<String, PointStat>()
+    val stats = mutableMapOf<Pair<String, String>, PointStat>()
     for (question in questions) {
         knowledgePoints(question.knowledgePointsJson).forEach { raw ->
             val name = raw.trim()
             if (name.isBlank()) return@forEach
-            val current = stats[name]
-            stats[name] = if (current == null) {
-                PointStat(name, 1, question.retakeFailures, question.captureTime)
+            val key = question.subject to name
+            val current = stats[key]
+            stats[key] = if (current == null) {
+                PointStat(question.subject, name, 1, question.retakeFailures, question.captureTime)
             } else {
                 current.copy(
                     count = current.count + 1,

@@ -188,7 +188,18 @@ fun MistakeBookApp(viewModel: MainViewModel) {
                 )
             }
             composable("stats") {
-                StatsScreen(viewModel)
+                StatsScreen(
+                    viewModel = viewModel,
+                    onOpenKnowledgePoint = { target ->
+                        navController.navigate(
+                            "knowledge?subject=${Uri.encode(target.subject)}" +
+                                "&book=${Uri.encode(target.book)}" +
+                                "&unit=${Uri.encode(target.unit)}" +
+                                "&chapter=${Uri.encode(target.chapter)}" +
+                                "&kp=${Uri.encode(target.knowledgePoint)}"
+                        )
+                    }
+                )
             }
             composable("processing") {
                 ProcessingHistoryScreen(

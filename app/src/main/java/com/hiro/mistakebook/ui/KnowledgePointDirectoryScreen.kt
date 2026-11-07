@@ -40,7 +40,12 @@ fun KnowledgePointDirectoryScreen(
     val matches = remember(questions, target) {
         questions.filter { question ->
             knowledgePoints(question.knowledgePointsJson).contains(target.knowledgePoint) &&
-                (target.book.isBlank() || question.book == target.book) &&
+                (target.subject.isBlank() || question.subject == target.subject) &&
+                when (target.book) {
+                    "" -> true
+                    "未归类书目" -> question.book.isBlank()
+                    else -> question.book == target.book
+                } &&
                 (target.unit.isBlank() || question.unit == target.unit) &&
                 (target.chapter.isBlank() || question.chapter == target.chapter)
         }
